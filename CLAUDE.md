@@ -163,7 +163,7 @@ git checkout -b branch-name
 ```
 
 Use this naming format for branches:
-- New feature: feature/feature-name (e.g. feature/flashcards)
+- New feature: feat/feature-name (e.g. feature/flashcards)
 - Bug fix: fix/bug-name (e.g. fix/level-toggle-bug)
 - UI change: ui/change-name (e.g. ui/sidebar-styling)
 
@@ -186,9 +186,9 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - CLAUDE.md created
 
 ### 🔄 Phase 1 — Project Setup (Current)
-- [ ] Initialize Expo project with TypeScript
-- [ ] Set up folder structure
-- [ ] Set up sidebar navigation
+- [x] Initialize Expo project with TypeScript
+- [x] Set up folder structure
+- [x] Set up sidebar navigation
 - [ ] Add level toggle (Zustand global state)
 - [ ] Add tips bar component at the bottom (static content for now)
 - [ ] Connect to GitHub repo (german-learning-app)
@@ -252,6 +252,14 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
   - Platform: Web first, mobile later
   - AI: Google Gemini API (free tier) — replaces Claude API
   - Cost policy: Entire project must remain free to run
+
+- [2026-03-27] Phase 1 in progress — project setup partially complete.
+  - Expo project initialised with TypeScript (SDK 55)
+  - app.json updated: name = "Lerne Deutsch", slug = "german-learning-app"
+  - Folder structure created: src/components, src/screens, src/store, src/data, src/lib
+  - Expo Router installed, all 7 screens created as placeholders
+  - Sidebar navigation working on web (permanent drawer, dark navy theme)
+  - Remaining: Zustand level toggle, tips bar, Supabase connection
 
 ---
 *This file is the single source of truth for the project.
