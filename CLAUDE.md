@@ -228,8 +228,8 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [ ] Listening Quiz (Web Speech API)
 
 ### 🔄 Phase 5 — Grammar Exercises (A1) — Current
-- [ ] Exercise UI (fill-blank and multiple-choice screens)
-- [ ] Gemini generated variations
+- [x] Exercise UI (fill-blank and multiple-choice screens)
+- [x] Gemini generated variations
 
 ### ⏳ Phase 6 — Exam Prep (A1)
 - [ ] Reading
@@ -252,6 +252,7 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [ ] Test level switching (A1 works, other levels show "coming soon")
 - [ ] Test on web
 - [ ] Performance check (loading states for AI calls)
+- [ ] Test Grammar Exercises: finish a topic → tap "✨ Generate More Exercises" → verify 5 new exercises load correctly
 
 ### ⏳ Phase 10 — Expand to A2, B1, B2
 - [ ] Expand A1 vocabulary to full ~600 word Goethe list

@@ -1,7 +1,7 @@
 // gemini.ts — Reusable Gemini API integration for Lerne Deutsch.
 // This is the ONLY file in the app that talks to Gemini.
-// All AI features (Fill in the Blank, Writing feedback, Speaking feedback, Reading passages)
-// import their functions from here.
+// All AI features (Fill in the Blank, Writing feedback, Speaking feedback, Reading passages,
+// Grammar exercise generation) import their functions from here.
 //
 // Model: gemini-1.5-flash (free tier — 15 requests/min, 1500 requests/day)
 // SDK: @google/generative-ai
@@ -154,7 +154,68 @@ Keep your response concise — no more than 150 words.
   return callGemini(prompt);
 }
 
-// --- 4. Reading passage generator ---
+// --- 4. Grammar exercise generator ---
+// Used by: Grammar Exercises → "Generate More" button on the done screen
+// Generates 5 fresh exercises for a given topic and level.
+// Returns an array ready to be appended to the existing exercise list.
+export async function generateGrammarExercises(
+  topic: string,
+  level: string
+): Promise<Array<{
+  type: 'fill-blank' | 'multiple-choice';
+  question: string;
+  options?: string[];
+  answer: string;
+  explanation: string;
+}>> {
+  const prompt = `
+You are a German grammar teacher creating exercises for a ${level} student.
+Topic: "${topic}"
+
+Generate exactly 5 grammar exercises. Use a mix of fill-blank and multiple-choice types.
+
+Rules:
+- fill-blank: a German sentence where one word is replaced with ___. The answer is the missing word.
+- multiple-choice: a question with exactly 4 options (strings array), one correct answer.
+- Keep it appropriate for ${level} level.
+- The explanation should be one short sentence explaining the grammar rule.
+- Output ONLY valid JSON. No markdown, no code fences, no extra text.
+
+Output format — a JSON array of 5 objects:
+[
+  {
+    "type": "fill-blank",
+    "question": "Ich ___ Student.",
+    "answer": "bin",
+    "explanation": "Sein with ich → bin."
+  },
+  {
+    "type": "multiple-choice",
+    "question": "Das Kind ___ krank.",
+    "options": ["bin", "bist", "ist", "sind"],
+    "answer": "ist",
+    "explanation": "Third person singular → ist."
+  }
+]
+  `.trim();
+
+  const raw = await callGemini(prompt);
+
+  try {
+    // Strip markdown code fences if Gemini adds them despite instructions
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+
+    // Validate it's an array before returning
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
+  } catch {
+    console.error('Failed to parse Gemini grammar response:', raw);
+    return [];
+  }
+}
+
+// --- 5. Reading passage generator ---
 // Used by: Exam Prep → Reading
 // Generates a short, level-appropriate German reading passage on a given topic.
 // Returns an object with the passage and comprehension questions.
