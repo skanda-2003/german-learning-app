@@ -2,7 +2,7 @@
 // Every word in every level (A1, A2, B1, B2) uses this same structure.
 
 // Part of speech — what kind of word it is
-export type PartOfSpeech = 'noun' | 'verb' | 'adjective' | 'adverb' | 'phrase';
+export type PartOfSpeech = 'noun' | 'verb' | 'adjective' | 'adverb' | 'preposition' | 'conjunction' | 'pronoun' | 'phrase';
 
 // Gender only applies to nouns in German (der = masculine, die = feminine, das = neuter)
 // null means the word is not a noun

@@ -194,40 +194,37 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [x] Connect to GitHub repo (german-learning-app)
 - [x] Connect to Supabase project
 
-### 🔄 Phase 2 — Content Foundation (Current)
-- [x] Curate A1 vocabulary list — 70 words across 10 categories (incomplete, ~600 total needed)
-- [x] Curate A1 grammar exercise templates — 31 exercises across 6 topics (incomplete, more topics needed)
-- [ ] Expand A1 vocabulary to full ~600 word Goethe A1 list
-- [ ] Expand A1 grammar to cover all A1 topics
-- [ ] Add A2 / B1 / B2 vocabulary lists
-- [ ] Add A2 / B1 / B2 grammar exercise templates
-- [ ] Write 20-30 tips per level (currently 5 placeholder tips per level)
-- [ ] Set up Gemini API integration (reusable function)
+### 🔄 Phase 2 — Content Foundation for A1 (Current)
+- [x] A1 vocabulary list — 70 words across 10 categories (in src/data/vocabulary/a1.ts)
+- [x] A1 grammar exercise templates — 31 exercises across 6 topics (in src/data/grammar/a1.ts)
+- [x] A2/B1/B2 vocabulary and grammar scaffolded as empty arrays (to be filled in Phase 10)
+- [ ] Write 20-30 tips for A1 (currently 5 placeholders — A2/B1/B2 tips to be done in Phase 10)
+- [ ] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
 
-### ⏳ Phase 3 — Flashcards
+### ⏳ Phase 3 — Flashcards (A1)
 - [ ] Flashcard UI with flip animation
 - [ ] Known / unknown marking
 - [ ] Spaced repetition logic
 - [ ] Connect vocabulary mastery to Supabase
 
-### ⏳ Phase 4 — Mini Games
+### ⏳ Phase 4 — Mini Games (A1)
 - [ ] Word Match
 - [ ] Fill in the Blank (Gemini generated sentences)
 - [ ] Gender Battle
 - [ ] Listening Quiz (Web Speech API)
 
-### ⏳ Phase 5 — Grammar Exercises
-- [ ] Exercise templates per level
+### ⏳ Phase 5 — Grammar Exercises (A1)
+- [ ] Exercise UI (fill-blank and multiple-choice screens)
 - [ ] Gemini generated variations
 
-### ⏳ Phase 6 — Exam Prep
+### ⏳ Phase 6 — Exam Prep (A1)
 - [ ] Reading
 - [ ] Listening
 - [ ] Writing (Gemini feedback)
 - [ ] Speaking (voice + text, Gemini feedback)
 
 ### ⏳ Phase 7 — Daily Challenge + Streak
-- [ ] Daily challenge logic (mixed exercises)
+- [ ] Daily challenge logic (mixed exercises from A1 content)
 - [ ] Streak counter (checks last active date on app open)
 - [ ] Update Supabase on completion
 
@@ -236,13 +233,20 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [ ] Vocabulary mastery visualization
 - [ ] Streak display
 
-### ⏳ Phase 9 — Polish
+### ⏳ Phase 9 — Polish (A1 complete app)
 - [ ] Consistent styling across all screens
-- [ ] Test level switching thoroughly
+- [ ] Test level switching (A1 works, other levels show "coming soon")
 - [ ] Test on web
 - [ ] Performance check (loading states for AI calls)
 
-### ⏳ Phase 10 — Multi-user (If Expanding)
+### ⏳ Phase 10 — Expand to A2, B1, B2
+- [ ] Expand A1 vocabulary to full ~600 word Goethe list
+- [ ] Add A2 / B1 / B2 vocabulary lists
+- [ ] Expand A1 grammar to cover all A1 topics
+- [ ] Add A2 / B1 / B2 grammar exercise templates
+- [ ] Write 20-30 tips for A2, B1, B2
+
+### ⏳ Phase 11 — Multi-user (If Expanding)
 - [ ] Auth screens (sign up / login)
 - [ ] Tie all progress to user accounts
 - [ ] Leaderboard for streaks
@@ -268,12 +272,13 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
   - Supabase project created (free tier), client set up in src/lib/supabase.ts
   - Project moved from Windows F drive to WSL filesystem to fix hot reload issues
 
-- [2026-03-28] Phase 2 in progress — content foundation partially complete.
-  - A1 vocabulary: 70 words in src/data/vocabulary/a1.ts (needs expansion to ~600)
-  - A1 grammar: 31 exercises in src/data/grammar/a1.ts (needs expansion to cover all A1 topics)
-  - A2/B1/B2 vocabulary and grammar: scaffolded as empty arrays, to be filled later
-  - Tips: 5 placeholder tips per level in src/data/tips.ts (needs expansion to 20-30 each)
-  - Remaining: expand content, set up Gemini API integration
+- [2026-03-28] Phase 2 in progress — A1 content foundation partially complete.
+  - Strategy change: build full app with A1 content first, add A2/B1/B2 in Phase 10
+  - A1 vocabulary: 70 words in src/data/vocabulary/a1.ts
+  - A1 grammar: 31 exercises in src/data/grammar/a1.ts
+  - A2/B1/B2 vocabulary and grammar: scaffolded as empty arrays, to be filled in Phase 10
+  - Tips: 5 placeholder tips per level in src/data/tips.ts (A1 tips to be expanded to 20-30, other levels in Phase 10)
+  - Remaining in Phase 2: expand A1 tips, set up Gemini API integration
 
 ---
 *This file is the single source of truth for the project.
