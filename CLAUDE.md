@@ -61,6 +61,9 @@ Switching level affects all content globally — flashcards, exercises, games, e
 - Mark as known / unknown
 - Spaced repetition — unknown words appear more frequently
 - Vocabulary sourced from CEFR / Goethe word lists per level
+- **[Future]** Category filter — let the user practise by part of speech (e.g. Nouns only,
+  Verbs only, Prepositions, Articles) so they can focus on what they don't know.
+  Categories map directly to the `partOfSpeech` field already on every word.
 
 ### 🎮 Mini Games
 - **Word Match** — drag German words to their English meanings
@@ -157,23 +160,21 @@ This project must remain completely free to run.
 ---
 
 ## GitHub Workflow Rules
-At the start of every new feature or fix, remind me to create a new branch with:
+At the start of every new phase, create one branch for the entire phase:
 ```bash
 git checkout -b branch-name
 ```
 
 Use this naming format for branches:
-- New feature: feat/feature-name (e.g. feat/flashcard-flip, feat/fill-in-the-blank)
+- New phase/feature: feat/descriptive-name (e.g. feat/flashcards, feat/mini-games, feat/grammar-exercises)
 - Bug fix: fix/bug-name (e.g. fix/level-toggle-bug)
 - UI change: ui/change-name (e.g. ui/sidebar-styling)
 
-**Branch names must describe the specific feature being built — never a phase number or vague label.**
-- ✅ Good: `feat/flashcard-flip`, `feat/word-match-game`, `feat/spaced-repetition`
-- ❌ Bad: `feat/phase3`, `feat/phase3-flashcards`, `feat/phase2-setup`
+**One branch per phase. All work for that phase — regardless of how many features it contains — goes on the same branch.**
+- ✅ Good: `feat/flashcards` (covers all of Phase 3), `feat/mini-games` (covers all of Phase 4)
+- ❌ Bad: `feat/phase3`, `feat/phase3-flashcards`, `feat/spaced-repetition` (too granular)
 
-If a phase involves multiple distinct features, use a separate branch per feature.
-
-Once the code for that feature or fix is complete, give me these commands:
+Once the phase is complete, give me these commands:
 ```bash
 git add .
 git commit -m "describe what was done"
@@ -207,19 +208,26 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [x] Write 20-30 tips for A1 — 25 tips written across 8 categories (in src/data/tips.ts)
 - [x] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
 
-### ⏳ Phase 3 — Flashcards (A1)
-- [ ] Flashcard UI with flip animation
-- [ ] Known / unknown marking
-- [ ] Spaced repetition logic
-- [ ] Connect vocabulary mastery to Supabase
+### ✅ Phase 3 — Flashcards (A1)
+- [x] Flashcard UI with flip animation
+- [x] Known / unknown marking
+- [x] Spaced repetition logic
+- [x] Connect vocabulary mastery to Supabase
 
-### ⏳ Phase 4 — Mini Games (A1)
+### ⏳ Phase 3b — Flashcard Categories
+- [ ] Add a category picker above the flashcard deck
+- [ ] Filter cards by part of speech: All, Nouns, Verbs, Adjectives, Prepositions, Other
+- [ ] Remember the selected category per session
+- [ ] Show card count per category (e.g. "Nouns — 210 words")
+- Note: the `partOfSpeech` field is already on every word — this is purely a UI filter
+
+### ⏳ Phase 4 — Mini Games (A1) — Skipped for now, will return after Phase 8
 - [ ] Word Match
 - [ ] Fill in the Blank (Gemini generated sentences)
 - [ ] Gender Battle
 - [ ] Listening Quiz (Web Speech API)
 
-### ⏳ Phase 5 — Grammar Exercises (A1)
+### 🔄 Phase 5 — Grammar Exercises (A1) — Current
 - [ ] Exercise UI (fill-blank and multiple-choice screens)
 - [ ] Gemini generated variations
 
