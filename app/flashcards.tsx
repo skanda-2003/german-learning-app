@@ -3,13 +3,15 @@
 // Uses the useSpacedRepetition hook to manage the study queue.
 // Unknown words are recycled back into the deck until the user knows them.
 // Session ends only when every word has been marked as known.
+// Mastery (known/unknown per word) is saved to Supabase so progress persists.
 
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import useLevelStore from '../src/store/useLevelStore';
 import { VOCABULARY } from '../src/data/vocabulary';
 import FlashCard from '../src/components/FlashCard';
 import { useSpacedRepetition } from '../src/hooks/useSpacedRepetition';
+import { loadMastery, saveMastery, MasteryMap } from '../src/lib/masteryService';
 
 export default function FlashcardsScreen() {
   // Get the currently selected level from global state
@@ -17,6 +19,24 @@ export default function FlashcardsScreen() {
 
   // Get the word list for this level
   const words = VOCABULARY[level];
+
+  // Mastery data loaded from Supabase — which word IDs the user already knows
+  const [masteryMap, setMasteryMap] = useState<MasteryMap>(new Set());
+  const [masteryLoading, setMasteryLoading] = useState(true);
+
+  // Load mastery from Supabase when the screen first opens or level changes.
+  // Words already marked as known are filtered out of the starting queue.
+  useEffect(() => {
+    setMasteryLoading(true);
+    loadMastery().then((map) => {
+      setMasteryMap(map);
+      setMasteryLoading(false);
+    });
+  }, [level]);
+
+  // Filter out words the user has already mastered so they don't appear in the deck.
+  // If all words are mastered, studyWords will be empty and the done screen shows.
+  const studyWords = words.filter((w) => !masteryMap.has(w.id));
 
   // All queue logic is handled by this hook
   const {
@@ -28,7 +48,30 @@ export default function FlashcardsScreen() {
     markKnown,
     markUnknown,
     restart,
-  } = useSpacedRepetition(words);
+  } = useSpacedRepetition(studyWords);
+
+  // ── Wrap markKnown / markUnknown to also save to Supabase ──
+  function handleKnown() {
+    if (!currentWord) return;
+    saveMastery(currentWord.id, true);  // fire and forget — no need to await
+    markKnown();
+  }
+
+  function handleUnknown() {
+    if (!currentWord) return;
+    saveMastery(currentWord.id, false); // fire and forget
+    markUnknown();
+  }
+
+  // ─── Loading state (fetching mastery from Supabase) ──────────────────────
+  if (masteryLoading) {
+    return (
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color="#4fc3f7" />
+        <Text style={styles.loadingText}>Loading your progress...</Text>
+      </View>
+    );
+  }
 
   // ─── Empty state (level has no words yet) ─────────────────────────────────
   if (words.length === 0) {
@@ -105,12 +148,12 @@ export default function FlashcardsScreen() {
 
       {/* ── Known / Unknown buttons ── */}
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={[styles.button, styles.unknownButton]} onPress={markUnknown}>
+        <TouchableOpacity style={[styles.button, styles.unknownButton]} onPress={handleUnknown}>
           <Text style={styles.buttonIcon}>✗</Text>
           <Text style={styles.buttonLabel}>Unknown</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.button, styles.knownButton]} onPress={markKnown}>
+        <TouchableOpacity style={[styles.button, styles.knownButton]} onPress={handleKnown}>
           <Text style={styles.buttonIcon}>✓</Text>
           <Text style={styles.buttonLabel}>Known</Text>
         </TouchableOpacity>
@@ -226,6 +269,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 32,
     backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#888888',
   },
   emptyEmoji: {
     fontSize: 48,

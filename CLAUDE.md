@@ -160,23 +160,21 @@ This project must remain completely free to run.
 ---
 
 ## GitHub Workflow Rules
-At the start of every new feature or fix, remind me to create a new branch with:
+At the start of every new phase, create one branch for the entire phase:
 ```bash
 git checkout -b branch-name
 ```
 
 Use this naming format for branches:
-- New feature: feat/feature-name (e.g. feat/flashcard-flip, feat/fill-in-the-blank)
+- New phase/feature: feat/descriptive-name (e.g. feat/flashcards, feat/mini-games, feat/grammar-exercises)
 - Bug fix: fix/bug-name (e.g. fix/level-toggle-bug)
 - UI change: ui/change-name (e.g. ui/sidebar-styling)
 
-**Branch names must describe the specific feature being built — never a phase number or vague label.**
-- ✅ Good: `feat/flashcard-flip`, `feat/word-match-game`, `feat/spaced-repetition`
-- ❌ Bad: `feat/phase3`, `feat/phase3-flashcards`, `feat/phase2-setup`
+**One branch per phase. All work for that phase — regardless of how many features it contains — goes on the same branch.**
+- ✅ Good: `feat/flashcards` (covers all of Phase 3), `feat/mini-games` (covers all of Phase 4)
+- ❌ Bad: `feat/phase3`, `feat/phase3-flashcards`, `feat/spaced-repetition` (too granular)
 
-If a phase involves multiple distinct features, use a separate branch per feature.
-
-Once the code for that feature or fix is complete, give me these commands:
+Once the phase is complete, give me these commands:
 ```bash
 git add .
 git commit -m "describe what was done"
@@ -213,7 +211,7 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 ### 🔄 Phase 3 — Flashcards (A1)
 - [x] Flashcard UI with flip animation
 - [x] Known / unknown marking
-- [ ] Spaced repetition logic
+- [x] Spaced repetition logic
 - [ ] Connect vocabulary mastery to Supabase
 
 ### ⏳ Phase 3b — Flashcard Categories
