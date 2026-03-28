@@ -221,13 +221,13 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [ ] Show card count per category (e.g. "Nouns — 210 words")
 - Note: the `partOfSpeech` field is already on every word — this is purely a UI filter
 
-### ⏳ Phase 4 — Mini Games (A1)
+### ⏳ Phase 4 — Mini Games (A1) — Skipped for now, will return after Phase 8
 - [ ] Word Match
 - [ ] Fill in the Blank (Gemini generated sentences)
 - [ ] Gender Battle
 - [ ] Listening Quiz (Web Speech API)
 
-### ⏳ Phase 5 — Grammar Exercises (A1)
+### 🔄 Phase 5 — Grammar Exercises (A1) — Current
 - [ ] Exercise UI (fill-blank and multiple-choice screens)
 - [ ] Gemini generated variations
 
