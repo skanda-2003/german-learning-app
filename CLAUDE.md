@@ -194,12 +194,12 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [x] Connect to GitHub repo (german-learning-app)
 - [x] Connect to Supabase project
 
-### 🔄 Phase 2 — Content Foundation for A1 (Current)
+### ✅ Phase 2 — Content Foundation for A1 (Complete)
 - [x] A1 vocabulary list — 665 words, full Goethe Institut A1 list (in src/data/vocabulary/a1.ts)
 - [x] A1 grammar exercise templates — 111 exercises across 16 topics (in src/data/grammar/a1.ts)
 - [x] A2/B1/B2 vocabulary and grammar scaffolded as empty arrays (to be filled in Phase 10)
 - [x] Write 20-30 tips for A1 — 25 tips written across 8 categories (in src/data/tips.ts)
-- [ ] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
+- [x] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
 
 ### ⏳ Phase 3 — Flashcards (A1)
 - [ ] Flashcard UI with flip animation
@@ -281,7 +281,8 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
       questions, separable verbs, plural nouns, imperative, prepositions
   - A2/B1/B2 vocabulary and grammar: scaffolded as empty arrays, to be filled in Phase 10
   - Tips: expanded A1 tips from 5 → 25 across 8 categories in src/data/tips.ts
-  - Remaining in Phase 2: set up Gemini API integration (src/lib/gemini.ts)
+  - Gemini API integration complete: src/lib/gemini.ts with 4 exported functions
+  - Phase 2 complete.
 
 ---
 *This file is the single source of truth for the project.
