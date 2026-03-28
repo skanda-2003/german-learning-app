@@ -61,6 +61,9 @@ Switching level affects all content globally — flashcards, exercises, games, e
 - Mark as known / unknown
 - Spaced repetition — unknown words appear more frequently
 - Vocabulary sourced from CEFR / Goethe word lists per level
+- **[Future]** Category filter — let the user practise by part of speech (e.g. Nouns only,
+  Verbs only, Prepositions, Articles) so they can focus on what they don't know.
+  Categories map directly to the `partOfSpeech` field already on every word.
 
 ### 🎮 Mini Games
 - **Word Match** — drag German words to their English meanings
@@ -207,11 +210,18 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [x] Write 20-30 tips for A1 — 25 tips written across 8 categories (in src/data/tips.ts)
 - [x] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
 
-### ⏳ Phase 3 — Flashcards (A1)
-- [ ] Flashcard UI with flip animation
-- [ ] Known / unknown marking
+### 🔄 Phase 3 — Flashcards (A1)
+- [x] Flashcard UI with flip animation
+- [x] Known / unknown marking
 - [ ] Spaced repetition logic
 - [ ] Connect vocabulary mastery to Supabase
+
+### ⏳ Phase 3b — Flashcard Categories
+- [ ] Add a category picker above the flashcard deck
+- [ ] Filter cards by part of speech: All, Nouns, Verbs, Adjectives, Prepositions, Other
+- [ ] Remember the selected category per session
+- [ ] Show card count per category (e.g. "Nouns — 210 words")
+- Note: the `partOfSpeech` field is already on every word — this is purely a UI filter
 
 ### ⏳ Phase 4 — Mini Games (A1)
 - [ ] Word Match
