@@ -184,4 +184,20 @@ export const A1_GRAMMAR: GrammarExercise[] = [
   { id: 'a1_gr_102', topic: 'Imperative', type: 'multiple-choice',  question: 'Which is the correct formal (Sie) command for "öffnen" (to open)?', options: ['Öffne!', 'Öffnet!', 'Öffnen Sie!', 'Öffnen du!'],  answer: 'Öffnen Sie!',    explanation: 'Sie-imperative: always infinitive + Sie: Öffnen Sie! Note: "Sie" must be included.' },
   { id: 'a1_gr_103', topic: 'Imperative', type: 'multiple-choice',  question: 'Which is the correct du-imperative of "lernen" (to learn)?',  options: ['Lernst!', 'Lernen!', 'Lerne!', 'Lernt!'],              answer: 'Lerne!',         explanation: 'du-imperative of "lernen": stem "lern" + optional -e → Lern! or Lerne! Both are correct; Lerne! is more common in writing.' },
 
+  // --- Common prepositions ---
+  // These prepositions are essential at A1. Each one takes a specific case:
+  //   Always Dativ:     mit (with), zu (to), bei (at/with), nach (to/after), aus (from/out of), von (from/of)
+  //   Always Akkusativ: für (for), durch (through)
+  //   Two-way (Dativ for location, Akkusativ for movement): in, auf, an, über, unter
+  //
+  // At A1, focus on recognising the right preposition — deep case rules come later.
+  { id: 'a1_gr_104', topic: 'Prepositions', type: 'multiple-choice',  question: 'Ich fahre ___ dem Bus. (by bus)',                            options: ['mit', 'für', 'aus', 'von'],             answer: 'mit',    explanation: '"Mit" = with. Use it for means of transport: mit dem Bus, mit dem Zug, mit dem Auto.' },
+  { id: 'a1_gr_105', topic: 'Prepositions', type: 'multiple-choice',  question: 'Ich komme ___ Deutschland. (from Germany)',                  options: ['nach', 'aus', 'von', 'bei'],            answer: 'aus',    explanation: '"Aus" = from (origin/country). Use for countries and cities: aus Deutschland, aus Berlin.' },
+  { id: 'a1_gr_106', topic: 'Prepositions', type: 'multiple-choice',  question: 'Ich fahre ___ Berlin. (to Berlin — a city)',                 options: ['zu', 'in', 'nach', 'aus'],              answer: 'nach',   explanation: '"Nach" is used for travel to cities and countries (without an article): nach Berlin, nach Österreich.' },
+  { id: 'a1_gr_107', topic: 'Prepositions', type: 'multiple-choice',  question: 'Ich gehe ___ Supermarkt. (to the supermarket)',              options: ['nach', 'aus', 'zum', 'bei'],            answer: 'zum',    explanation: '"Zu" is used for travel to places with an article. "zu + dem" contracts to "zum": zum Supermarkt, zum Bahnhof.' },
+  { id: 'a1_gr_108', topic: 'Prepositions', type: 'multiple-choice',  question: 'Das Buch liegt ___ dem Tisch. (on the table — location)',    options: ['in', 'auf', 'für', 'mit'],              answer: 'auf',    explanation: '"Auf" = on (a surface). For location (no movement) → takes Dativ: auf dem Tisch.' },
+  { id: 'a1_gr_109', topic: 'Prepositions', type: 'multiple-choice',  question: 'Ich wohne ___ meiner Familie. (with my family)',             options: ['mit', 'bei', 'von', 'nach'],            answer: 'bei',    explanation: '"Bei" = at / with (living situation or someone\'s place): bei meiner Familie, bei meinen Eltern.' },
+  { id: 'a1_gr_110', topic: 'Prepositions', type: 'fill-blank',       question: 'Das Geschenk ist ___ dich. (for you)',                      answer: 'für',    explanation: '"Für" = for. It always takes Akkusativ: für dich, für mich, für meinen Bruder.' },
+  { id: 'a1_gr_111', topic: 'Prepositions', type: 'multiple-choice',  question: 'Ich gehe ___ die Schule. (into the school — movement)',      options: ['in', 'auf', 'bei', 'aus'],              answer: 'in',     explanation: '"In" is a two-way preposition. Movement (going into) → Akkusativ: in die Schule. Location (being inside) → Dativ: in der Schule.' },
+
 ];
