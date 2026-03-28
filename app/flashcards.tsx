@@ -1,14 +1,15 @@
 // flashcards.tsx — Flashcards screen
 //
-// Shows one flashcard at a time for the currently selected level.
-// The user taps the card to flip it, then marks it as Known or Unknown.
-// Progress is tracked locally for this session (Supabase sync comes in a later phase).
+// Uses the useSpacedRepetition hook to manage the study queue.
+// Unknown words are recycled back into the deck until the user knows them.
+// Session ends only when every word has been marked as known.
 
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import useLevelStore from '../src/store/useLevelStore';
 import { VOCABULARY } from '../src/data/vocabulary';
 import FlashCard from '../src/components/FlashCard';
+import { useSpacedRepetition } from '../src/hooks/useSpacedRepetition';
 
 export default function FlashcardsScreen() {
   // Get the currently selected level from global state
@@ -17,15 +18,17 @@ export default function FlashcardsScreen() {
   // Get the word list for this level
   const words = VOCABULARY[level];
 
-  // Index of the card currently being shown
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  // Track how many cards the user has marked as known vs unknown this session
-  const [knownCount, setKnownCount] = useState(0);
-  const [unknownCount, setUnknownCount] = useState(0);
-
-  // True when the user has gone through all cards
-  const isDone = currentIndex >= words.length;
+  // All queue logic is handled by this hook
+  const {
+    currentWord,
+    remaining,
+    knownCount,
+    unknownCount,
+    isDone,
+    markKnown,
+    markUnknown,
+    restart,
+  } = useSpacedRepetition(words);
 
   // ─── Empty state (level has no words yet) ─────────────────────────────────
   if (words.length === 0) {
@@ -40,13 +43,15 @@ export default function FlashcardsScreen() {
     );
   }
 
-  // ─── Done state (end of deck) ──────────────────────────────────────────────
+  // ─── Done state (queue is empty — every word has been marked known) ────────
   if (isDone) {
     return (
       <View style={styles.centeredContainer}>
         <Text style={styles.doneEmoji}>🎉</Text>
-        <Text style={styles.doneTitle}>Deck Complete!</Text>
-        <Text style={styles.doneSubtitle}>You went through all {words.length} cards.</Text>
+        <Text style={styles.doneTitle}>All Done!</Text>
+        <Text style={styles.doneSubtitle}>
+          You cleared all {words.length} words.
+        </Text>
 
         {/* Summary row */}
         <View style={styles.summaryRow}>
@@ -56,71 +61,56 @@ export default function FlashcardsScreen() {
           </View>
           <View style={[styles.summaryBox, styles.unknownBox]}>
             <Text style={styles.summaryCount}>{unknownCount}</Text>
-            <Text style={styles.summaryLabel}>Unknown</Text>
+            <Text style={styles.summaryLabel}>Revisited</Text>
           </View>
         </View>
 
-        {/* Restart button */}
-        <TouchableOpacity
-          style={styles.restartButton}
-          onPress={() => {
-            setCurrentIndex(0);
-            setKnownCount(0);
-            setUnknownCount(0);
-          }}
-        >
-          <Text style={styles.restartButtonText}>Start Again</Text>
+        <TouchableOpacity style={styles.restartButton} onPress={restart}>
+          <Text style={styles.restartButtonText}>Study Again</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // ─── Current card ──────────────────────────────────────────────────────────
-  const currentWord = words[currentIndex];
-
-  function handleKnown() {
-    setKnownCount((prev) => prev + 1);
-    setCurrentIndex((prev) => prev + 1);
-  }
-
-  function handleUnknown() {
-    setUnknownCount((prev) => prev + 1);
-    setCurrentIndex((prev) => prev + 1);
-  }
-
+  // ─── Main study view ───────────────────────────────────────────────────────
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
-      {/* ── Progress bar ── */}
+      {/* ── Progress bar ──
+          Shows how many words are left to clear, not a simple counter.
+          The bar fills as the queue shrinks. */}
       <View style={styles.progressContainer}>
         <Text style={styles.progressText}>
-          {currentIndex + 1} / {words.length}
+          {remaining} word{remaining !== 1 ? 's' : ''} remaining
         </Text>
         <View style={styles.progressBarBackground}>
           <View
             style={[
               styles.progressBarFill,
-              { width: `${(currentIndex / words.length) * 100}%` },
+              // Fill = how much of the original list has been cleared
+              { width: `${((words.length - remaining) / words.length) * 100}%` },
             ]}
           />
         </View>
       </View>
 
       {/* ── The card ──
-          key={currentWord.id} causes React to fully remount FlashCard each time
-          the word changes — this resets the flip animation back to the front face. */}
+          key={currentWord.id} remounts FlashCard on every new word,
+          resetting the flip animation back to the front face. */}
       <View style={styles.cardContainer}>
-        <FlashCard key={currentWord.id} word={currentWord} />
+        {currentWord && (
+          <FlashCard key={currentWord.id} word={currentWord} />
+        )}
       </View>
 
       {/* ── Known / Unknown buttons ── */}
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={[styles.button, styles.unknownButton]} onPress={handleUnknown}>
+        <TouchableOpacity style={[styles.button, styles.unknownButton]} onPress={markUnknown}>
           <Text style={styles.buttonIcon}>✗</Text>
           <Text style={styles.buttonLabel}>Unknown</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.button, styles.knownButton]} onPress={handleKnown}>
+        <TouchableOpacity style={[styles.button, styles.knownButton]} onPress={markKnown}>
           <Text style={styles.buttonIcon}>✓</Text>
           <Text style={styles.buttonLabel}>Known</Text>
         </TouchableOpacity>
@@ -128,9 +118,9 @@ export default function FlashcardsScreen() {
 
       {/* ── Session tally ── */}
       <View style={styles.tallyRow}>
-        <Text style={styles.tallyText}>✓ {knownCount} known</Text>
+        <Text style={styles.tallyText}>✓ {knownCount} cleared</Text>
         <Text style={styles.tallyDivider}>·</Text>
-        <Text style={styles.tallyText}>✗ {unknownCount} unknown</Text>
+        <Text style={styles.tallyText}>↺ {unknownCount} revisited</Text>
       </View>
 
     </ScrollView>
