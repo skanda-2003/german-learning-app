@@ -208,11 +208,11 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [x] Write 20-30 tips for A1 — 25 tips written across 8 categories (in src/data/tips.ts)
 - [x] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
 
-### 🔄 Phase 3 — Flashcards (A1)
+### ✅ Phase 3 — Flashcards (A1)
 - [x] Flashcard UI with flip animation
 - [x] Known / unknown marking
 - [x] Spaced repetition logic
-- [ ] Connect vocabulary mastery to Supabase
+- [x] Connect vocabulary mastery to Supabase
 
 ### ⏳ Phase 3b — Flashcard Categories
 - [ ] Add a category picker above the flashcard deck
