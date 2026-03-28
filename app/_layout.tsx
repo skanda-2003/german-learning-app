@@ -4,12 +4,16 @@
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
-import { Platform } from 'react-native';
+import { Platform, View } from 'react-native';
+import LevelToggle from '../src/components/LevelToggle';
+import TipsBar from '../src/components/TipsBar';
 
 export default function RootLayout() {
   return (
     // GestureHandlerRootView is required for the drawer to work
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* This outer View stacks the Drawer and TipsBar vertically */}
+      <View style={{ flex: 1 }}>
       <Drawer
         screenOptions={{
           // On web, make the sidebar always visible (permanent)
@@ -29,6 +33,8 @@ export default function RootLayout() {
             backgroundColor: '#1a1a2e', // match header to sidebar
           },
           headerTintColor: '#ffffff', // white header text
+          // LevelToggle placed on the right side of the header bar
+          headerRight: () => <LevelToggle />,
         }}
       >
         {/* Each Drawer.Screen maps to a file in the app/ folder */}
@@ -40,6 +46,9 @@ export default function RootLayout() {
         <Drawer.Screen name="exam"       options={{ title: '🎓  Exam Prep' }} />
         <Drawer.Screen name="progress"   options={{ title: '📊  Progress' }} />
       </Drawer>
+      {/* TipsBar sits below the Drawer — appears on every screen */}
+      <TipsBar />
+      </View>
     </GestureHandlerRootView>
   );
 }

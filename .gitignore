@@ -36,6 +36,9 @@ yarn-error.*
 # personal notes
 myinstructions.txt
 
+# WSL-specific Metro polling config (not needed on Windows/Mac)
+metro.config.js
+
 # typescript
 *.tsbuildinfo
 
