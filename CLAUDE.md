@@ -163,9 +163,15 @@ git checkout -b branch-name
 ```
 
 Use this naming format for branches:
-- New feature: feat/feature-name (e.g. feature/flashcards)
+- New feature: feat/feature-name (e.g. feat/flashcard-flip, feat/fill-in-the-blank)
 - Bug fix: fix/bug-name (e.g. fix/level-toggle-bug)
 - UI change: ui/change-name (e.g. ui/sidebar-styling)
+
+**Branch names must describe the specific feature being built — never a phase number or vague label.**
+- ✅ Good: `feat/flashcard-flip`, `feat/word-match-game`, `feat/spaced-repetition`
+- ❌ Bad: `feat/phase3`, `feat/phase3-flashcards`, `feat/phase2-setup`
+
+If a phase involves multiple distinct features, use a separate branch per feature.
 
 Once the code for that feature or fix is complete, give me these commands:
 ```bash
