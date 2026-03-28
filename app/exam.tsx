@@ -13,6 +13,9 @@ import {
   ScrollView,
 } from 'react-native';
 import ReadingExercise from '../src/components/exam/ReadingExercise';
+import ListeningExercise from '../src/components/exam/ListeningExercise';
+import WritingExercise from '../src/components/exam/WritingExercise';
+import SpeakingExercise from '../src/components/exam/SpeakingExercise';
 
 // ─── Sub-section definitions ──────────────────────────────────────────────────
 
@@ -39,21 +42,21 @@ const SUB_SECTIONS: SubSectionCard[] = [
     emoji: '🎧',
     title: 'Listening',
     description: 'Listen to a German passage read aloud and answer questions.',
-    available: false,
+    available: true,
   },
   {
     id: 'writing',
     emoji: '✍️',
     title: 'Writing',
     description: 'Write a short response to a prompt and get AI feedback.',
-    available: false,
+    available: true,
   },
   {
     id: 'speaking',
     emoji: '🎤',
     title: 'Speaking',
     description: 'Speak or type a response and get AI pronunciation feedback.',
-    available: false,
+    available: true,
   },
 ];
 
@@ -67,7 +70,6 @@ export default function ExamScreen() {
   if (activeSection === 'reading') {
     return (
       <ScrollView style={styles.subSectionContainer}>
-        {/* Back button */}
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => setActiveSection(null)}
@@ -76,6 +78,48 @@ export default function ExamScreen() {
         </TouchableOpacity>
         <ReadingExercise />
       </ScrollView>
+    );
+  }
+
+  if (activeSection === 'listening') {
+    return (
+      <View style={styles.subSectionContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => setActiveSection(null)}
+        >
+          <Text style={styles.backButtonText}>← Exam Prep</Text>
+        </TouchableOpacity>
+        <ListeningExercise />
+      </View>
+    );
+  }
+
+  if (activeSection === 'writing') {
+    return (
+      <View style={styles.subSectionContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => setActiveSection(null)}
+        >
+          <Text style={styles.backButtonText}>← Exam Prep</Text>
+        </TouchableOpacity>
+        <WritingExercise />
+      </View>
+    );
+  }
+
+  if (activeSection === 'speaking') {
+    return (
+      <View style={styles.subSectionContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => setActiveSection(null)}
+        >
+          <Text style={styles.backButtonText}>← Exam Prep</Text>
+        </TouchableOpacity>
+        <SpeakingExercise />
+      </View>
     );
   }
 

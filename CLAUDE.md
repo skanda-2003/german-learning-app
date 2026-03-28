@@ -218,11 +218,27 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [x] Exercise UI (fill-blank and multiple-choice screens)
 - [x] Gemini generated variations
 
-### 🔄 Phase 5 — Exam Prep (A1) — Current
+### ⏳ Phase 4b — Test Grammar Exercises
+- [ ] Test fill-blank exercises: type answer, check correct/incorrect feedback
+- [ ] Test multiple-choice exercises: tap option, check colour feedback
+- [ ] Test topic selector: pick a specific topic, verify only that topic's exercises show
+- [ ] Test "All Topics": verify all 111 exercises cycle through
+- [ ] Test "✨ Generate More Exercises": finish a topic → tap button → verify 5 new exercises load
+- [ ] Test done screen: score circle shows correct percentage
+
+### ✅ Phase 5 — Exam Prep (A1) — Complete
 - [x] Reading (Gemini passage + multiple-choice comprehension questions)
-- [ ] Listening (text-to-speech + comprehension questions)
-- [ ] Writing (Gemini feedback)
-- [ ] Speaking (voice + text, Gemini feedback)
+- [x] Listening (text-to-speech + comprehension questions, passage revealed on done screen)
+- [x] Writing (prompt shown, user types in German, Gemini gives feedback)
+- [x] Speaking (🎤 record via browser mic OR type, Gemini evaluates response)
+
+### ⏳ Phase 5b — Test Exam Prep
+- [ ] Test Reading: generate passage → answer all 3 questions → verify score and review screen
+- [ ] Test Listening: generate passage → play audio (German voice) → answer questions → verify passage revealed on done screen
+- [ ] Test Writing: type a German response → submit → verify Gemini feedback appears in purple card
+- [ ] Test Speaking (mic): tap Record → speak German → stop → verify transcript appears in text box → submit → verify feedback
+- [ ] Test Speaking (type): type a response directly → submit → verify Gemini feedback appears in pink card
+- [ ] Test back button returns to Exam Prep selector from each sub-section
 
 ### ⏳ Phase 6 — Mini Games (A1)
 - [ ] Word Match
@@ -305,9 +321,13 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
   - Gemini integration: "Generate More Exercises" button on done screen fetches 5 fresh exercises
   - Phases reordered: Mini Games moved to Phase 6, Flashcard Categories to Phase 7
 
-- [2026-03-28] Phase 5 in progress — Exam Prep.
-  - Reading sub-section complete: Gemini generates a German passage + 3 multiple-choice questions
-  - Exam screen: selector with 4 cards (Reading active, Listening/Writing/Speaking show "Soon")
+- [2026-03-28] Phase 5 complete — Exam Prep.
+  - Exam screen: selector with 4 cards, each opening its own sub-section
+  - Reading: Gemini generates a German passage + 3 multiple-choice comprehension questions, score + review on done screen
+  - Listening: same as Reading but passage is hidden — read aloud via Web Speech API (de-DE, 0.85x speed), passage revealed after answering
+  - Writing: rotating A1 prompts, multiline text input, Gemini reviews and gives structured feedback
+  - Speaking: 🎤 browser mic (SpeechRecognition, de-DE) transcribes speech into text box, falls back to typing if mic unavailable, Gemini evaluates response
+  - All 4 sub-sections live — no more "Coming Soon" badges
 
 ---
 *This file is the single source of truth for the project.
