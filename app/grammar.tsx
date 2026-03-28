@@ -14,10 +14,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import useLevelStore from '../src/store/useLevelStore';
 import { GRAMMAR, GrammarExercise } from '../src/data/grammar';
 import ExerciseCard from '../src/components/ExerciseCard';
+import { generateGrammarExercises } from '../src/lib/gemini';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -42,6 +44,15 @@ export default function GrammarScreen() {
   // How many exercises the user got correct this session
   const [correctCount, setCorrectCount] = useState(0);
 
+  // Gemini-generated exercises appended to the end of the list
+  const [extraExercises, setExtraExercises] = useState<GrammarExercise[]>([]);
+
+  // True while waiting for Gemini to respond
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Error message shown if Gemini fails or returns nothing
+  const [generateError, setGenerateError] = useState<string | null>(null);
+
   // ── Derived values ──────────────────────────────────────────────────────────
 
   // Unique list of topic names, in the order they first appear in the data
@@ -57,11 +68,14 @@ export default function GrammarScreen() {
     return result;
   }, [allExercises]);
 
-  // The exercises to show — either all, or filtered to the selected topic
+  // The exercises to show — pre-written list (filtered by topic) + any Gemini-generated ones
   const exercises: GrammarExercise[] = useMemo(() => {
-    if (selectedTopic === null) return allExercises;
-    return allExercises.filter((ex) => ex.topic === selectedTopic);
-  }, [allExercises, selectedTopic]);
+    const base =
+      selectedTopic === null
+        ? allExercises
+        : allExercises.filter((ex) => ex.topic === selectedTopic);
+    return [...base, ...extraExercises];
+  }, [allExercises, selectedTopic, extraExercises]);
 
   const totalExercises = exercises.length;
   const currentExercise = exercises[currentIndex] ?? null;
@@ -73,6 +87,46 @@ export default function GrammarScreen() {
     setSelectedTopic(topic);
     setCurrentIndex(0);
     setCorrectCount(0);
+    setExtraExercises([]);   // clear any previously generated exercises
+    setGenerateError(null);
+    setScreen('exercise');
+  }
+
+  // Called from the done screen — asks Gemini for 5 more exercises on the same topic
+  async function handleGenerateMore() {
+    setIsGenerating(true);
+    setGenerateError(null);
+
+    // Pick the topic label to send to Gemini.
+    // If "All Topics" was selected, pick a random topic from the list.
+    const topicForGemini =
+      selectedTopic ?? topics[Math.floor(Math.random() * topics.length)] ?? 'German A1 grammar';
+
+    const raw = await generateGrammarExercises(topicForGemini, level);
+
+    if (raw.length === 0) {
+      setGenerateError('Could not generate exercises right now. Try again.');
+      setIsGenerating(false);
+      return;
+    }
+
+    // Convert the raw Gemini output into proper GrammarExercise objects with unique IDs
+    const newExercises: GrammarExercise[] = raw.map((ex, i) => ({
+      id: `gemini_${Date.now()}_${i}`,
+      topic: topicForGemini,
+      type: ex.type,
+      question: ex.question,
+      options: ex.options,
+      answer: ex.answer,
+      explanation: ex.explanation,
+    }));
+
+    // Append to extra exercises — the memo will update exercises automatically.
+    // We also set the index to point at the first new exercise.
+    const startIndex = exercises.length; // current total before appending
+    setExtraExercises((prev) => [...prev, ...newExercises]);
+    setCurrentIndex(startIndex);
+    setIsGenerating(false);
     setScreen('exercise');
   }
 
@@ -95,9 +149,11 @@ export default function GrammarScreen() {
     setSelectedTopic(null);
     setCurrentIndex(0);
     setCorrectCount(0);
+    setExtraExercises([]);
+    setGenerateError(null);
   }
 
-  // Retry the same topic from the start
+  // Retry the same topic from the start (keeps generated exercises in the set)
   function retry() {
     setCurrentIndex(0);
     setCorrectCount(0);
@@ -200,6 +256,24 @@ export default function GrammarScreen() {
         <TouchableOpacity style={styles.primaryButton} onPress={retry}>
           <Text style={styles.primaryButtonText}>Try Again</Text>
         </TouchableOpacity>
+
+        {/* Generate More — calls Gemini for 5 fresh exercises */}
+        <TouchableOpacity
+          style={[styles.generateButton, isGenerating && styles.generateButtonDisabled]}
+          onPress={handleGenerateMore}
+          disabled={isGenerating}
+        >
+          {isGenerating ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Text style={styles.generateButtonText}>✨ Generate More Exercises</Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Error message if Gemini fails */}
+        {generateError && (
+          <Text style={styles.generateError}>{generateError}</Text>
+        )}
 
         <TouchableOpacity style={styles.secondaryButton} onPress={goToTopicSelect}>
           <Text style={styles.secondaryButtonText}>Choose Another Topic</Text>
@@ -474,5 +548,28 @@ const styles = StyleSheet.create({
     color: '#4fc3f7',
     fontSize: 15,
     fontWeight: '600',
+  },
+  generateButton: {
+    backgroundColor: '#7c4dff',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    marginBottom: 8,
+    minWidth: 220,
+    alignItems: 'center',
+  },
+  generateButtonDisabled: {
+    backgroundColor: '#b39ddb',
+  },
+  generateButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  generateError: {
+    fontSize: 13,
+    color: '#d32f2f',
+    marginBottom: 8,
+    textAlign: 'center',
   },
 });
