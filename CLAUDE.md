@@ -214,54 +214,70 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [x] Spaced repetition logic
 - [x] Connect vocabulary mastery to Supabase
 
-### ⏳ Phase 3b — Flashcard Categories
+### ✅ Phase 4 — Grammar Exercises (A1) (Complete)
+- [x] Exercise UI (fill-blank and multiple-choice screens)
+- [x] Gemini generated variations
+
+### ⏳ Phase 4b — Test Grammar Exercises
+- [ ] Test fill-blank exercises: type answer, check correct/incorrect feedback
+- [ ] Test multiple-choice exercises: tap option, check colour feedback
+- [ ] Test topic selector: pick a specific topic, verify only that topic's exercises show
+- [ ] Test "All Topics": verify all 111 exercises cycle through
+- [ ] Test "✨ Generate More Exercises": finish a topic → tap button → verify 5 new exercises load
+- [ ] Test done screen: score circle shows correct percentage
+
+### ✅ Phase 5 — Exam Prep (A1) — Complete
+- [x] Reading (Gemini passage + multiple-choice comprehension questions)
+- [x] Listening (text-to-speech + comprehension questions, passage revealed on done screen)
+- [x] Writing (prompt shown, user types in German, Gemini gives feedback)
+- [x] Speaking (🎤 record via browser mic OR type, Gemini evaluates response)
+
+### ⏳ Phase 5b — Test Exam Prep
+- [ ] Test Reading: generate passage → answer all 3 questions → verify score and review screen
+- [ ] Test Listening: generate passage → play audio (German voice) → answer questions → verify passage revealed on done screen
+- [ ] Test Writing: type a German response → submit → verify Gemini feedback appears in purple card
+- [ ] Test Speaking (mic): tap Record → speak German → stop → verify transcript appears in text box → submit → verify feedback
+- [ ] Test Speaking (type): type a response directly → submit → verify Gemini feedback appears in pink card
+- [ ] Test back button returns to Exam Prep selector from each sub-section
+
+### ⏳ Phase 6 — Mini Games (A1)
+- [ ] Word Match
+- [ ] Fill in the Blank (Gemini generated sentences)
+- [ ] Gender Battle
+- [ ] Listening Quiz (Web Speech API)
+
+### ⏳ Phase 7 — Flashcard Categories
 - [ ] Add a category picker above the flashcard deck
 - [ ] Filter cards by part of speech: All, Nouns, Verbs, Adjectives, Prepositions, Other
 - [ ] Remember the selected category per session
 - [ ] Show card count per category (e.g. "Nouns — 210 words")
 - Note: the `partOfSpeech` field is already on every word — this is purely a UI filter
 
-### ⏳ Phase 4 — Mini Games (A1) — Skipped for now, will return after Phase 8
-- [ ] Word Match
-- [ ] Fill in the Blank (Gemini generated sentences)
-- [ ] Gender Battle
-- [ ] Listening Quiz (Web Speech API)
-
-### 🔄 Phase 5 — Grammar Exercises (A1) — Current
-- [x] Exercise UI (fill-blank and multiple-choice screens)
-- [x] Gemini generated variations
-
-### ⏳ Phase 6 — Exam Prep (A1)
-- [ ] Reading
-- [ ] Listening
-- [ ] Writing (Gemini feedback)
-- [ ] Speaking (voice + text, Gemini feedback)
-
-### ⏳ Phase 7 — Daily Challenge + Streak
+### ⏳ Phase 8 — Daily Challenge + Streak
 - [ ] Daily challenge logic (mixed exercises from A1 content)
 - [ ] Streak counter (checks last active date on app open)
 - [ ] Update Supabase on completion
 
-### ⏳ Phase 8 — Progress Dashboard
+### ⏳ Phase 9 — Progress Dashboard
 - [ ] Scores per section
 - [ ] Vocabulary mastery visualization
 - [ ] Streak display
 
-### ⏳ Phase 9 — Polish (A1 complete app)
+### ⏳ Phase 10 — Polish (A1 complete app)
 - [ ] Consistent styling across all screens
 - [ ] Test level switching (A1 works, other levels show "coming soon")
 - [ ] Test on web
 - [ ] Performance check (loading states for AI calls)
 - [ ] Test Grammar Exercises: finish a topic → tap "✨ Generate More Exercises" → verify 5 new exercises load correctly
 
-### ⏳ Phase 10 — Expand to A2, B1, B2
+### ⏳ Phase 11 — Expand to A2, B1, B2
 - [ ] Expand A1 vocabulary to full ~600 word Goethe list
 - [ ] Add A2 / B1 / B2 vocabulary lists
 - [ ] Expand A1 grammar to cover all A1 topics
 - [ ] Add A2 / B1 / B2 grammar exercise templates
 - [ ] Write 20-30 tips for A2, B1, B2
 
-### ⏳ Phase 11 — Multi-user (If Expanding)
+### ⏳ Phase 12 — Multi-user (If Expanding)
 - [ ] Auth screens (sign up / login)
 - [ ] Tie all progress to user accounts
 - [ ] Leaderboard for streaks
@@ -288,16 +304,30 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
   - Project moved from Windows F drive to WSL filesystem to fix hot reload issues
 
 - [2026-03-28] Phase 2 in progress — A1 content foundation mostly complete.
-  - Strategy change: build full app with A1 content first, add A2/B1/B2 in Phase 10
+  - Strategy change: build full app with A1 content first, add A2/B1/B2 in Phase 11
   - A1 vocabulary: expanded to full 665-word Goethe Institut A1 list in src/data/vocabulary/a1.ts
   - A1 grammar: expanded from 31 → 111 exercises across 16 topics in src/data/grammar/a1.ts
     - Topics: sein, haben, definite articles, negation, word order, indefinite articles,
       personal pronouns, regular verbs, modal verbs, Akkusativ, possessive articles,
       questions, separable verbs, plural nouns, imperative, prepositions
-  - A2/B1/B2 vocabulary and grammar: scaffolded as empty arrays, to be filled in Phase 10
+  - A2/B1/B2 vocabulary and grammar: scaffolded as empty arrays, to be filled in Phase 11
   - Tips: expanded A1 tips from 5 → 25 across 8 categories in src/data/tips.ts
   - Gemini API integration complete: src/lib/gemini.ts with 4 exported functions
   - Phase 2 complete.
+
+- [2026-03-28] Phase 4 complete — Grammar Exercises.
+  - ExerciseCard component: fill-blank (inline TextInput) + multiple-choice (4 tappable options)
+  - Grammar screen: topic selector (16 topics + All Topics), progress bar, score tracker, done screen
+  - Gemini integration: "Generate More Exercises" button on done screen fetches 5 fresh exercises
+  - Phases reordered: Mini Games moved to Phase 6, Flashcard Categories to Phase 7
+
+- [2026-03-28] Phase 5 complete — Exam Prep.
+  - Exam screen: selector with 4 cards, each opening its own sub-section
+  - Reading: Gemini generates a German passage + 3 multiple-choice comprehension questions, score + review on done screen
+  - Listening: same as Reading but passage is hidden — read aloud via Web Speech API (de-DE, 0.85x speed), passage revealed after answering
+  - Writing: rotating A1 prompts, multiline text input, Gemini reviews and gives structured feedback
+  - Speaking: 🎤 browser mic (SpeechRecognition, de-DE) transcribes speech into text box, falls back to typing if mic unavailable, Gemini evaluates response
+  - All 4 sub-sections live — no more "Coming Soon" badges
 
 ---
 *This file is the single source of truth for the project.

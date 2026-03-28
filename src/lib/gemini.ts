@@ -217,53 +217,57 @@ Output format — a JSON array of 5 objects:
 
 // --- 5. Reading passage generator ---
 // Used by: Exam Prep → Reading
-// Generates a short, level-appropriate German reading passage on a given topic.
-// Returns an object with the passage and comprehension questions.
+// Generates a short, level-appropriate German reading passage on a given topic,
+// plus 3 multiple-choice comprehension questions with 4 options each.
+//
+// Return type for a single comprehension question:
+export type ReadingQuestion = {
+  question: string;  // the question text in German
+  options: string[]; // exactly 4 answer choices
+  answer: string;    // the correct choice — must match one of the options exactly
+};
+
 export async function generateReadingPassage(
   topic: string,
   level: string
-): Promise<{ passage: string; questions: string[] }> {
+): Promise<{ passage: string; questions: ReadingQuestion[] }> {
   const prompt = `
-You are a German language teacher creating a reading exercise for a ${level} student.
+You are a German language teacher creating a reading comprehension exercise for a ${level} student.
 
 Write a short German reading passage about: "${topic}"
-
-Then write 3 comprehension questions in German about the passage.
+Then write 3 multiple-choice comprehension questions about the passage.
 
 Rules:
-- The passage must be appropriate for ${level} level vocabulary and grammar.
-- A1: 4-6 sentences. Very simple grammar and vocabulary.
-- A2: 6-8 sentences. Simple past tense allowed.
-- B1/B2: 8-12 sentences. More complex grammar allowed.
-- Questions should be answerable from the passage.
+- Passage length: A1 = 4-6 sentences, A2 = 6-8 sentences, B1/B2 = 8-12 sentences.
+- Use vocabulary and grammar appropriate for ${level}.
+- Each question has exactly 4 options. Only one is correct.
+- Questions and options should be in German.
+- Output ONLY valid JSON. No markdown, no code fences, no extra text.
 
-Output format (use exactly this structure):
-PASSAGE:
-[the German passage here]
-
-QUESTIONS:
-1. [question 1]
-2. [question 2]
-3. [question 3]
+Output format:
+{
+  "passage": "the German passage here",
+  "questions": [
+    {
+      "question": "question in German",
+      "options": ["option A", "option B", "option C", "option D"],
+      "answer": "option A"
+    }
+  ]
+}
   `.trim();
 
   const raw = await callGemini(prompt);
 
-  // Parse the response into passage and questions
-  // If parsing fails we return the raw text as the passage with empty questions
   try {
-    const passageMatch = raw.match(/PASSAGE:\s*([\s\S]*?)\s*QUESTIONS:/);
-    const questionsMatch = raw.match(/QUESTIONS:\s*([\s\S]*)/);
-
-    const passage = passageMatch ? passageMatch[1].trim() : raw;
-    const questionsRaw = questionsMatch ? questionsMatch[1].trim() : '';
-    const questions = questionsRaw
-      .split('\n')
-      .map(q => q.replace(/^\d+\.\s*/, '').trim())
-      .filter(q => q.length > 0);
-
-    return { passage, questions };
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    return {
+      passage: parsed.passage ?? raw,
+      questions: Array.isArray(parsed.questions) ? parsed.questions : [],
+    };
   } catch {
+    console.error('Failed to parse reading passage response:', raw);
     return { passage: raw, questions: [] };
   }
 }
