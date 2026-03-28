@@ -183,6 +183,30 @@ git push origin branch-name
 
 Then remind me to open a Pull Request on GitHub to merge the branch into main.
 
+### Pull Request Descriptions
+After giving push commands, always generate a pull request description
+ready to copy-paste directly into the GitHub Pull Request box.
+
+Use this exact format:
+
+**Summary**
+One sentence explaining what this PR does and why.
+
+**Changes**
+List every file that was created or modified:
+- New: `file/path.ts` — what it does, key functions/exports, data structures
+- Updated: `file/path.ts` — what changed inside it and why
+
+**Verification**
+- ✅ Thing that was tested and confirmed working
+- ✅ Thing that was tested and confirmed working
+
+Rules for the PR description:
+- Be specific — mention actual file paths, function names, variable names
+- Not vague summaries — mention real details like "111 exercises across 16 topics"
+- Every file touched gets its own line in Changes
+- Verification items should reflect what was actually tested, not generic claims
+
 ---
 
 ## Build Phases
@@ -204,11 +228,11 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 ### ✅ Phase 2 — Content Foundation for A1 (Complete)
 - [x] A1 vocabulary list — 665 words, full Goethe Institut A1 list (in src/data/vocabulary/a1.ts)
 - [x] A1 grammar exercise templates — 111 exercises across 16 topics (in src/data/grammar/a1.ts)
-- [x] A2/B1/B2 vocabulary and grammar scaffolded as empty arrays (to be filled in Phase 10)
+- [x] A2/B1/B2 vocabulary and grammar scaffolded as empty arrays (to be filled in Phase 11)
 - [x] Write 20-30 tips for A1 — 25 tips written across 8 categories (in src/data/tips.ts)
 - [x] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
 
-### ✅ Phase 3 — Flashcards (A1)
+### ✅ Phase 3 — Flashcards (A1) (Complete)
 - [x] Flashcard UI with flip animation
 - [x] Known / unknown marking
 - [x] Spaced repetition logic
@@ -226,7 +250,7 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [ ] Test "✨ Generate More Exercises": finish a topic → tap button → verify 5 new exercises load
 - [ ] Test done screen: score circle shows correct percentage
 
-### ✅ Phase 5 — Exam Prep (A1) — Complete
+### ✅ Phase 5 — Exam Prep (A1) (Complete)
 - [x] Reading (Gemini passage + multiple-choice comprehension questions)
 - [x] Listening (text-to-speech + comprehension questions, passage revealed on done screen)
 - [x] Writing (prompt shown, user types in German, Gemini gives feedback)
@@ -303,7 +327,7 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
   - Supabase project created (free tier), client set up in src/lib/supabase.ts
   - Project moved from Windows F drive to WSL filesystem to fix hot reload issues
 
-- [2026-03-28] Phase 2 in progress — A1 content foundation mostly complete.
+- [2026-03-28] Phase 2 complete — A1 content foundation.
   - Strategy change: build full app with A1 content first, add A2/B1/B2 in Phase 11
   - A1 vocabulary: expanded to full 665-word Goethe Institut A1 list in src/data/vocabulary/a1.ts
   - A1 grammar: expanded from 31 → 111 exercises across 16 topics in src/data/grammar/a1.ts
