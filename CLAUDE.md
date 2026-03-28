@@ -195,10 +195,10 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [x] Connect to Supabase project
 
 ### 🔄 Phase 2 — Content Foundation for A1 (Current)
-- [x] A1 vocabulary list — 70 words across 10 categories (in src/data/vocabulary/a1.ts)
-- [x] A1 grammar exercise templates — 31 exercises across 6 topics (in src/data/grammar/a1.ts)
+- [x] A1 vocabulary list — 665 words, full Goethe Institut A1 list (in src/data/vocabulary/a1.ts)
+- [x] A1 grammar exercise templates — 111 exercises across 16 topics (in src/data/grammar/a1.ts)
 - [x] A2/B1/B2 vocabulary and grammar scaffolded as empty arrays (to be filled in Phase 10)
-- [ ] Write 20-30 tips for A1 (currently 5 placeholders — A2/B1/B2 tips to be done in Phase 10)
+- [x] Write 20-30 tips for A1 — 25 tips written across 8 categories (in src/data/tips.ts)
 - [ ] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
 
 ### ⏳ Phase 3 — Flashcards (A1)
@@ -272,13 +272,16 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
   - Supabase project created (free tier), client set up in src/lib/supabase.ts
   - Project moved from Windows F drive to WSL filesystem to fix hot reload issues
 
-- [2026-03-28] Phase 2 in progress — A1 content foundation partially complete.
+- [2026-03-28] Phase 2 in progress — A1 content foundation mostly complete.
   - Strategy change: build full app with A1 content first, add A2/B1/B2 in Phase 10
-  - A1 vocabulary: 70 words in src/data/vocabulary/a1.ts
-  - A1 grammar: 31 exercises in src/data/grammar/a1.ts
+  - A1 vocabulary: expanded to full 665-word Goethe Institut A1 list in src/data/vocabulary/a1.ts
+  - A1 grammar: expanded from 31 → 111 exercises across 16 topics in src/data/grammar/a1.ts
+    - Topics: sein, haben, definite articles, negation, word order, indefinite articles,
+      personal pronouns, regular verbs, modal verbs, Akkusativ, possessive articles,
+      questions, separable verbs, plural nouns, imperative, prepositions
   - A2/B1/B2 vocabulary and grammar: scaffolded as empty arrays, to be filled in Phase 10
-  - Tips: 5 placeholder tips per level in src/data/tips.ts (A1 tips to be expanded to 20-30, other levels in Phase 10)
-  - Remaining in Phase 2: expand A1 tips, set up Gemini API integration
+  - Tips: expanded A1 tips from 5 → 25 across 8 categories in src/data/tips.ts
+  - Remaining in Phase 2: set up Gemini API integration (src/lib/gemini.ts)
 
 ---
 *This file is the single source of truth for the project.
