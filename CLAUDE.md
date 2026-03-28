@@ -185,45 +185,46 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - Tech stack decided (Expo, TypeScript, Zustand, Supabase, Gemini API)
 - CLAUDE.md created
 
-### 🔄 Phase 1 — Project Setup (Current)
+### ✅ Phase 1 — Project Setup (Complete)
 - [x] Initialize Expo project with TypeScript
 - [x] Set up folder structure
 - [x] Set up sidebar navigation
-- [ ] Add level toggle (Zustand global state)
-- [ ] Add tips bar component at the bottom (static content for now)
-- [ ] Connect to GitHub repo (german-learning-app)
-- [ ] Connect to Supabase project
+- [x] Add level toggle (Zustand global state)
+- [x] Add tips bar component at the bottom (static content for now)
+- [x] Connect to GitHub repo (german-learning-app)
+- [x] Connect to Supabase project
 
-### ⏳ Phase 2 — Content Foundation
-- [ ] Curate A1 vocabulary list (from CEFR/Goethe) into JSON
-- [ ] Curate grammar rules and exercise templates per level
-- [ ] Write 20-30 tips per level
-- [ ] Set up Gemini API integration (reusable function)
+### ✅ Phase 2 — Content Foundation for A1 (Complete)
+- [x] A1 vocabulary list — 665 words, full Goethe Institut A1 list (in src/data/vocabulary/a1.ts)
+- [x] A1 grammar exercise templates — 111 exercises across 16 topics (in src/data/grammar/a1.ts)
+- [x] A2/B1/B2 vocabulary and grammar scaffolded as empty arrays (to be filled in Phase 10)
+- [x] Write 20-30 tips for A1 — 25 tips written across 8 categories (in src/data/tips.ts)
+- [x] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
 
-### ⏳ Phase 3 — Flashcards
+### ⏳ Phase 3 — Flashcards (A1)
 - [ ] Flashcard UI with flip animation
 - [ ] Known / unknown marking
 - [ ] Spaced repetition logic
 - [ ] Connect vocabulary mastery to Supabase
 
-### ⏳ Phase 4 — Mini Games
+### ⏳ Phase 4 — Mini Games (A1)
 - [ ] Word Match
 - [ ] Fill in the Blank (Gemini generated sentences)
 - [ ] Gender Battle
 - [ ] Listening Quiz (Web Speech API)
 
-### ⏳ Phase 5 — Grammar Exercises
-- [ ] Exercise templates per level
+### ⏳ Phase 5 — Grammar Exercises (A1)
+- [ ] Exercise UI (fill-blank and multiple-choice screens)
 - [ ] Gemini generated variations
 
-### ⏳ Phase 6 — Exam Prep
+### ⏳ Phase 6 — Exam Prep (A1)
 - [ ] Reading
 - [ ] Listening
 - [ ] Writing (Gemini feedback)
 - [ ] Speaking (voice + text, Gemini feedback)
 
 ### ⏳ Phase 7 — Daily Challenge + Streak
-- [ ] Daily challenge logic (mixed exercises)
+- [ ] Daily challenge logic (mixed exercises from A1 content)
 - [ ] Streak counter (checks last active date on app open)
 - [ ] Update Supabase on completion
 
@@ -232,13 +233,20 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - [ ] Vocabulary mastery visualization
 - [ ] Streak display
 
-### ⏳ Phase 9 — Polish
+### ⏳ Phase 9 — Polish (A1 complete app)
 - [ ] Consistent styling across all screens
-- [ ] Test level switching thoroughly
+- [ ] Test level switching (A1 works, other levels show "coming soon")
 - [ ] Test on web
 - [ ] Performance check (loading states for AI calls)
 
-### ⏳ Phase 10 — Multi-user (If Expanding)
+### ⏳ Phase 10 — Expand to A2, B1, B2
+- [ ] Expand A1 vocabulary to full ~600 word Goethe list
+- [ ] Add A2 / B1 / B2 vocabulary lists
+- [ ] Expand A1 grammar to cover all A1 topics
+- [ ] Add A2 / B1 / B2 grammar exercise templates
+- [ ] Write 20-30 tips for A2, B1, B2
+
+### ⏳ Phase 11 — Multi-user (If Expanding)
 - [ ] Auth screens (sign up / login)
 - [ ] Tie all progress to user accounts
 - [ ] Leaderboard for streaks
@@ -253,13 +261,28 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
   - AI: Google Gemini API (free tier) — replaces Claude API
   - Cost policy: Entire project must remain free to run
 
-- [2026-03-27] Phase 1 in progress — project setup partially complete.
+- [2026-03-27] Phase 1 complete.
   - Expo project initialised with TypeScript (SDK 55)
   - app.json updated: name = "Lerne Deutsch", slug = "german-learning-app"
   - Folder structure created: src/components, src/screens, src/store, src/data, src/lib
   - Expo Router installed, all 7 screens created as placeholders
   - Sidebar navigation working on web (permanent drawer, dark navy theme)
-  - Remaining: Zustand level toggle, tips bar, Supabase connection
+  - Zustand level store (useLevelStore.ts) + LevelToggle component wired into header
+  - TipsBar component at bottom of every screen, level-aware, left/right navigation
+  - Supabase project created (free tier), client set up in src/lib/supabase.ts
+  - Project moved from Windows F drive to WSL filesystem to fix hot reload issues
+
+- [2026-03-28] Phase 2 in progress — A1 content foundation mostly complete.
+  - Strategy change: build full app with A1 content first, add A2/B1/B2 in Phase 10
+  - A1 vocabulary: expanded to full 665-word Goethe Institut A1 list in src/data/vocabulary/a1.ts
+  - A1 grammar: expanded from 31 → 111 exercises across 16 topics in src/data/grammar/a1.ts
+    - Topics: sein, haben, definite articles, negation, word order, indefinite articles,
+      personal pronouns, regular verbs, modal verbs, Akkusativ, possessive articles,
+      questions, separable verbs, plural nouns, imperative, prepositions
+  - A2/B1/B2 vocabulary and grammar: scaffolded as empty arrays, to be filled in Phase 10
+  - Tips: expanded A1 tips from 5 → 25 across 8 categories in src/data/tips.ts
+  - Gemini API integration complete: src/lib/gemini.ts with 4 exported functions
+  - Phase 2 complete.
 
 ---
 *This file is the single source of truth for the project.
