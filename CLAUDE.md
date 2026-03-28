@@ -185,19 +185,23 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
 - Tech stack decided (Expo, TypeScript, Zustand, Supabase, Gemini API)
 - CLAUDE.md created
 
-### 🔄 Phase 1 — Project Setup (Current)
+### ✅ Phase 1 — Project Setup (Complete)
 - [x] Initialize Expo project with TypeScript
 - [x] Set up folder structure
 - [x] Set up sidebar navigation
-- [ ] Add level toggle (Zustand global state)
-- [ ] Add tips bar component at the bottom (static content for now)
-- [ ] Connect to GitHub repo (german-learning-app)
-- [ ] Connect to Supabase project
+- [x] Add level toggle (Zustand global state)
+- [x] Add tips bar component at the bottom (static content for now)
+- [x] Connect to GitHub repo (german-learning-app)
+- [x] Connect to Supabase project
 
-### ⏳ Phase 2 — Content Foundation
-- [ ] Curate A1 vocabulary list (from CEFR/Goethe) into JSON
-- [ ] Curate grammar rules and exercise templates per level
-- [ ] Write 20-30 tips per level
+### 🔄 Phase 2 — Content Foundation (Current)
+- [x] Curate A1 vocabulary list — 70 words across 10 categories (incomplete, ~600 total needed)
+- [x] Curate A1 grammar exercise templates — 31 exercises across 6 topics (incomplete, more topics needed)
+- [ ] Expand A1 vocabulary to full ~600 word Goethe A1 list
+- [ ] Expand A1 grammar to cover all A1 topics
+- [ ] Add A2 / B1 / B2 vocabulary lists
+- [ ] Add A2 / B1 / B2 grammar exercise templates
+- [ ] Write 20-30 tips per level (currently 5 placeholder tips per level)
 - [ ] Set up Gemini API integration (reusable function)
 
 ### ⏳ Phase 3 — Flashcards
@@ -253,13 +257,23 @@ Then remind me to open a Pull Request on GitHub to merge the branch into main.
   - AI: Google Gemini API (free tier) — replaces Claude API
   - Cost policy: Entire project must remain free to run
 
-- [2026-03-27] Phase 1 in progress — project setup partially complete.
+- [2026-03-27] Phase 1 complete.
   - Expo project initialised with TypeScript (SDK 55)
   - app.json updated: name = "Lerne Deutsch", slug = "german-learning-app"
   - Folder structure created: src/components, src/screens, src/store, src/data, src/lib
   - Expo Router installed, all 7 screens created as placeholders
   - Sidebar navigation working on web (permanent drawer, dark navy theme)
-  - Remaining: Zustand level toggle, tips bar, Supabase connection
+  - Zustand level store (useLevelStore.ts) + LevelToggle component wired into header
+  - TipsBar component at bottom of every screen, level-aware, left/right navigation
+  - Supabase project created (free tier), client set up in src/lib/supabase.ts
+  - Project moved from Windows F drive to WSL filesystem to fix hot reload issues
+
+- [2026-03-28] Phase 2 in progress — content foundation partially complete.
+  - A1 vocabulary: 70 words in src/data/vocabulary/a1.ts (needs expansion to ~600)
+  - A1 grammar: 31 exercises in src/data/grammar/a1.ts (needs expansion to cover all A1 topics)
+  - A2/B1/B2 vocabulary and grammar: scaffolded as empty arrays, to be filled later
+  - Tips: 5 placeholder tips per level in src/data/tips.ts (needs expansion to 20-30 each)
+  - Remaining: expand content, set up Gemini API integration
 
 ---
 *This file is the single source of truth for the project.
