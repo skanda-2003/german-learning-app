@@ -45,6 +45,7 @@ const NAV_ITEMS: NavItem[] = [
   { route: 'exam',       label: 'Exam Prep',       icon: 'book-open'   },
   { route: 'progress',   label: 'Progress',        icon: 'bar-chart-2' },
   { route: 'insights',   label: 'Insights',        icon: 'trending-up' },
+  { route: 'reading',    label: 'Reading Mode',    icon: 'book'        },
 ];
 
 // ─── Custom drawer content ────────────────────────────────────────────────────
@@ -210,6 +211,7 @@ export default function RootLayout() {
           <Drawer.Screen name="exam"       options={{ title: 'Exam Prep' }} />
           <Drawer.Screen name="progress"   options={{ title: 'Progress' }} />
           <Drawer.Screen name="insights"   options={{ title: 'Insights' }} />
+          <Drawer.Screen name="reading"    options={{ title: 'Reading Mode' }} />
         </Drawer>
 
         {/* TipsBar sits below the Drawer — appears on every screen */}
