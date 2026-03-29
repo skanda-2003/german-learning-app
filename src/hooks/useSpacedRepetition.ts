@@ -21,13 +21,15 @@ type SpacedRepetitionState = {
   currentWord: Word | null;   // the word currently on screen (null if queue is empty)
   remaining: number;           // how many unique cards are left to be marked known
   knownCount: number;          // words marked known this session
-  shakyCount: number;          // words marked shaky this session
+  shakyCount: number;          // words marked shaky this session (final time each word was rated)
   unknownCount: number;        // times a word was marked unknown (can exceed word count)
   isDone: boolean;             // true when the queue is empty
+  weakWords: Word[];           // words marked shaky or unknown at least once — for "Study Weak"
   markKnown: () => void;       // call when the user taps "Known"
   markShaky: () => void;       // call when the user taps "Shaky"
   markUnknown: () => void;     // call when the user taps "Unknown"
-  restart: () => void;         // reset the session using restartWords
+  restart: () => void;         // reset the session using restartWords (all category words)
+  restartWeak: () => void;     // reset the session using only weakWords
 };
 
 // ─── Helper: shuffle an array ──────────────────────────────────────────────────
@@ -72,6 +74,11 @@ export function useSpacedRepetition(
   const [shakyCount, setShakyCount] = useState(0);
   const [unknownCount, setUnknownCount] = useState(0);
 
+  // Track which words were marked shaky or unknown at least once this session.
+  // Used to power the "Study Weak" button on the done screen.
+  // Stored as a Set of word IDs for fast lookup.
+  const [weakWordIds, setWeakWordIds] = useState<Set<string>>(() => new Set());
+
   // ── markKnown ──
   // The user knows this word confidently. Remove it from the queue for good.
   function markKnown() {
@@ -85,7 +92,9 @@ export function useSpacedRepetition(
     setShakyCount((prev) => prev + 1);
     setQueue((prev) => {
       const [current, ...rest] = prev;
-      return reinsert(rest, current, 8, 12); // comes back after 8–12 other cards
+      // Record this word as weak
+      setWeakWordIds((ids) => new Set(ids).add(current.id));
+      return reinsert(rest, current, 8, 12);
     });
   }
 
@@ -95,7 +104,9 @@ export function useSpacedRepetition(
     setUnknownCount((prev) => prev + 1);
     setQueue((prev) => {
       const [current, ...rest] = prev;
-      return reinsert(rest, current, 3, 5); // comes back after 3–5 other cards
+      // Record this word as weak
+      setWeakWordIds((ids) => new Set(ids).add(current.id));
+      return reinsert(rest, current, 3, 5);
     });
   }
 
@@ -106,7 +117,22 @@ export function useSpacedRepetition(
     setKnownCount(0);
     setShakyCount(0);
     setUnknownCount(0);
+    setWeakWordIds(new Set());
   }
+
+  // ── restartWeak ──
+  // Start fresh with only the words that were marked shaky or unknown this session.
+  function restartWeak() {
+    const weak = restartWords.filter((w) => weakWordIds.has(w.id));
+    setQueue(shuffle(weak));
+    setKnownCount(0);
+    setShakyCount(0);
+    setUnknownCount(0);
+    setWeakWordIds(new Set());
+  }
+
+  // Build the weakWords array from the IDs — used by the done screen
+  const weakWords = restartWords.filter((w) => weakWordIds.has(w.id));
 
   return {
     currentWord: queue[0] ?? null,
@@ -115,9 +141,11 @@ export function useSpacedRepetition(
     shakyCount,
     unknownCount,
     isDone: queue.length === 0,
+    weakWords,
     markKnown,
     markShaky,
     markUnknown,
     restart,
+    restartWeak,
   };
 }

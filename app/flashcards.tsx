@@ -26,7 +26,7 @@ import { useSpacedRepetition } from '../src/hooks/useSpacedRepetition';
 import { loadMastery, saveMastery, MasteryMap } from '../src/lib/masteryService';
 import {
   colors, font, fontSize, spacing, radius,
-  cardStyle, labelStyle, progressTrackStyle,
+  cardStyle, labelStyle,
 } from '../src/styles/theme';
 
 // ─── Category definitions ──────────────────────────────────────────────────────
@@ -65,10 +65,12 @@ function FlashcardDeck({ studyWords, allCategoryWords }: DeckProps) {
     shakyCount,
     unknownCount,
     isDone,
+    weakWords,
     markKnown,
     markShaky,
     markUnknown,
     restart,
+    restartWeak,
   } = useSpacedRepetition(studyWords, allCategoryWords);
 
   function handleKnown() {
@@ -121,6 +123,15 @@ function FlashcardDeck({ studyWords, allCategoryWords }: DeckProps) {
         <TouchableOpacity style={styles.primaryButton} onPress={restart}>
           <Text style={styles.primaryButtonText}>Study Again</Text>
         </TouchableOpacity>
+
+        {/* Only show Study Weak if there were any shaky/unknown words this session */}
+        {weakWords.length > 0 && (
+          <TouchableOpacity style={styles.weakButton} onPress={restartWeak}>
+            <Text style={styles.weakButtonText}>
+              Study Weak ({weakWords.length})
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
@@ -135,14 +146,11 @@ function FlashcardDeck({ studyWords, allCategoryWords }: DeckProps) {
   return (
     <ScrollView contentContainerStyle={styles.deckContainer}>
 
-      {/* Progress bar */}
+      {/* Progress counters */}
       <View style={styles.progressBlock}>
         <View style={styles.progressRow}>
           <Text style={styles.progressLabel}>{remaining} remaining</Text>
-          <Text style={styles.progressLabel}>{knownCount + shakyCount} cleared</Text>
-        </View>
-        <View style={[progressTrackStyle, { width: '100%', maxWidth: 480 } as any]}>
-          <View style={[styles.progressFill, { width: `${progressPct}%` as any }]} />
+          <Text style={styles.progressLabel}>{knownCount} cleared</Text>
         </View>
       </View>
 
@@ -339,8 +347,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     gap: spacing.sm,
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   pill: {
     flexDirection: 'row',
@@ -402,12 +408,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.textMuted,
   },
-  progressFill: {
-    height: '100%' as any,
-    backgroundColor: colors.accent,
-    borderRadius: 2,
-  },
-
   // ── Card ──
   cardContainer: {
     width: '100%',
@@ -524,6 +524,21 @@ const styles = StyleSheet.create({
     fontFamily: font.semiBold,
     fontSize: fontSize.md,
     color: colors.background,
+  },
+  weakButton: {
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.amber,
+    borderRadius: radius.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.hero,
+    alignItems: 'center',
+    backgroundColor: colors.amberLight,
+  },
+  weakButtonText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.md,
+    color: colors.amber,
   },
 
   // ── Shared centered states ──

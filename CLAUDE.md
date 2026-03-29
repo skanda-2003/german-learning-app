@@ -272,23 +272,33 @@ Rules: be specific about what changed inside each file. No generic summaries lik
 - [x] Home page: "LERNE DEUTSCH" wordmark, TODAY'S FOCUS card (priority-based recommendation), 3-column stats strip, Feather icons replacing all emojis
 - Branch: `ui/fixes-round-2`
 
-### ⏳ Phase 10c — Flashcard Enhancements
-- [ ] Add third state: Shaky (amber/yellow) between Known and Unknown
-- [ ] Update spaced repetition: Known = rare, Shaky = occasional, Unknown = frequent
-- [ ] Update Supabase mastery storage to support 3 states
-- [ ] Show extra info on card back:
-  - Verbs: conjugation table (ich/du/er/wir/ihr/sie forms)
-  - Nouns: plural form
-  - Adjectives: comparative form
-- [ ] Session summary screen after finishing deck (cards reviewed, known/shaky/unknown counts)
-- [ ] Word search bar above category pills
-- [ ] Fix "Study Again" button (currently broken)
-- [ ] Fix category pills: compact fixed-height, horizontally scrollable, show count e.g. "Nouns 265"
+### ⏳ Phase 10c — Flashcard Enhancements (In Progress)
+- [x] Add third state: Shaky (amber/yellow) between Known and Unknown
+- [x] Update spaced repetition: Known = remove, Shaky = reinsert 8–12 ahead, Unknown = reinsert 3–5 ahead
+- [x] Update Supabase mastery storage to support 3 states (new `mastery` text column)
+- [x] Session summary screen after finishing deck (known/shaky/unknown counts)
+- [x] Word search bar above category pills
+- [x] Fix "Study Again" button
+- [x] Fix category pills: compact fixed-height, horizontally scrollable, show count e.g. "Nouns 265"
+- [x] Fix "Cleared" counter — only increment on Known, not Shaky
+- [x] Add "Study Weak" button on done screen — restarts with only shaky + unknown words
+- [x] Remove separator line between pill row and deck area
+- [x] README file
+- [ ] Right-side info panel (deferred — see Phase 10f)
+- [ ] Vocabulary data: populate plural/conjugations/comparative for A1 words (deferred — see Phase 10f)
+- Branch: `feat/flashcard-enhancements`
 
-### ⏳ Phase 10d — Test Exam Prep (Phase 5b deferred)
+### ⏳ Phase 10e — Test Exam Prep (deferred from earlier)
 - [ ] Test Reading, Listening, Writing, Speaking
 - [ ] Test back button from each sub-section
 - [ ] Test Grammar "Generate More Exercises"
+
+### ⏳ Phase 10f — Flashcard Extra Info (Deferred from 10c)
+**Context: The Word type already has optional plural/conjugations/comparative fields. The card back is already wired to show them. This phase is just adding the data and the right-side panel.**
+- [ ] Right-side info panel — always-visible panel to the right of the card showing the extra info for the current word (two-column layout: card left, panel right)
+- [ ] Populate `plural` for all ~200 A1 nouns (e.g. `"die Bücher"`)
+- [ ] Populate `conjugations` for all ~150 A1 verbs (ich/du/er/wir/ihr/sie present tense)
+- [ ] Populate `comparative` for all ~80 A1 adjectives (e.g. `"älter"`)
 
 ### ⏳ Phase 11 — Insights / Analytics (New Section)
 - [ ] Add Insights to sidebar navigation (icon: trending-up)
