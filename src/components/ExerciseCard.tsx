@@ -8,7 +8,7 @@
 //   - Shows the explanation
 //   - Shows a Next button to move on
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -37,6 +37,9 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
   // Which option the user tapped (multiple-choice only)
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
+  // Index of the keyboard-highlighted option (multiple-choice only, starts at 0 = option A)
+  const [focusedIndex, setFocusedIndex] = useState(0);
+
   const isAnswered = result !== null;
 
   // ── Check answer ──
@@ -55,7 +58,37 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
     setInputValue('');
     setResult(null);
     setSelectedOption(null);
+    setFocusedIndex(0);
   }
+
+  // ── Keyboard navigation (web only) ──
+  // Multiple-choice (not yet answered): ArrowUp/Down move the highlight, Enter selects.
+  // After answering (both types): Enter advances to the next exercise.
+  useEffect(() => {
+    const options = exercise.options ?? [];
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (isAnswered) {
+        if (e.key === 'Enter') handleNext();
+        return;
+      }
+
+      if (exercise.type === 'multiple-choice') {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault(); // stop the page from scrolling
+          setFocusedIndex((prev) => (prev + 1) % options.length);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setFocusedIndex((prev) => (prev - 1 + options.length) % options.length);
+        } else if (e.key === 'Enter' && options[focusedIndex]) {
+          checkAnswer(options[focusedIndex]);
+        }
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isAnswered, result, focusedIndex, exercise]);
 
   // ─── Render fill-blank ───────────────────────────────────────────────────
   if (exercise.type === 'fill-blank') {
@@ -74,13 +107,16 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
           <Text style={styles.sentenceText}>{parts[0]}</Text>
           {!isAnswered ? (
             <TextInput
-              style={styles.blankInput}
+              style={[styles.blankInput, { outline: 'none' } as any]}
               value={inputValue}
               onChangeText={setInputValue}
               placeholder="___"
               placeholderTextColor="#bbbbbb"
               autoCapitalize="none"
               autoCorrect={false}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={() => { if (inputValue.trim()) checkAnswer(inputValue); }}
             />
           ) : (
             // After answering, replace input with the correct answer coloured
@@ -111,7 +147,6 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
         {isAnswered && (
           <ResultBlock
             correct={result!}
-            userAnswer={inputValue}
             correctAnswer={exercise.answer}
             explanation={exercise.explanation}
             onNext={handleNext}
@@ -129,7 +164,7 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
 
       {/* Option buttons */}
       <View style={styles.optionsContainer}>
-        {exercise.options?.map((option) => {
+        {exercise.options?.map((option, index) => {
           // Determine button style based on state
           let optionStyle = styles.optionButton;
           if (isAnswered) {
@@ -138,6 +173,9 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
             } else if (option === selectedOption && option !== exercise.answer) {
               optionStyle = { ...styles.optionButton, ...styles.optionIncorrect };
             }
+          } else if (index === focusedIndex) {
+            // Keyboard highlight — blue outline when this option is focused
+            optionStyle = { ...styles.optionButton, ...styles.optionFocused };
           }
 
           return (
@@ -150,6 +188,7 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
               <Text
                 style={[
                   styles.optionText,
+                  !isAnswered && index === focusedIndex && styles.focusedText,
                   isAnswered && option === exercise.answer && styles.correctText,
                   isAnswered && option === selectedOption && option !== exercise.answer && styles.incorrectText,
                 ]}
@@ -165,7 +204,6 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
       {isAnswered && (
         <ResultBlock
           correct={result!}
-          userAnswer={selectedOption ?? ''}
           correctAnswer={exercise.answer}
           explanation={exercise.explanation}
           onNext={handleNext}
@@ -179,13 +217,12 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
 // Shared between both exercise types — shown after the user answers.
 type ResultBlockProps = {
   correct: boolean;
-  userAnswer: string;
   correctAnswer: string;
   explanation: string;
   onNext: () => void;
 };
 
-function ResultBlock({ correct, userAnswer, correctAnswer, explanation, onNext }: ResultBlockProps) {
+function ResultBlock({ correct, correctAnswer, explanation, onNext }: ResultBlockProps) {
   return (
     <View style={[styles.resultBlock, correct ? styles.resultCorrect : styles.resultIncorrect]}>
       {/* ✓ or ✗ verdict */}
@@ -292,6 +329,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: '#fafafa',
   },
+  optionFocused: {
+    borderColor: '#4fc3f7',
+    backgroundColor: '#e1f5fe',
+  },
   optionCorrect: {
     borderColor: '#a5d6a7',
     backgroundColor: '#e8f5e9',
@@ -303,6 +344,10 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 15,
     color: '#1a1a2e',
+  },
+  focusedText: {
+    color: '#0277bd',
+    fontWeight: '600',
   },
 
   // ── Result block ──

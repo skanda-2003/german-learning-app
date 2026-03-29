@@ -242,13 +242,21 @@ Rules for the PR description:
 - [x] Exercise UI (fill-blank and multiple-choice screens)
 - [x] Gemini generated variations
 
-### ⏳ Phase 4b — Test Grammar Exercises
-- [ ] Test fill-blank exercises: type answer, check correct/incorrect feedback
-- [ ] Test multiple-choice exercises: tap option, check colour feedback
-- [ ] Test topic selector: pick a specific topic, verify only that topic's exercises show
-- [ ] Test "All Topics": verify all 111 exercises cycle through
-- [ ] Test "✨ Generate More Exercises": finish a topic → tap button → verify 5 new exercises load
-- [ ] Test done screen: score circle shows correct percentage
+### ✅ Phase 4b — Test & Fix Grammar Exercises (Complete)
+- [x] Test fill-blank exercises: type answer, check correct/incorrect feedback
+- [x] Test multiple-choice exercises: tap option, check colour feedback
+- [x] Test topic selector: pick a specific topic, verify only that topic's exercises show
+- [x] Test "All Topics": verify all 111 exercises cycle through
+- [x] Test done screen: score circle shows correct percentage
+- Bugs fixed during testing:
+  - Enter key now submits fill-blank answer (onSubmitEditing on TextInput)
+  - Enter key now advances to next exercise after answering (keydown listener)
+  - Multiple-choice: arrow key navigation + Enter to select (focusedIndex state + keydown listener)
+  - Multiple-choice: option A highlighted by default (autoFocus equivalent via focusedIndex=0)
+  - Fill-blank: auto-focuses on load (autoFocus prop)
+  - Fill-blank: removed browser focus outline box (outline: 'none')
+  - Gemini model updated: gemini-1.5-flash → gemini-2.0-flash (fixes 404 error)
+- ⚠️ "✨ Generate More Exercises" not yet verified — hit Gemini free tier daily quota during testing
 
 ### ✅ Phase 5 — Exam Prep (A1) (Complete)
 - [x] Reading (Gemini passage + multiple-choice comprehension questions)
@@ -293,6 +301,7 @@ Rules for the PR description:
 - [ ] Test on web
 - [ ] Performance check (loading states for AI calls)
 - [ ] Test Grammar Exercises: finish a topic → tap "✨ Generate More Exercises" → verify 5 new exercises load correctly
+- [ ] Test all Exam Prep Gemini features (Reading, Listening, Writing, Speaking) — deferred from Phase 5b due to free tier quota
 
 ### ⏳ Phase 11 — Expand to A2, B1, B2
 - [ ] Expand A1 vocabulary to full ~600 word Goethe list
@@ -344,6 +353,13 @@ Rules for the PR description:
   - Grammar screen: topic selector (16 topics + All Topics), progress bar, score tracker, done screen
   - Gemini integration: "Generate More Exercises" button on done screen fetches 5 fresh exercises
   - Phases reordered: Mini Games moved to Phase 6, Flashcard Categories to Phase 7
+
+- [2026-03-29] Phase 4b complete — Grammar Exercises testing and UX fixes.
+  - Gemini model updated from gemini-1.5-flash → gemini-2.0-flash (fixes 404 error)
+  - Fill-blank: Enter key submits answer, auto-focuses on load, browser outline box removed
+  - Both types: Enter key advances to next exercise after answering
+  - Multiple-choice: arrow key navigation (up/down), Enter to select, option A highlighted by default
+  - Gemini quota hit during testing — "Generate More Exercises" deferred to Phase 10 for verification
 
 - [2026-03-28] Phase 5 complete — Exam Prep.
   - Exam screen: selector with 4 cards, each opening its own sub-section
