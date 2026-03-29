@@ -266,6 +266,16 @@ Rules: be specific about what changed inside each file. No generic summaries lik
 ### ✅ Phase 10a — UI Polish / Redesign (Complete)
 ### ✅ Phase 10b — UI Fixes Round 2 (Complete)
 ### ✅ Phase 10c — Flashcard Enhancements (Complete)
+### ⏳ Phase 10d — Test Exam Prep
+### ⏳ Phase 10e — Flashcard Extra Info
+### ⏳ Phase 10f — Progress Page Redesign
+### ⏳ Phase 11 — Insights / Analytics
+### ⏳ Phase 12 — Reading Mode
+### ⏳ Phase 13 — Keyboard Shortcuts
+### ⏳ Phase 14 — Gemini Features Testing & Polish
+### ⏳ Phase 15 — Expand to A2, B1, B2
+### ⏳ Phase 16 — Deep Progress Insights
+### ⏳ Phase 17 — Multi-user (If Expanding)
 
 ---
 ## ACTIVE PIPELINE
