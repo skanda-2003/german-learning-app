@@ -20,7 +20,7 @@ import useLevelStore from '../src/store/useLevelStore';
 import { VOCABULARY } from '../src/data/vocabulary';
 import { GRAMMAR } from '../src/data/grammar';
 import { loadMastery } from '../src/lib/masteryService';
-import { loadProgress, getTodayString } from '../src/lib/streakService';
+import { loadProgress, getTodayString, UserProgress } from '../src/lib/streakService';
 import { loadAllScores, SectionScore } from '../src/lib/scoresService';
 import {
   colors, font, fontSize, spacing, radius, labelStyle,
@@ -32,6 +32,16 @@ import {
 function pct(score: SectionScore): string {
   if (score.bestTotal === 0) return '—';
   return `${Math.round((score.bestScore / score.bestTotal) * 100)}%`;
+}
+
+// Format lastActiveDate as a human-readable string
+function formatLastActive(dateStr: string): string {
+  if (!dateStr) return 'never active';
+  const today = getTodayString();
+  if (dateStr === today) return 'Last active: today';
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000);
+  if (diff === 1) return 'Last active: yesterday';
+  return `Last active: ${diff} days ago`;
 }
 
 // Format sessions as "Nx" (e.g. "3×"), or "—" if never attempted
@@ -156,12 +166,17 @@ function CategoryBar({ label, total, known, shaky, isLast }: CategoryBarProps) {
         <Text style={catBar.count}>{known + shaky} / {total}</Text>
       </View>
 
-      {/* Stacked bar track */}
-      <View style={catBar.track}>
-        {/* Green fill: known words */}
-        <View style={[catBar.fill, { left: 0, width: `${knownPct}%` as any, backgroundColor: colors.success }]} />
-        {/* Amber fill: shaky words, starts right after the green section */}
-        <View style={[catBar.fill, { left: `${knownPct}%` as any, width: `${shakyPct}%` as any, backgroundColor: colors.amber }]} />
+      {/* Stacked bar track + percentage label */}
+      <View style={catBar.trackRow}>
+        <View style={catBar.track}>
+          {/* Green fill: known words */}
+          <View style={[catBar.fill, { left: 0, width: `${knownPct}%` as any, backgroundColor: colors.success }]} />
+          {/* Amber fill: shaky words, starts right after the green section */}
+          <View style={[catBar.fill, { left: `${knownPct}%` as any, width: `${shakyPct}%` as any, backgroundColor: colors.amber }]} />
+        </View>
+        <Text style={catBar.pctLabel}>
+          {total > 0 ? `${Math.round(((known + shaky) / total) * 100)}%` : '0%'}
+        </Text>
       </View>
     </View>
   );
@@ -184,12 +199,25 @@ const catBar = StyleSheet.create({
     fontSize: fontSize.xxs,
     color: colors.textMuted,
   },
+  trackRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   track: {
+    flex: 1,
     height: 5,
     backgroundColor: colors.border,
     borderRadius: 3,
     overflow: 'hidden',
     position: 'relative',
+  },
+  pctLabel: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xxs,
+    color: colors.textSecondary,
+    width: 28,          // fixed width so all bars align neatly
+    textAlign: 'right',
   },
   fill: {
     position: 'absolute',
@@ -224,6 +252,7 @@ export default function ProgressScreen() {
   const [loading, setLoading] = useState(true);
   const [masteryMap, setMasteryMap] = useState<Map<string, string>>(new Map());
   const [streak, setStreak] = useState(0);
+  const [lastActiveDate, setLastActiveDate] = useState('');
   const [challengeDoneToday, setChallengeDoneToday] = useState(false);
   const [scores, setScores] = useState<Awaited<ReturnType<typeof loadAllScores>> | null>(null);
 
@@ -244,6 +273,7 @@ export default function ProgressScreen() {
         if (!cancelled) {
           setMasteryMap(mastery);
           setStreak(progress.streakCount);
+          setLastActiveDate(progress.lastActiveDate);
           setChallengeDoneToday(progress.dailyChallengeCompletedDate === getTodayString());
           setScores(allScores);
           setLoading(false);
@@ -318,7 +348,7 @@ export default function ProgressScreen() {
         <StatCard
           label="STREAK"
           value={`${streak}`}
-          sub="days"
+          sub={formatLastActive(lastActiveDate)}
         />
         <StatCard
           label="VOCABULARY"
