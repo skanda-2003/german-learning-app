@@ -139,6 +139,7 @@ export default function GrammarScreen() {
     setScreen('exercise');
   }
 
+
   // ─── Empty state ──────────────────────────────────────────────────────────
   if (allExercises.length === 0) {
     return (

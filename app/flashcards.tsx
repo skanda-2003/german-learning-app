@@ -91,6 +91,7 @@ function FlashcardDeck({ studyWords, allCategoryWords }: DeckProps) {
     markUnknown();
   }
 
+
   // Total cards reviewed = known + shaky + all unknown actions
   // (unknownCount can exceed word count since a card can be marked unknown multiple times)
   const totalReviewed = knownCount + shakyCount;
