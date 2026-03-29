@@ -255,6 +255,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 10c — Flashcard Enhancements (Complete)
 ### ✅ Phase 12 — Progress Page Fixes (Complete)
 ### ✅ Phase 17 — Pronunciation Guide (Complete)
+### ✅ Phase 19 — Keyboard Shortcuts (Complete)
 ### ✅ Phase 14 — Insights / Analytics (Complete)
 ### ✅ Phase 16 — Reading Mode (Complete)
 
@@ -307,14 +308,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Green/red feedback on submit, correct sentence shown after each round
 - [ ] Score tracked per session (X/10), saved to Supabase section_scores
 - [ ] Score feeds into Progress and Insights screens
-
-### ⏳ Phase 19 — Keyboard Shortcuts · Effort: Low
-- [ ] Space to flip flashcard
-- [ ] 1/2/3 for Known/Shaky/Unknown in flashcards
-- [ ] M/F/N for der/die/das in Gender Battle
-- [ ] Arrow keys + Enter for multiple choice in Grammar
-- [ ] Escape to go back from any sub-section
-- [ ] Small "?" help button on each screen listing available shortcuts
 
 ---
 ## LATER
@@ -371,6 +364,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-29] Phase 14 complete — Insights screen with weak vocabulary, mistake log, weak grammar topics, activity calendar.
 - [2026-03-29] Phase 16 complete — Reading Mode with 15 shuffled A1 passages, per-word vocabulary lookup popup.
 - [2026-03-29] Phase 17 complete — Pronunciation Guide with 28 entries across 4 groups, Web Speech API play buttons.
+- [2026-03-29] Phase 19 complete — Space key to flip flashcard.
 
 ---
 *This file is the single source of truth for the project.

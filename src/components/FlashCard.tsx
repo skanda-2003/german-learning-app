@@ -13,7 +13,7 @@
 //   - Verbs: conjugation table (ich/du/er/wir/ihr/sie)
 //   - Adjectives: comparative form
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -90,6 +90,20 @@ export default function FlashCard({ word }: Props) {
   const flipValue = useSharedValue(0);
   // Track flip state so we know which way to animate next
   const isFlipped = useSharedValue(false);
+
+  // Space key flips the card — same as tapping it.
+  // Guard: don't fire when the user is typing in a text input (e.g. the search bar).
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== ' ') return;
+      const tag = (document.activeElement as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      e.preventDefault(); // stop the page from scrolling on Space
+      handleFlip();
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   // Called when the user taps the card
   function handleFlip() {
