@@ -2,7 +2,7 @@
 //
 // Aesthetic: sharp, technical, data-forward — inspired by Coach Phelps HQ
 // Font: IBM Plex Mono (monospace throughout)
-// Background: pure white, no gradients, no shadows
+// Background: #fafafa page, #ffffff cards — creates subtle depth without shadows
 // Cards: 1px border, 4px radius, flat
 
 import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
@@ -11,9 +11,9 @@ import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
 
 export const colors = {
   // Backgrounds
-  background:     '#ffffff',  // page background — pure white
-  surface:        '#ffffff',  // card background
-  surfaceAlt:     '#f9f9f9',  // slightly off-white for nested surfaces
+  background:     '#fafafa',  // page background — light grey tint
+  surface:        '#ffffff',  // card background — pure white (sits above page)
+  surfaceAlt:     '#f5f5f5',  // slightly darker for nested surfaces
 
   // Borders
   border:         '#e0e0e0',  // standard card / input border
@@ -33,6 +33,8 @@ export const colors = {
   successLight:   '#f0fdf4',  // green tint background
   error:          '#dc2626',  // wrong answer, error
   errorLight:     '#fef2f2',  // red tint background
+  amber:          '#f59e0b',  // shaky/warning state
+  amberLight:     '#fffbeb',  // amber tint background
 
   // Sidebar (keep as-is per brief)
   sidebar:        '#1a1a2e',

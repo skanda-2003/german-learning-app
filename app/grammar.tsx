@@ -145,35 +145,30 @@ export default function GrammarScreen() {
           {allExercises.length} exercises across {topics.length} topics
         </Text>
 
-        {/* All Topics row */}
-        <TouchableOpacity style={[styles.topicRow, styles.topicRowAll]} onPress={() => startTopic(null)}>
-          <View style={styles.topicRowLeft}>
-            <Text style={styles.topicRowTitle}>All Topics</Text>
-            <Text style={styles.topicRowCount}>{allExercises.length} exercises</Text>
-          </View>
-          <Text style={styles.topicArrow}>→</Text>
+        {/* All Topics — full-width card at the top */}
+        <TouchableOpacity style={[styles.topicCard, styles.topicCardAll]} onPress={() => startTopic(null)}>
+          <Text style={styles.topicCardTitle}>All Topics</Text>
+          <Text style={styles.topicCardCount}>{allExercises.length} exercises</Text>
         </TouchableOpacity>
 
-        {/* Divider */}
-        <View style={styles.divider} />
-
-        {/* Individual topics */}
-        {topics.map((topic) => {
-          const count = allExercises.filter((ex) => ex.topic === topic).length;
-          return (
-            <TouchableOpacity
-              key={topic}
-              style={styles.topicRow}
-              onPress={() => startTopic(topic)}
-            >
-              <View style={styles.topicRowLeft}>
-                <Text style={styles.topicRowTitle}>{topic}</Text>
-                <Text style={styles.topicRowCount}>{count} exercises</Text>
-              </View>
-              <Text style={styles.topicArrow}>→</Text>
-            </TouchableOpacity>
-          );
-        })}
+        {/* Individual topic cards — 2-column grid */}
+        <Text style={[labelStyle, styles.topicsGridLabel]}>BY TOPIC</Text>
+        <View style={styles.topicsGrid}>
+          {topics.map((topic) => {
+            const count = allExercises.filter((ex) => ex.topic === topic).length;
+            return (
+              <TouchableOpacity
+                key={topic}
+                style={styles.topicCard}
+                onPress={() => startTopic(topic)}
+                activeOpacity={0.75}
+              >
+                <Text style={styles.topicCardTitle}>{topic}</Text>
+                <Text style={styles.topicCardCount}>{count} exercises</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </ScrollView>
     );
   }
@@ -305,42 +300,42 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: spacing.xxl,
   },
-  topicRow: {
+  // ── Topic cards ──
+  topicsGridLabel: {
+    marginBottom: spacing.md,
+    marginTop: spacing.xxl,
+  },
+  topicsGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    flexWrap: 'wrap',
+    gap: spacing.md,
   },
-  topicRowAll: {
-    paddingVertical: spacing.xl,
-    marginBottom: spacing.sm,
+  topicCard: {
+    // Default: half-width grid card for individual topics
+    width: '47%' as any,
+    minWidth: 130,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.lg,
   },
-  topicRowLeft: {
-    flex: 1,
+  topicCardAll: {
+    // "All Topics" spans full width and has a slightly larger padding
+    width: '100%' as any,
+    padding: spacing.xl,
+    marginBottom: spacing.xs,
   },
-  topicRowTitle: {
+  topicCardTitle: {
     fontFamily: font.semiBold,
-    fontSize: fontSize.md,
+    fontSize: fontSize.sm,
     color: colors.textPrimary,
-    marginBottom: 2,
+    marginBottom: spacing.xs,
   },
-  topicRowCount: {
+  topicCardCount: {
     fontFamily: font.regular,
     fontSize: fontSize.xs,
     color: colors.textMuted,
-  },
-  topicArrow: {
-    fontFamily: font.regular,
-    fontSize: fontSize.md,
-    color: colors.textMuted,
-    marginLeft: spacing.md,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginBottom: spacing.sm,
   },
 
   // ── Done screen ──

@@ -196,10 +196,15 @@ This project must remain completely free to run.
 ---
 
 ## GitHub Workflow Rules
-At the start of every new phase, create one branch for the entire phase:
+
+**Before starting any new phase/branch, always run:**
 ```bash
+git checkout main
+git pull
 git checkout -b branch-name
 ```
+
+At the start of every new phase, create one branch for the entire phase.
 
 Use this naming format for branches:
 - New phase/feature: feat/descriptive-name
@@ -211,7 +216,7 @@ Use this naming format for branches:
 Once the phase is complete:
 ```bash
 git add .
-git commit -m "describe what was done"
+git commit -m "short message — main features only, not files"
 git push origin branch-name
 ```
 Then open a Pull Request on GitHub to merge into main.
@@ -249,42 +254,12 @@ Rules: specific file paths, function names, real details. Every file touched get
 ### ✅ Phase 9 — Progress Dashboard (Complete)
 ### ✅ Phase 10a — UI Polish / Redesign (Complete)
 
-### ⏳ Phase 10b — UI Fixes Round 2 (Current)
-Issues identified from screenshots:
-
-**Sidebar:**
-- [ ] Replace all emoji icons with Feather line icons (install @expo/vector-icons if not present)
-- [ ] Fix nav item text cutoff ("Daily Chall..." → "Daily Challenge" — widen sidebar or reduce font size)
-- [ ] Active state: replace grey highlight with left 2px blue accent bar
-- [ ] Use Inter font for sidebar nav items (not IBM Plex Mono)
-- [ ] Tighter, more precise spacing between nav items
-
-**Page backgrounds:**
-- [ ] Change all page backgrounds from pure white to `#fafafa`
-- [ ] Cards remain `#ffffff` — this creates depth without adding color
-
-**Home page redesign:**
-- [ ] Remove pixel-art emoji icons from section cards
-- [ ] Top section: greeting with streak ("You're on a 3 day streak") + today's recommended section (based on lowest score)
-- [ ] Middle: compact quick-stats strip (words known, best grammar score, daily challenge status)
-- [ ] Bottom: clean quick-launch grid for all sections — icon + name + one stat only
-- [ ] Fill the empty bottom half — no white voids
-- [ ] Differentiate clearly from Progress page (Home = what to do next, Progress = how I've done)
-
-**Mini Games selector:**
-- [ ] Replace plain text list with proper cards (1px border, white bg, padding)
-- [ ] Each card: game name bold, description grey below, best score top-right if played
-- [ ] Grid layout (2 columns) not a vertical list
-
-**Grammar selector:**
-- [ ] Same treatment as Mini Games — cards not a list
-- [ ] Each topic as a card with name, exercise count, best score
-
-**Exam Prep selector:**
-- [ ] Same treatment — 2x2 grid of cards, not a list
-
-**Topbar:**
-- [ ] Use Inter font for page title in topbar (not IBM Plex Mono)
+### ✅ Phase 10b — UI Fixes Round 2 (Complete)
+- [x] Sidebar: Feather icons, Inter font, 2px blue left-border active state, `CustomDrawerContent`, width 240, "LERNE DEUTSCH" wordmark
+- [x] Page backgrounds: `colors.background` → `#fafafa`, surface stays `#ffffff`, amber colors added to theme
+- [x] Mini Games / Grammar / Exam Prep selectors: 2-column bordered card grids with live score badges
+- [x] Home page: "LERNE DEUTSCH" wordmark, TODAY'S FOCUS card (priority-based recommendation), 3-column stats strip, Feather icons replacing all emojis
+- Branch: `ui/fixes-round-2`
 
 ### ⏳ Phase 10c — Flashcard Enhancements
 - [ ] Add third state: Shaky (amber/yellow) between Known and Unknown
@@ -351,6 +326,7 @@ Issues identified from screenshots:
 - [2026-03-29] Phase 8 complete — Daily Challenge + streak tracking.
 - [2026-03-29] Phase 9 complete — Progress Dashboard with Supabase score tracking.
 - [2026-03-29] Phase 10a complete — Full UI redesign. IBM Plex Mono, theme.ts, all screens restyled.
+- [2026-03-29] Phase 10b complete — Sidebar Feather icons + Inter font, #fafafa page backgrounds, card grid selectors (Games/Grammar/Exam), home page redesign with TODAY'S FOCUS + stats strip.
 - [2026-03-29] Phase 3 complete — Flashcards with flip animation and spaced repetition.
 
 ---

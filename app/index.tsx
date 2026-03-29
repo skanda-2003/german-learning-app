@@ -1,9 +1,14 @@
 // index.tsx — Home / Dashboard screen
 //
-// Shows a summary of the user's current state:
-//   - Current level + daily challenge streak
-//   - Vocabulary mastery progress bar
-//   - Quick-access cards for each section
+// Purpose: forward-looking — tells the user what to do next.
+// (Progress screen is backward-looking — how have I done overall)
+//
+// Layout:
+//   1. Top row — level badge + streak count
+//   2. Greeting — "LERNE DEUTSCH" wordmark + streak message
+//   3. TODAY'S FOCUS — recommended next section (lowest score / not started)
+//   4. Stats strip — words known · best grammar · daily challenge
+//   5. Section grid — 6 quick-launch cards with Feather icons (no emojis)
 
 import React, { useState, useCallback } from 'react';
 import {
@@ -11,9 +16,11 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
 import useLevelStore from '../src/store/useLevelStore';
 import { VOCABULARY } from '../src/data/vocabulary';
 import { loadMastery } from '../src/lib/masteryService';
@@ -21,7 +28,7 @@ import { loadProgress, getTodayString } from '../src/lib/streakService';
 import { loadAllScores } from '../src/lib/scoresService';
 import {
   colors, font, fontSize, spacing, radius,
-  cardStyle, labelStyle, statNumberStyle, progressTrackStyle,
+  labelStyle,
 } from '../src/styles/theme';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -37,6 +44,71 @@ type DashboardData = {
   gamesSessions: number;
 };
 
+// ─── TODAY'S FOCUS logic ───────────────────────────────────────────────────────
+// Returns the section we most recommend, plus a short reason string.
+
+type FocusSection = {
+  label: string;       // section name shown in the card
+  reason: string;      // one-line explanation, e.g. "Not started yet"
+  icon: string;        // Feather icon name
+  route: string;       // expo-router href
+};
+
+function getFocusSection(data: DashboardData): FocusSection {
+  // Priority 1: daily challenge not done today
+  if (!data.challengeDoneToday) {
+    return {
+      label: 'Daily Challenge',
+      reason: 'Complete today\'s challenge to keep your streak.',
+      icon: 'calendar',
+      route: '/daily',
+    };
+  }
+  // Priority 2: grammar never attempted
+  if (data.grammarSessions === 0) {
+    return {
+      label: 'Grammar',
+      reason: 'Not started yet — drill the fundamentals.',
+      icon: 'edit-3',
+      route: '/grammar',
+    };
+  }
+  // Priority 3: grammar score below 70%
+  if (data.grammarBestPct !== null && data.grammarBestPct < 70) {
+    return {
+      label: 'Grammar',
+      reason: `Your best score is ${data.grammarBestPct}% — room to improve.`,
+      icon: 'edit-3',
+      route: '/grammar',
+    };
+  }
+  // Priority 4: exam prep never attempted
+  if (data.examSessions === 0) {
+    return {
+      label: 'Exam Prep',
+      reason: 'Not started yet — practise all four skills.',
+      icon: 'book-open',
+      route: '/exam',
+    };
+  }
+  // Priority 5: mini games never played
+  if (data.gamesSessions === 0) {
+    return {
+      label: 'Mini Games',
+      reason: 'Not started yet — practise through play.',
+      icon: 'zap',
+      route: '/games',
+    };
+  }
+  // Default: always good to review flashcards
+  return {
+    label: 'Flashcards',
+    reason: `${data.knownCount} of ${data.totalCount} words known — keep going.`,
+    icon: 'layers',
+    route: '/flashcards',
+  };
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function HomeScreen() {
@@ -46,7 +118,7 @@ export default function HomeScreen() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Reload every time the screen comes into focus
+  // Reload every time this screen comes into focus
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
@@ -67,20 +139,17 @@ export default function HomeScreen() {
         const challengeDoneToday =
           progress.dailyChallengeCompletedDate === getTodayString();
 
-        // Grammar best %
         const g = scores.grammar;
         const grammarBestPct = g.bestTotal > 0
           ? Math.round((g.bestScore / g.bestTotal) * 100)
           : null;
 
-        // Exam: sum sessions across all 4 sub-sections
         const examSessions =
           scores.exam_reading.sessionsCompleted +
           scores.exam_listening.sessionsCompleted +
           scores.exam_writing.sessionsCompleted +
           scores.exam_speaking.sessionsCompleted;
 
-        // Games: sum sessions across all games
         const gamesSessions =
           scores.game_gender_battle.sessionsCompleted +
           scores.game_listening_quiz.sessionsCompleted +
@@ -114,118 +183,116 @@ export default function HomeScreen() {
     );
   }
 
-  const masteryPct = data.totalCount > 0
-    ? data.knownCount / data.totalCount
-    : 0;
+  const masteryPct = data.totalCount > 0 ? data.knownCount / data.totalCount : 0;
+  const focus = getFocusSection(data);
+
+  // Streak message shown under the wordmark
+  const streakMessage = data.streak > 0
+    ? `You're on a ${data.streak}-day streak.`
+    : 'Start your streak — complete today\'s challenge.';
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
-      {/* ── Top bar: level + streak ── */}
+      {/* ── 1. Top row: level badge + streak ── */}
       <View style={styles.topRow}>
         <View style={styles.levelBadge}>
           <Text style={styles.levelBadgeText}>{level}</Text>
         </View>
-        <View style={styles.streakBadge}>
-          <Text style={styles.streakFire}>🔥</Text>
+        <View style={styles.streakRow}>
           <Text style={styles.streakCount}>{data.streak}</Text>
-          <Text style={styles.streakLabel}>day streak</Text>
+          <Text style={styles.streakLabel}> day streak</Text>
         </View>
       </View>
 
-      {/* ── Greeting ── */}
+      {/* ── 2. Greeting: wordmark + streak message ── */}
       <View style={styles.greetingBlock}>
-        <Text style={styles.greetingTitle}>Lerne Deutsch</Text>
-        <Text style={styles.greetingSubtitle}>
-          {data.challengeDoneToday
-            ? 'Daily challenge complete. Keep it up.'
-            : 'Complete today\'s challenge to keep your streak.'}
-        </Text>
+        <Text style={styles.wordmark}>LERNE DEUTSCH</Text>
+        <Text style={styles.streakMessage}>{streakMessage}</Text>
       </View>
 
-      {/* ── Vocabulary card ── */}
-      <View style={styles.card}>
-        <Text style={styles.cardLabel}>VOCABULARY MASTERY</Text>
-        <View style={styles.masteryRow}>
-          <Text style={styles.masteryNumber}>{data.knownCount}</Text>
-          <Text style={styles.masteryTotal}> / {data.totalCount} words</Text>
+      {/* ── 3. TODAY'S FOCUS card ── */}
+      <TouchableOpacity
+        style={styles.focusCard}
+        onPress={() => router.push(focus.route as any)}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.focusLabel}>TODAY'S FOCUS</Text>
+        <View style={styles.focusBody}>
+          <View style={styles.focusIconWrap}>
+            <Feather name={focus.icon as any} size={18} color={colors.accent} />
+          </View>
+          <View style={styles.focusText}>
+            <Text style={styles.focusSection}>{focus.label}</Text>
+            <Text style={styles.focusReason}>{focus.reason}</Text>
+          </View>
+          <Feather name="arrow-right" size={16} color={colors.textMuted} />
         </View>
+      </TouchableOpacity>
 
-        {/* Progress bar */}
-        <View style={[progressTrackStyle, styles.progressTrack]}>
-          <View
-            style={[
-              styles.progressFill,
-              { width: `${Math.round(masteryPct * 100)}%` as any },
-            ]}
-          />
+      {/* ── 4. Stats strip ── */}
+      <View style={styles.statsStrip}>
+        <View style={styles.statCell}>
+          <Text style={styles.statNumber}>{data.knownCount}</Text>
+          <Text style={styles.statLabel}>words known</Text>
         </View>
-
-        <Text style={styles.masteryPctLabel}>
-          {Math.round(masteryPct * 100)}% of {level} vocabulary known
-        </Text>
+        <View style={styles.statDivider} />
+        <View style={styles.statCell}>
+          <Text style={styles.statNumber}>
+            {data.grammarBestPct !== null ? `${data.grammarBestPct}%` : '—'}
+          </Text>
+          <Text style={styles.statLabel}>best grammar</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statCell}>
+          <Text style={[styles.statNumber, data.challengeDoneToday && styles.statNumberGreen]}>
+            {data.challengeDoneToday ? '✓' : '—'}
+          </Text>
+          <Text style={styles.statLabel}>daily done</Text>
+        </View>
       </View>
 
-      {/* ── Section summary cards ── */}
+      {/* ── 5. Section grid ── */}
       <Text style={[labelStyle, styles.sectionHeading]}>SECTIONS</Text>
 
       <View style={styles.sectionGrid}>
-
         <SectionCard
-          emoji="📅"
+          icon="calendar"
           title="Daily Challenge"
           detail={data.challengeDoneToday ? 'Done today' : 'Not done yet'}
           highlight={data.challengeDoneToday}
           onPress={() => router.push('/daily')}
         />
-
         <SectionCard
-          emoji="🃏"
+          icon="layers"
           title="Flashcards"
-          detail={`${data.knownCount} known`}
+          detail={`${data.knownCount} / ${data.totalCount} known`}
           onPress={() => router.push('/flashcards')}
         />
-
         <SectionCard
-          emoji="📝"
+          icon="edit-3"
           title="Grammar"
-          detail={
-            data.grammarBestPct !== null
-              ? `Best: ${data.grammarBestPct}%`
-              : `${data.grammarSessions} sessions`
-          }
+          detail={data.grammarBestPct !== null ? `Best: ${data.grammarBestPct}%` : 'Not started'}
           onPress={() => router.push('/grammar')}
         />
-
         <SectionCard
-          emoji="🎓"
+          icon="book-open"
           title="Exam Prep"
-          detail={
-            data.examSessions > 0
-              ? `${data.examSessions} sessions`
-              : 'Not started'
-          }
+          detail={data.examSessions > 0 ? `${data.examSessions} sessions` : 'Not started'}
           onPress={() => router.push('/exam')}
         />
-
         <SectionCard
-          emoji="🎮"
+          icon="zap"
           title="Mini Games"
-          detail={
-            data.gamesSessions > 0
-              ? `${data.gamesSessions} sessions`
-              : 'Not started'
-          }
+          detail={data.gamesSessions > 0 ? `${data.gamesSessions} sessions` : 'Not started'}
           onPress={() => router.push('/games')}
         />
-
         <SectionCard
-          emoji="📊"
+          icon="bar-chart-2"
           title="Progress"
-          detail="View all scores"
+          detail={`${Math.round(masteryPct * 100)}% vocab known`}
           onPress={() => router.push('/progress')}
         />
-
       </View>
 
     </ScrollView>
@@ -234,24 +301,27 @@ export default function HomeScreen() {
 
 // ─── Section card sub-component ───────────────────────────────────────────────
 
-import { TouchableOpacity } from 'react-native';
-
 type SectionCardProps = {
-  emoji: string;
+  icon: string;      // Feather icon name — no emojis
   title: string;
   detail: string;
   highlight?: boolean;
   onPress: () => void;
 };
 
-function SectionCard({ emoji, title, detail, highlight, onPress }: SectionCardProps) {
+function SectionCard({ icon, title, detail, highlight, onPress }: SectionCardProps) {
   return (
     <TouchableOpacity
       style={[styles.sectionCard, highlight && styles.sectionCardHighlight]}
       onPress={onPress}
       activeOpacity={0.75}
     >
-      <Text style={styles.sectionCardEmoji}>{emoji}</Text>
+      <Feather
+        name={icon as any}
+        size={15}
+        color={highlight ? colors.success : colors.textMuted}
+        style={styles.sectionCardIcon}
+      />
       <Text style={styles.sectionCardTitle}>{title}</Text>
       <Text style={[
         styles.sectionCardDetail,
@@ -279,7 +349,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
-  // ── Top row ──
+  // ── 1. Top row ──
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -290,22 +360,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
   },
   levelBadgeText: {
     fontFamily: font.bold,
-    fontSize: fontSize.md,
+    fontSize: fontSize.sm,
     color: colors.textPrimary,
     letterSpacing: 1,
   },
-  streakBadge: {
+  streakRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  streakFire: {
-    fontSize: 18,
+    alignItems: 'baseline',
   },
   streakCount: {
     fontFamily: font.bold,
@@ -318,60 +384,109 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
 
-  // ── Greeting ──
+  // ── 2. Greeting ──
   greetingBlock: {
     marginBottom: spacing.xxl,
   },
-  greetingTitle: {
-    fontFamily: font.bold,
+  // "LERNE DEUTSCH" in Inter — the only place Inter appears in content
+  wordmark: {
+    fontFamily: 'Inter_600SemiBold',
     fontSize: fontSize.xxxl,
     color: colors.textPrimary,
+    letterSpacing: 1,
     marginBottom: spacing.sm,
   },
-  greetingSubtitle: {
+  streakMessage: {
     fontFamily: font.regular,
     fontSize: fontSize.md,
     color: colors.textSecondary,
     lineHeight: 22,
   },
 
-  // ── Vocabulary card ──
-  card: {
-    ...cardStyle,
-    marginBottom: spacing.xxxl,
+  // ── 3. TODAY'S FOCUS card ──
+  focusCard: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.accent,   // blue border makes it stand out from regular cards
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.xxl,
   },
-  cardLabel: {
-    ...labelStyle,
-    marginBottom: spacing.lg,
+  focusLabel: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.xs,
+    color: colors.accent,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    marginBottom: spacing.md,
   },
-  masteryRow: {
+  focusBody: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.md,
   },
-  masteryNumber: {
-    ...statNumberStyle,
+  focusIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  masteryTotal: {
-    fontFamily: font.regular,
+  focusText: {
+    flex: 1,
+  },
+  focusSection: {
+    fontFamily: font.semiBold,
     fontSize: fontSize.md,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
+    marginBottom: 2,
   },
-  progressTrack: {
-    marginBottom: spacing.sm,
-  },
-  progressFill: {
-    height: '100%' as any,
-    backgroundColor: colors.accent,
-    borderRadius: 2,
-  },
-  masteryPctLabel: {
+  focusReason: {
     fontFamily: font.regular,
     fontSize: fontSize.sm,
     color: colors.textSecondary,
+    lineHeight: 18,
   },
 
-  // ── Section grid ──
+  // ── 4. Stats strip ──
+  statsStrip: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    marginBottom: spacing.xxl,
+  },
+  statCell: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.sm,
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: colors.border,
+    marginVertical: spacing.md,
+  },
+  statNumber: {
+    fontFamily: font.bold,
+    fontSize: fontSize.xl,
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  statNumberGreen: {
+    color: colors.success,
+  },
+  statLabel: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xxs,
+    color: colors.textMuted,
+    textAlign: 'center',
+    letterSpacing: 0.3,
+  },
+
+  // ── 5. Section grid ──
   sectionHeading: {
     marginBottom: spacing.md,
   },
@@ -381,8 +496,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   sectionCard: {
-    ...cardStyle,
-    padding: spacing.xl,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.lg,
     width: '47%' as any,
     minWidth: 140,
   },
@@ -390,8 +508,7 @@ const styles = StyleSheet.create({
     borderColor: colors.success,
     backgroundColor: colors.successLight,
   },
-  sectionCardEmoji: {
-    fontSize: 22,
+  sectionCardIcon: {
     marginBottom: spacing.sm,
   },
   sectionCardTitle: {
