@@ -23,12 +23,15 @@ import { VOCABULARY, Word } from '../src/data/vocabulary';
 import FlashCard from '../src/components/FlashCard';
 import { useSpacedRepetition } from '../src/hooks/useSpacedRepetition';
 import { loadMastery, saveMastery, MasteryMap } from '../src/lib/masteryService';
+import {
+  colors, font, fontSize, spacing, radius,
+  cardStyle, labelStyle, progressTrackStyle,
+} from '../src/styles/theme';
 
 // ─── Category definitions ──────────────────────────────────────────────────────
 
 type CategoryId = 'All' | 'Nouns' | 'Verbs' | 'Adjectives' | 'Prepositions' | 'Other';
 
-// Filter a word list to those matching a given category
 function filterByCategory(words: Word[], category: CategoryId): Word[] {
   switch (category) {
     case 'All':          return words;
@@ -37,7 +40,6 @@ function filterByCategory(words: Word[], category: CategoryId): Word[] {
     case 'Adjectives':   return words.filter(w => w.partOfSpeech === 'adjective');
     case 'Prepositions': return words.filter(w => w.partOfSpeech === 'preposition');
     case 'Other':
-      // Everything that isn't covered by the four named categories above
       return words.filter(w =>
         !['noun', 'verb', 'adjective', 'preposition'].includes(w.partOfSpeech)
       );
@@ -47,17 +49,11 @@ function filterByCategory(words: Word[], category: CategoryId): Word[] {
 const CATEGORIES: CategoryId[] = ['All', 'Nouns', 'Verbs', 'Adjectives', 'Prepositions', 'Other'];
 
 // ─── FlashcardDeck sub-component ──────────────────────────────────────────────
-// Holds all the study logic (hook + card + buttons + done screen).
-// It lives here rather than in its own file because it's only ever used by
-// FlashcardsScreen.
-//
-// IMPORTANT: FlashcardsScreen renders this with key={selectedCategory}.
-// When the category changes, React unmounts and remounts this component,
-// which reinitialises useSpacedRepetition with the new word list cleanly.
+// Remounted via key={selectedCategory} when the category changes.
 
 type DeckProps = {
-  studyWords: Word[];   // pre-filtered and mastery-filtered list to study
-  totalWords: number;   // total words in the level (for progress bar denominator)
+  studyWords: Word[];
+  totalWords: number;
 };
 
 function FlashcardDeck({ studyWords, totalWords }: DeckProps) {
@@ -88,75 +84,67 @@ function FlashcardDeck({ studyWords, totalWords }: DeckProps) {
   if (isDone) {
     return (
       <View style={styles.centeredContainer}>
-        <Text style={styles.doneEmoji}>🎉</Text>
-        <Text style={styles.doneTitle}>All Done!</Text>
+        <Text style={styles.doneTitle}>All Done</Text>
         <Text style={styles.doneSubtitle}>
-          You cleared all {studyWords.length} words.
+          You cleared all {studyWords.length} words in this set.
         </Text>
 
         <View style={styles.summaryRow}>
           <View style={[styles.summaryBox, styles.knownBox]}>
             <Text style={styles.summaryCount}>{knownCount}</Text>
-            <Text style={styles.summaryLabel}>Known</Text>
+            <Text style={styles.summaryLabel}>KNOWN</Text>
           </View>
           <View style={[styles.summaryBox, styles.unknownBox]}>
             <Text style={styles.summaryCount}>{unknownCount}</Text>
-            <Text style={styles.summaryLabel}>Revisited</Text>
+            <Text style={styles.summaryLabel}>REVISITED</Text>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.restartButton} onPress={restart}>
-          <Text style={styles.restartButtonText}>Study Again</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={restart}>
+          <Text style={styles.primaryButtonText}>Study Again</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
+  const progressPct = totalWords > 0
+    ? ((totalWords - remaining) / totalWords) * 100
+    : 0;
+
   // ── Study view ──
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.deckContainer}>
 
-      {/* Progress bar — based on total level words, not just filtered set */}
-      <View style={styles.progressContainer}>
-        <Text style={styles.progressText}>
-          {remaining} word{remaining !== 1 ? 's' : ''} remaining
-        </Text>
-        <View style={styles.progressBarBackground}>
-          <View
-            style={[
-              styles.progressBarFill,
-              { width: `${((totalWords - remaining) / totalWords) * 100}%` },
-            ]}
-          />
+      {/* Progress */}
+      <View style={styles.progressBlock}>
+        <View style={styles.progressRow}>
+          <Text style={styles.progressLabel}>{remaining} remaining</Text>
+          <Text style={styles.progressLabel}>{Math.round(progressPct)}% done</Text>
+        </View>
+        <View style={[progressTrackStyle, { width: '100%', maxWidth: 480 } as any]}>
+          <View style={[styles.progressFill, { width: `${progressPct}%` as any }]} />
         </View>
       </View>
 
-      {/* The card */}
+      {/* Card */}
       <View style={styles.cardContainer}>
-        {currentWord && (
-          <FlashCard key={currentWord.id} word={currentWord} />
-        )}
+        {currentWord && <FlashCard key={currentWord.id} word={currentWord} />}
       </View>
 
       {/* Known / Unknown buttons */}
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={[styles.button, styles.unknownButton]} onPress={handleUnknown}>
-          <Text style={styles.buttonIcon}>✗</Text>
-          <Text style={styles.buttonLabel}>Unknown</Text>
+        <TouchableOpacity style={[styles.actionButton, styles.unknownButton]} onPress={handleUnknown}>
+          <Text style={styles.unknownButtonText}>✗  Unknown</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={[styles.button, styles.knownButton]} onPress={handleKnown}>
-          <Text style={styles.buttonIcon}>✓</Text>
-          <Text style={styles.buttonLabel}>Known</Text>
+        <TouchableOpacity style={[styles.actionButton, styles.knownButton]} onPress={handleKnown}>
+          <Text style={styles.knownButtonText}>✓  Known</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Session tally */}
-      <View style={styles.tallyRow}>
-        <Text style={styles.tallyText}>✓ {knownCount} cleared</Text>
-        <Text style={styles.tallyDivider}>·</Text>
-        <Text style={styles.tallyText}>↺ {unknownCount} revisited</Text>
-      </View>
+      {/* Tally */}
+      <Text style={styles.tallyText}>
+        {knownCount} cleared · {unknownCount} revisited
+      </Text>
 
     </ScrollView>
   );
@@ -168,11 +156,8 @@ export default function FlashcardsScreen() {
   const level = useLevelStore((state) => state.level);
   const words = VOCABULARY[level];
 
-  // Mastery data loaded from Supabase
   const [masteryMap, setMasteryMap] = useState<MasteryMap>(new Set());
   const [masteryLoading, setMasteryLoading] = useState(true);
-
-  // Currently selected category — 'All' by default
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('All');
 
   useEffect(() => {
@@ -183,31 +168,23 @@ export default function FlashcardsScreen() {
     });
   }, [level]);
 
-  // Words the user hasn't mastered yet
   const unstudiedWords = words.filter((w) => !masteryMap.has(w.id));
-
-  // Further filtered by the selected category
   const studyWords = filterByCategory(unstudiedWords, selectedCategory);
 
-  // ── Loading state ──
   if (masteryLoading) {
     return (
       <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#4fc3f7" />
-        <Text style={styles.loadingText}>Loading your progress...</Text>
+        <ActivityIndicator size="small" color={colors.accent} />
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
 
-  // ── Empty state (level has no words yet) ──
   if (words.length === 0) {
     return (
       <View style={styles.centeredContainer}>
-        <Text style={styles.emptyEmoji}>🚧</Text>
-        <Text style={styles.emptyTitle}>{level} Vocabulary Coming Soon</Text>
-        <Text style={styles.emptySubtitle}>
-          Switch to A1 using the level toggle at the top to start practising.
-        </Text>
+        <Text style={styles.emptyTitle}>{level} vocabulary coming soon.</Text>
+        <Text style={styles.emptySubtitle}>Switch to A1 to start practising.</Text>
       </View>
     );
   }
@@ -215,10 +192,7 @@ export default function FlashcardsScreen() {
   return (
     <View style={styles.outerContainer}>
 
-      {/* ── Category pill row ──
-          Scrollable horizontally so all 6 pills fit on narrow screens.
-          Each pill shows the category name and the count from the full word list
-          (not mastery-filtered) so the numbers stay stable as you study. */}
+      {/* Category pill row */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -244,9 +218,7 @@ export default function FlashcardsScreen() {
         })}
       </ScrollView>
 
-      {/* ── Flashcard deck ──
-          key={selectedCategory} causes a full remount when the category changes,
-          which reinitialises the spaced-repetition queue with the new word list. */}
+      {/* Deck — remounts on category change */}
       <FlashcardDeck
         key={selectedCategory}
         studyWords={studyWords}
@@ -258,229 +230,216 @@ export default function FlashcardsScreen() {
 }
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
 
-  // ── Outer container (wraps pill row + deck) ──
+const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
 
   // ── Category pills ──
   pillRow: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    gap: 8,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
     flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    borderWidth: 1.5,
-    borderColor: '#e0e0e0',
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.background,
   },
   pillSelected: {
-    backgroundColor: '#1a1a2e',
-    borderColor: '#1a1a2e',
+    backgroundColor: colors.textPrimary,
+    borderColor: colors.textPrimary,
   },
   pillText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#555',
+    fontFamily: font.semiBold,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
   },
   pillTextSelected: {
-    color: '#fff',
+    color: colors.background,
   },
   pillCount: {
-    fontSize: 12,
-    color: '#aaa',
-    fontWeight: '500',
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
   },
   pillCountSelected: {
-    color: '#aaa',
+    color: colors.textMuted,
   },
 
-  // ── Deck (study view) ──
-  container: {
+  // ── Deck ──
+  deckContainer: {
     flexGrow: 1,
-    padding: 24,
-    backgroundColor: '#f5f5f5',
+    padding: spacing.xxl,
+    backgroundColor: colors.background,
     alignItems: 'center',
   },
 
   // ── Progress ──
-  progressContainer: {
+  progressBlock: {
     width: '100%',
-    maxWidth: 380,
-    marginBottom: 32,
+    maxWidth: 480,
+    marginBottom: spacing.xxxl,
+    alignItems: 'center',
   },
-  progressText: {
-    fontSize: 13,
-    color: '#888888',
-    textAlign: 'right',
-    marginBottom: 6,
+  progressRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 480,
+    marginBottom: spacing.sm,
   },
-  progressBarBackground: {
-    height: 4,
-    backgroundColor: '#ddd',
-    borderRadius: 2,
-    overflow: 'hidden',
+  progressLabel: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
   },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: '#4fc3f7',
+  progressFill: {
+    height: '100%' as any,
+    backgroundColor: colors.accent,
     borderRadius: 2,
   },
 
-  // ── Card area ──
+  // ── Card ──
   cardContainer: {
     width: '100%',
     maxWidth: 380,
     height: 260,
-    marginBottom: 40,
+    marginBottom: spacing.xxxl,
   },
 
   // ── Buttons ──
   buttonRow: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+    width: '100%',
+    maxWidth: 380,
   },
-  button: {
+  actionButton: {
     flex: 1,
-    maxWidth: 160,
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: spacing.lg,
+    borderRadius: radius.md,
     alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
+    borderWidth: 1,
   },
   unknownButton: {
-    backgroundColor: '#ffebee',
-    borderWidth: 1.5,
-    borderColor: '#ef9a9a',
+    borderColor: colors.error,
+    backgroundColor: colors.errorLight,
   },
   knownButton: {
-    backgroundColor: '#e8f5e9',
-    borderWidth: 1.5,
-    borderColor: '#a5d6a7',
+    borderColor: colors.success,
+    backgroundColor: colors.successLight,
   },
-  buttonIcon: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  unknownButtonText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.md,
+    color: colors.error,
   },
-  buttonLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#333333',
+  knownButtonText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.md,
+    color: colors.success,
   },
 
-  // ── Session tally ──
-  tallyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
+  // ── Tally ──
   tallyText: {
-    fontSize: 13,
-    color: '#aaaaaa',
-  },
-  tallyDivider: {
-    fontSize: 13,
-    color: '#cccccc',
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
   },
 
-  // ── Empty / done / loading states ──
+  // ── Done state ──
+  doneTitle: {
+    fontFamily: font.bold,
+    fontSize: fontSize.xl,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  doneSubtitle: {
+    fontFamily: font.regular,
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
+    marginBottom: spacing.xxxl,
+    textAlign: 'center',
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.xxxl,
+  },
+  summaryBox: {
+    ...cardStyle,
+    width: 120,
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+  },
+  knownBox: {
+    borderColor: colors.success,
+    backgroundColor: colors.successLight,
+  },
+  unknownBox: {
+    borderColor: colors.error,
+    backgroundColor: colors.errorLight,
+  },
+  summaryCount: {
+    fontFamily: font.bold,
+    fontSize: fontSize.xxl,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  summaryLabel: {
+    ...labelStyle,
+  },
+  primaryButton: {
+    backgroundColor: colors.textPrimary,
+    borderRadius: radius.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.hero,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.md,
+    color: colors.background,
+  },
+
+  // ── Shared centered states ──
   centeredContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
-    backgroundColor: '#f5f5f5',
+    padding: spacing.xxxl,
+    backgroundColor: colors.background,
   },
   loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#888888',
-  },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: 16,
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    marginTop: spacing.md,
   },
   emptyTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-    marginBottom: 8,
+    fontFamily: font.semiBold,
+    fontSize: fontSize.lg,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   emptySubtitle: {
-    fontSize: 15,
-    color: '#888888',
+    fontFamily: font.regular,
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
-  },
-  doneEmoji: {
-    fontSize: 56,
-    marginBottom: 16,
-  },
-  doneTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-    marginBottom: 8,
-  },
-  doneSubtitle: {
-    fontSize: 15,
-    color: '#888888',
-    marginBottom: 32,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    gap: 16,
-    marginBottom: 32,
-  },
-  summaryBox: {
-    width: 110,
-    paddingVertical: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  knownBox: {
-    backgroundColor: '#e8f5e9',
-    borderWidth: 1.5,
-    borderColor: '#a5d6a7',
-  },
-  unknownBox: {
-    backgroundColor: '#ffebee',
-    borderWidth: 1.5,
-    borderColor: '#ef9a9a',
-  },
-  summaryCount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-  },
-  summaryLabel: {
-    fontSize: 13,
-    color: '#888888',
-    marginTop: 4,
-  },
-  restartButton: {
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-  },
-  restartButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

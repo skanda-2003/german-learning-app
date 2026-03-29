@@ -57,40 +57,42 @@ export default function TipsBar() {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',        // arrow | text | arrow laid out side by side
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f0f23',  // very dark navy, slightly different from sidebar
+    backgroundColor: '#1a1a2e',
     borderTopWidth: 1,
-    borderTopColor: '#2a2a4a',   // subtle divider line at the top
+    borderTopColor: 'rgba(255,255,255,0.06)',
     paddingVertical: 10,
     paddingHorizontal: 8,
-    minHeight: 56,               // enough height to be easy to read
+    minHeight: 52,
   },
   arrowButton: {
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
   arrow: {
-    color: '#4fc3f7',   // same light blue used for active nav items
-    fontSize: 28,
-    lineHeight: 28,
+    color: 'rgba(255,255,255,0.35)',
+    fontSize: 22,
+    lineHeight: 22,
+    fontFamily: 'IBMPlexMono_400Regular',
   },
   textContainer: {
-    flex: 1,             // take up all remaining space between the arrows
+    flex: 1,
     alignItems: 'center',
   },
   label: {
-    color: '#4fc3f7',
-    fontSize: 11,
-    fontWeight: 'bold',
-    marginBottom: 2,
+    fontFamily: 'IBMPlexMono_600SemiBold',
+    color: 'rgba(255,255,255,0.3)',
+    fontSize: 9,
+    marginBottom: 3,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
   tipText: {
-    color: '#cccccc',   // light grey — readable but not as bright as white
-    fontSize: 13,
+    fontFamily: 'IBMPlexMono_400Regular',
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: 12,
     textAlign: 'center',
-    lineHeight: 18,
+    lineHeight: 17,
   },
 });

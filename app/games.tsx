@@ -21,75 +21,58 @@ import { VOCABULARY } from '../src/data/vocabulary';
 import WordMatchGame from '../src/components/games/WordMatchGame';
 import GenderBattleGame from '../src/components/games/GenderBattleGame';
 import ListeningQuizGame from '../src/components/games/ListeningQuizGame';
+import {
+  colors, font, fontSize, spacing, radius,
+  labelStyle,
+} from '../src/styles/theme';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
 type GameId = 'word-match' | 'gender-battle' | 'listening-quiz';
 
 type GameCard = {
-  id: GameId | null;  // null = not yet available
-  emoji: string;
+  id: GameId | null;
   title: string;
   description: string;
   available: boolean;
 };
 
-// ─── Game card definitions ─────────────────────────────────────────────────────
-
 const GAMES: GameCard[] = [
   {
     id: 'word-match',
-    emoji: '🔗',
     title: 'Word Match',
-    description: 'Select a German word, then tap its English meaning. Match all 6 pairs.',
+    description: 'Match 6 German words to their English meanings.',
     available: true,
   },
   {
     id: 'gender-battle',
-    emoji: '⚔️',
     title: 'Gender Battle',
-    description: 'A noun appears — pick der, die, or das as fast as you can. 10 rounds.',
+    description: 'Pick der, die, or das for each noun. 10 rounds.',
     available: true,
   },
   {
     id: 'listening-quiz',
-    emoji: '🎧',
     title: 'Listening Quiz',
-    description: 'A German word is spoken aloud. Pick the correct English meaning. 10 rounds.',
+    description: 'Hear a German word, pick the correct meaning. 10 rounds.',
     available: true,
   },
   {
     id: null,
-    emoji: '✏️',
     title: 'Fill in the Blank',
-    description: 'Complete a sentence with the missing German word. Powered by AI.',
-    available: false, // requires Gemini — coming in Phase 10
+    description: 'Complete sentences with the correct German word.',
+    available: false,
   },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function GamesScreen() {
-  const level = useLevelStore(state => state.level);
+  const level = useLevelStore((state) => state.level);
   const words = VOCABULARY[level];
 
-  // null = show the selector | GameId = show that game
   const [activeGame, setActiveGame] = useState<GameId | null>(null);
 
-  // ── Empty state (no vocabulary for this level yet) ──
-  if (words.length === 0) {
-    return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.emptyEmoji}>🚧</Text>
-        <Text style={styles.emptyTitle}>{level} Games Coming Soon</Text>
-        <Text style={styles.emptySubtitle}>
-          Switch to A1 using the level toggle at the top to start playing.
-        </Text>
-      </View>
-    );
-  }
-
-  // ── Active game views ──
+  // ── Active game screens ──
   if (activeGame === 'word-match') {
     return <WordMatchGame words={words} onExit={() => setActiveGame(null)} />;
   }
@@ -103,38 +86,38 @@ export default function GamesScreen() {
   // ── Selector screen ──
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.screenTitle}>Mini Games</Text>
-      <Text style={styles.screenSubtitle}>
-        Practice your German with quick, fun games.
-      </Text>
+      <Text style={styles.pageTitle}>Mini Games</Text>
+      <Text style={styles.pageSubtitle}>Practice German through play.</Text>
 
-      {GAMES.map((game, index) => (
+      <Text style={[labelStyle, styles.sectionLabel]}>AVAILABLE</Text>
+
+      {GAMES.filter(g => g.available).map((game) => (
         <TouchableOpacity
-          key={index}
-          style={[styles.gameCard, !game.available && styles.gameCardDisabled]}
-          onPress={() => game.available && game.id && setActiveGame(game.id)}
-          disabled={!game.available}
+          key={game.id}
+          style={styles.gameRow}
+          onPress={() => game.id && setActiveGame(game.id)}
+          activeOpacity={0.7}
         >
-          <View style={styles.gameCardLeft}>
-            <Text style={styles.gameEmoji}>{game.emoji}</Text>
+          <View style={styles.gameRowLeft}>
+            <Text style={styles.gameTitle}>{game.title}</Text>
+            <Text style={styles.gameDescription}>{game.description}</Text>
           </View>
-          <View style={styles.gameCardContent}>
-            <View style={styles.gameTitleRow}>
-              <Text style={[styles.gameTitle, !game.available && styles.gameTitleDisabled]}>
-                {game.title}
-              </Text>
-              {!game.available && (
-                <View style={styles.comingSoonBadge}>
-                  <Text style={styles.comingSoonText}>Soon</Text>
-                </View>
-              )}
-            </View>
-            <Text style={[styles.gameDescription, !game.available && styles.gameDescriptionDisabled]}>
-              {game.description}
-            </Text>
-          </View>
-          {game.available && <Text style={styles.arrow}>→</Text>}
+          <Text style={styles.gameArrow}>→</Text>
         </TouchableOpacity>
+      ))}
+
+      <Text style={[labelStyle, styles.sectionLabel]}>COMING SOON</Text>
+
+      {GAMES.filter(g => !g.available).map((game, i) => (
+        <View key={i} style={[styles.gameRow, styles.gameRowDisabled]}>
+          <View style={styles.gameRowLeft}>
+            <Text style={[styles.gameTitle, styles.gameTitleDisabled]}>{game.title}</Text>
+            <Text style={styles.gameDescription}>{game.description}</Text>
+          </View>
+          <View style={styles.soonBadge}>
+            <Text style={styles.soonText}>SOON</Text>
+          </View>
+        </View>
       ))}
     </ScrollView>
   );
@@ -144,111 +127,77 @@ export default function GamesScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
-    backgroundColor: '#f5f5f5',
+    padding: spacing.xxl,
+    backgroundColor: colors.background,
   },
 
-  // ── Empty state ──
-  centeredContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    backgroundColor: '#f5f5f5',
+  pageTitle: {
+    fontFamily: font.bold,
+    fontSize: fontSize.xl,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
-  emptyEmoji: { fontSize: 48, marginBottom: 16 },
-  emptyTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: 15,
-    color: '#888',
-    textAlign: 'center',
-    lineHeight: 22,
+  pageSubtitle: {
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    marginBottom: spacing.xxl,
   },
 
-  // ── Selector ──
-  screenTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-    marginBottom: 6,
-  },
-  screenSubtitle: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 28,
-    lineHeight: 20,
+  sectionLabel: {
+    marginBottom: spacing.sm,
+    marginTop: spacing.lg,
   },
 
-  // ── Game cards ──
-  gameCard: {
+  // ── Game row ──
+  gameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1.5,
-    borderColor: '#eee',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
+    justifyContent: 'space-between',
+    paddingVertical: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  gameCardDisabled: {
+  gameRowDisabled: {
     opacity: 0.5,
   },
-  gameCardLeft: {
-    marginRight: 14,
-  },
-  gameEmoji: {
-    fontSize: 32,
-  },
-  gameCardContent: {
+  gameRowLeft: {
     flex: 1,
-  },
-  gameTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
+    marginRight: spacing.md,
   },
   gameTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1a1a2e',
+    fontFamily: font.semiBold,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    marginBottom: 3,
   },
   gameTitleDisabled: {
-    color: '#aaa',
+    color: colors.textSecondary,
   },
   gameDescription: {
-    fontSize: 13,
-    color: '#666',
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
     lineHeight: 18,
   },
-  gameDescriptionDisabled: {
-    color: '#bbb',
+  gameArrow: {
+    fontFamily: font.regular,
+    fontSize: fontSize.md,
+    color: colors.textMuted,
   },
-  arrow: {
-    fontSize: 18,
-    color: '#aaa',
-    marginLeft: 8,
-  },
-  comingSoonBadge: {
-    backgroundColor: '#e0e0e0',
-    borderRadius: 6,
-    paddingHorizontal: 7,
+
+  // ── Soon badge ──
+  soonBadge: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
     paddingVertical: 2,
+    paddingHorizontal: spacing.sm,
   },
-  comingSoonText: {
-    fontSize: 11,
-    color: '#888',
-    fontWeight: '600',
+  soonText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.xxs,
+    color: colors.textMuted,
+    letterSpacing: 0.5,
   },
 });

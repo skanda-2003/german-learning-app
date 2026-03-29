@@ -315,8 +315,17 @@ Rules for the PR description:
 - Show per-category bars: Nouns (210/265), Verbs (80/180), Adjectives (20/100), etc.
 - Add to Phase 10 Polish pass
 
-### ⏳ Phase 10 — Polish (A1 complete app)
-- [ ] Consistent styling across all screens (all screens flagged as needing UI work)
+### ✅ Phase 10a — UI Polish / Redesign (Complete)
+- [x] Created `src/styles/theme.ts` — central design system (colors, font, fontSize, spacing, radius)
+- [x] IBM Plex Mono font loaded via `@expo-google-fonts/ibm-plex-mono` in `app/_layout.tsx`
+- [x] All screens restyled: Home, Flashcards, Grammar, Daily Challenge, Games, Exam Prep, Progress
+- [x] All shared components restyled: LevelToggle, TipsBar, FlashCard, ExerciseCard
+- [x] All exam components restyled: ReadingExercise, ListeningExercise, WritingExercise, SpeakingExercise
+- [x] All game components restyled: WordMatchGame, GenderBattleGame, ListeningQuizGame
+- Design system: pure white background, 1px #e0e0e0 borders, 4px border-radius, no shadows, IBM Plex Mono throughout
+- Branch: `ui/polish-redesign`
+
+### ⏳ Phase 10b — Polish (remaining)
 - [ ] Test level switching (A1 works, other levels show "coming soon")
 - [ ] Test on web
 - [ ] Performance check (loading states for AI calls)
@@ -421,6 +430,16 @@ Rules for the PR description:
   - Writing: rotating A1 prompts, multiline text input, Gemini reviews and gives structured feedback
   - Speaking: 🎤 browser mic (SpeechRecognition, de-DE) transcribes speech into text box, falls back to typing if mic unavailable, Gemini evaluates response
   - All 4 sub-sections live — no more "Coming Soon" badges
+
+- [2026-03-29] Phase 10a complete — UI Polish / Redesign.
+  - Created src/styles/theme.ts: colors, font (IBM Plex Mono), fontSize, spacing, radius, pre-built style objects
+  - IBM Plex Mono loaded in app/_layout.tsx via @expo-google-fonts/ibm-plex-mono; app shows ActivityIndicator until fonts ready
+  - All 7 screens rewritten with theme: app/index.tsx, flashcards.tsx, grammar.tsx, daily.tsx, games.tsx, exam.tsx, progress.tsx
+  - Shared components restyled: LevelToggle, TipsBar, FlashCard, ExerciseCard
+  - All exam sub-components restyled: ReadingExercise, ListeningExercise, WritingExercise, SpeakingExercise
+  - All game sub-components restyled: WordMatchGame, GenderBattleGame, ListeningQuizGame
+  - Design: pure white (#ffffff) content, 1px #e0e0e0 borders, 4px radius, no shadows, #1a1a2e sidebar/header
+  - Key fix: StyleSheet array syntax [base, condition && variant] used throughout — avoids TypeScript literal type conflicts from object spread
 
 ---
 *This file is the single source of truth for the project.
