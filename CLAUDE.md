@@ -254,6 +254,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 10b — UI Fixes Round 2 (Complete)
 ### ✅ Phase 10c — Flashcard Enhancements (Complete)
 ### ✅ Phase 14 — Insights / Analytics (Complete)
+### ✅ Phase 16 — Reading Mode (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -294,12 +295,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
   - Unknown → next_review_date = today + 1 day
   - On session start: show only words where next_review_date <= today
 - Note: prerequisite for Insights, proper spaced repetition, and eventual multi-user expansion
-
-### ⏳ Phase 16 — Reading Mode · Effort: Medium
-- [ ] Add Reading Mode to sidebar (icon: book)
-- [ ] Display a short German text at current level
-- [ ] Tap any word to see translation + part of speech popup
-- [ ] No questions — pure reading with on-demand word lookup
 
 ### ⏳ Phase 17 — Pronunciation Guide · Effort: Low
 - [ ] Add Pronunciation Guide to sidebar (icon: volume-2)
