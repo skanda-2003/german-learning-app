@@ -197,7 +197,9 @@ This project must remain completely free to run.
 
 ## GitHub Workflow Rules
 
-**Before starting any new phase/branch, always run:**
+**IMPORTANT FOR CLAUDE: Never execute git commands. Always just print the commands for the user to run themselves. Do not use the Bash tool for any git operation. Do not ask the user if they want to run git commands — just output them.**
+
+**Before starting any new phase/branch, give the user these commands to run:**
 ```bash
 git checkout main
 git pull
@@ -213,7 +215,7 @@ Use this naming format for branches:
 
 **One branch per phase.**
 
-Once the phase is complete:
+Once the phase is complete, give the user these commands to run:
 ```bash
 git add .
 git commit -m "short message — main features only, not files"
@@ -229,13 +231,22 @@ ready to copy-paste directly into the GitHub Pull Request box.
 One sentence explaining what this PR does and why.
 
 **Changes**
-- New: `file/path.ts` — what it does, key functions/exports
-- Updated: `file/path.ts` — what changed and why
+List changes grouped by file. For each file, bullet the specific things that changed inside it — not a generic description of the file's purpose.
+
+Example format:
+`path/to/file.ts`:
+- Added X to Y section
+- Updated Z function to handle new case
+- Removed deprecated W
+
+`path/to/other.ts`:
+- Added new type Foo with fields a, b, c
+- Changed Bar function signature from (x: boolean) to (x: State)
 
 **Verification**
 - ✅ Thing tested and confirmed working
 
-Rules: specific file paths, function names, real details. Every file touched gets its own line.
+Rules: be specific about what changed inside each file. No generic summaries like "updated to support 3 states" — say exactly what was added, changed, or removed.
 
 ---
 
@@ -261,23 +272,33 @@ Rules: specific file paths, function names, real details. Every file touched get
 - [x] Home page: "LERNE DEUTSCH" wordmark, TODAY'S FOCUS card (priority-based recommendation), 3-column stats strip, Feather icons replacing all emojis
 - Branch: `ui/fixes-round-2`
 
-### ⏳ Phase 10c — Flashcard Enhancements
-- [ ] Add third state: Shaky (amber/yellow) between Known and Unknown
-- [ ] Update spaced repetition: Known = rare, Shaky = occasional, Unknown = frequent
-- [ ] Update Supabase mastery storage to support 3 states
-- [ ] Show extra info on card back:
-  - Verbs: conjugation table (ich/du/er/wir/ihr/sie forms)
-  - Nouns: plural form
-  - Adjectives: comparative form
-- [ ] Session summary screen after finishing deck (cards reviewed, known/shaky/unknown counts)
-- [ ] Word search bar above category pills
-- [ ] Fix "Study Again" button (currently broken)
-- [ ] Fix category pills: compact fixed-height, horizontally scrollable, show count e.g. "Nouns 265"
+### ✅ Phase 10c — Flashcard Enhancements (Complete)
+- [x] Add third state: Shaky (amber/yellow) between Known and Unknown
+- [x] Update spaced repetition: Known = remove, Shaky = reinsert 8–12 ahead, Unknown = reinsert 3–5 ahead
+- [x] Update Supabase mastery storage to support 3 states (new `mastery` text column)
+- [x] Session summary screen after finishing deck (known/shaky/unknown counts)
+- [x] Word search bar above category pills
+- [x] Fix "Study Again" button
+- [x] Fix category pills: compact fixed-height, horizontally scrollable, show count e.g. "Nouns 265"
+- [x] Fix "Cleared" counter — only increment on Known, not Shaky
+- [x] Add "Study Weak" button on done screen — restarts with only shaky + unknown words
+- [x] Remove separator line between pill row and deck area
+- [x] README file
+- [ ] Right-side info panel (deferred — see Phase 10f)
+- [ ] Vocabulary data: populate plural/conjugations/comparative for A1 words (deferred — see Phase 10f)
+- Branch: `feat/flashcard-enhancements`
 
-### ⏳ Phase 10d — Test Exam Prep (Phase 5b deferred)
+### ⏳ Phase 10e — Test Exam Prep (deferred from earlier)
 - [ ] Test Reading, Listening, Writing, Speaking
 - [ ] Test back button from each sub-section
 - [ ] Test Grammar "Generate More Exercises"
+
+### ⏳ Phase 10f — Flashcard Extra Info (Deferred from 10c)
+**Context: The Word type already has optional plural/conjugations/comparative fields. The card back is already wired to show them. This phase is just adding the data and the right-side panel.**
+- [ ] Right-side info panel — always-visible panel to the right of the card showing the extra info for the current word (two-column layout: card left, panel right)
+- [ ] Populate `plural` for all ~200 A1 nouns (e.g. `"die Bücher"`)
+- [ ] Populate `conjugations` for all ~150 A1 verbs (ich/du/er/wir/ihr/sie present tense)
+- [ ] Populate `comparative` for all ~80 A1 adjectives (e.g. `"älter"`)
 
 ### ⏳ Phase 11 — Insights / Analytics (New Section)
 - [ ] Add Insights to sidebar navigation (icon: trending-up)
@@ -328,6 +349,7 @@ Rules: specific file paths, function names, real details. Every file touched get
 - [2026-03-29] Phase 10a complete — Full UI redesign. IBM Plex Mono, theme.ts, all screens restyled.
 - [2026-03-29] Phase 10b complete — Sidebar Feather icons + Inter font, #fafafa page backgrounds, card grid selectors (Games/Grammar/Exam), home page redesign with TODAY'S FOCUS + stats strip.
 - [2026-03-29] Phase 3 complete — Flashcards with flip animation and spaced repetition.
+- [2026-03-29] Phase 10c complete — Shaky state, 3-button rating, Study Weak, search bar, session summary, cleared counter fix, README.
 
 ---
 *This file is the single source of truth for the project.

@@ -130,7 +130,7 @@ export default function ProgressScreen() {
         ]);
 
         if (!cancelled) {
-          setKnownCount(vocab.filter(w => mastery.has(w.id)).length);
+          setKnownCount(vocab.filter(w => mastery.get(w.id) === 'known').length);
           setTotalCount(vocab.length);
           setStreak(progress.streakCount);
           setChallengeDoneToday(progress.dailyChallengeCompletedDate === getTodayString());

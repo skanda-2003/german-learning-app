@@ -1,53 +1,70 @@
 // masteryService.ts — Reads and writes vocabulary mastery to Supabase.
 //
-// All database calls for the vocabulary_mastery table live here.
-// The flashcards screen imports from this file — nothing else talks to Supabase directly.
+// Each word can be in one of three states:
+//   'known'   — confident, shown rarely in spaced repetition
+//   'shaky'   — know it but want to revisit, shown occasionally
+//   'unknown' — don't know it yet, shown frequently
 //
-// Table schema:
-//   vocabulary_mastery (id, user_id, word_id, known, updated_at)
-//   unique constraint on (user_id, word_id)
+// Supabase table: vocabulary_mastery
+//   Columns: id, user_id, word_id, known (legacy bool), mastery (text), updated_at
+//   Unique constraint on (user_id, word_id)
+//
+// NOTE: Requires a `mastery` text column in vocabulary_mastery.
+// Run this SQL in the Supabase dashboard once:
+//   ALTER TABLE vocabulary_mastery ADD COLUMN IF NOT EXISTS mastery text DEFAULT 'unknown';
+//   UPDATE vocabulary_mastery SET mastery = CASE WHEN known = true THEN 'known' ELSE 'unknown' END;
 
 import { supabase } from './supabase';
 import { getUserId } from './userId';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
-// A Set of word IDs that the user has marked as known
-export type MasteryMap = Set<string>;
+// The three possible mastery states for a word
+export type MasteryState = 'known' | 'shaky' | 'unknown';
+
+// A Map from word ID to mastery state
+// e.g. { 'a1_001' => 'known', 'a1_002' => 'shaky' }
+export type MasteryMap = Map<string, MasteryState>;
 
 // ─── Load mastery ──────────────────────────────────────────────────────────────
 
-// Fetches all word IDs that this user has marked as known from Supabase.
-// Returns a Set so we can do fast lookups: masteryMap.has('a1_001')
+// Fetches the mastery state for all studied words from Supabase.
+// Returns a Map so we can do fast lookups: masteryMap.get('a1_001') → 'known'
+// Words not in the Map have never been studied (treat as 'unknown').
 export async function loadMastery(): Promise<MasteryMap> {
   try {
     const userId = await getUserId();
 
     const { data, error } = await supabase
       .from('vocabulary_mastery')
-      .select('word_id')
-      .eq('user_id', userId)
-      .eq('known', true);
+      .select('word_id, mastery')
+      .eq('user_id', userId);
 
     if (error) {
       console.error('Failed to load mastery:', error.message);
-      return new Set();
+      return new Map();
     }
 
-    // Convert the array of rows into a Set of word IDs
-    return new Set(data.map((row) => row.word_id));
+    // Build a Map from the rows
+    const map: MasteryMap = new Map();
+    for (const row of data) {
+      // mastery column may be null for old rows — treat null as 'unknown'
+      const state: MasteryState = (row.mastery as MasteryState) ?? 'unknown';
+      map.set(row.word_id, state);
+    }
+
+    return map;
   } catch (error) {
     console.error('Failed to load mastery:', error);
-    return new Set();
+    return new Map();
   }
 }
 
-// ─── Save a single word's mastery status ───────────────────────────────────────
+// ─── Save a single word's mastery state ────────────────────────────────────────
 
-// Saves whether a word is known or unknown for this user.
-// Uses "upsert" — if a row for this user+word already exists, it updates it.
-// If it doesn't exist yet, it inserts a new row.
-export async function saveMastery(wordId: string, known: boolean): Promise<void> {
+// Saves the mastery state for a word.
+// Uses "upsert" — inserts a new row or updates the existing one for this user+word.
+export async function saveMastery(wordId: string, state: MasteryState): Promise<void> {
   try {
     const userId = await getUserId();
 
@@ -57,11 +74,13 @@ export async function saveMastery(wordId: string, known: boolean): Promise<void>
         {
           user_id: userId,
           word_id: wordId,
-          known,
+          mastery: state,
+          // Also update the legacy 'known' boolean column for backward compat
+          known: state === 'known',
           updated_at: new Date().toISOString(),
         },
         {
-          onConflict: 'user_id,word_id', // if this user+word combo exists, update it
+          onConflict: 'user_id,word_id',
         }
       );
 

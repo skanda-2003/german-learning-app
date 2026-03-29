@@ -1,13 +1,13 @@
 // flashcards.tsx — Flashcards screen
 //
-// Uses the useSpacedRepetition hook to manage the study queue.
-// Unknown words are recycled back into the deck until the user knows them.
-// Session ends only when every word has been marked as known.
-// Mastery (known/unknown per word) is saved to Supabase so progress persists.
-//
-// Category filter: the user can narrow the deck to a part of speech.
-// Changing the category remounts FlashcardDeck (via key=) which reinitialises
-// the spaced-repetition queue cleanly with the new filtered word list.
+// Phase 10c additions:
+//   - THREE mastery states: Known (green) / Shaky (amber) / Unknown (red)
+//   - Shaky words re-insert 8–12 cards ahead; Unknown re-inserts 3–5 cards ahead
+//   - Word search bar — filters the deck by German word or English translation
+//   - Session summary screen shows known / shaky / unknown counts
+//   - "Study Again" now restarts with all words in the category (not just unstudied)
+//   - Category pills show word counts
+//   - Mastery persists to Supabase using the new 3-state mastery column
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -17,6 +17,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import useLevelStore from '../src/store/useLevelStore';
 import { VOCABULARY, Word } from '../src/data/vocabulary';
@@ -25,7 +26,7 @@ import { useSpacedRepetition } from '../src/hooks/useSpacedRepetition';
 import { loadMastery, saveMastery, MasteryMap } from '../src/lib/masteryService';
 import {
   colors, font, fontSize, spacing, radius,
-  cardStyle, labelStyle, progressTrackStyle,
+  cardStyle, labelStyle,
 } from '../src/styles/theme';
 
 // ─── Category definitions ──────────────────────────────────────────────────────
@@ -49,80 +50,107 @@ function filterByCategory(words: Word[], category: CategoryId): Word[] {
 const CATEGORIES: CategoryId[] = ['All', 'Nouns', 'Verbs', 'Adjectives', 'Prepositions', 'Other'];
 
 // ─── FlashcardDeck sub-component ──────────────────────────────────────────────
-// Remounted via key={selectedCategory} when the category changes.
+// Remounted via key= when the category or search query changes.
 
 type DeckProps = {
-  studyWords: Word[];
-  totalWords: number;
+  studyWords: Word[];      // words to study this session (mastery-filtered + search-filtered)
+  allCategoryWords: Word[]; // all words in this category — used for "Study Again"
 };
 
-function FlashcardDeck({ studyWords, totalWords }: DeckProps) {
+function FlashcardDeck({ studyWords, allCategoryWords }: DeckProps) {
   const {
     currentWord,
     remaining,
     knownCount,
+    shakyCount,
     unknownCount,
     isDone,
+    weakWords,
     markKnown,
+    markShaky,
     markUnknown,
     restart,
-  } = useSpacedRepetition(studyWords);
+    restartWeak,
+  } = useSpacedRepetition(studyWords, allCategoryWords);
 
   function handleKnown() {
     if (!currentWord) return;
-    saveMastery(currentWord.id, true);
+    saveMastery(currentWord.id, 'known');
     markKnown();
+  }
+
+  function handleShaky() {
+    if (!currentWord) return;
+    saveMastery(currentWord.id, 'shaky');
+    markShaky();
   }
 
   function handleUnknown() {
     if (!currentWord) return;
-    saveMastery(currentWord.id, false);
+    saveMastery(currentWord.id, 'unknown');
     markUnknown();
   }
 
-  // ── Done state ──
+  // Total cards reviewed = known + shaky + all unknown actions
+  // (unknownCount can exceed word count since a card can be marked unknown multiple times)
+  const totalReviewed = knownCount + shakyCount;
+
+  // ── Done state — session summary ──
   if (isDone) {
     return (
       <View style={styles.centeredContainer}>
-        <Text style={styles.doneTitle}>All Done</Text>
+        <Text style={styles.doneTitle}>Session Complete</Text>
         <Text style={styles.doneSubtitle}>
-          You cleared all {studyWords.length} words in this set.
+          {totalReviewed} {totalReviewed === 1 ? 'word' : 'words'} reviewed
         </Text>
 
+        {/* Three summary boxes */}
         <View style={styles.summaryRow}>
           <View style={[styles.summaryBox, styles.knownBox]}>
             <Text style={styles.summaryCount}>{knownCount}</Text>
-            <Text style={styles.summaryLabel}>KNOWN</Text>
+            <Text style={[styles.summaryLabel, { color: colors.success }]}>KNOWN</Text>
+          </View>
+          <View style={[styles.summaryBox, styles.shakyBox]}>
+            <Text style={styles.summaryCount}>{shakyCount}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.amber }]}>SHAKY</Text>
           </View>
           <View style={[styles.summaryBox, styles.unknownBox]}>
             <Text style={styles.summaryCount}>{unknownCount}</Text>
-            <Text style={styles.summaryLabel}>REVISITED</Text>
+            <Text style={[styles.summaryLabel, { color: colors.error }]}>UNKNOWN</Text>
           </View>
         </View>
 
         <TouchableOpacity style={styles.primaryButton} onPress={restart}>
           <Text style={styles.primaryButtonText}>Study Again</Text>
         </TouchableOpacity>
+
+        {/* Only show Study Weak if there were any shaky/unknown words this session */}
+        {weakWords.length > 0 && (
+          <TouchableOpacity style={styles.weakButton} onPress={restartWeak}>
+            <Text style={styles.weakButtonText}>
+              Study Weak ({weakWords.length})
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   }
 
-  const progressPct = totalWords > 0
-    ? ((totalWords - remaining) / totalWords) * 100
+  // Progress: based on how many words have been marked known or shaky
+  // (they won't appear again until restart)
+  const progressPct = allCategoryWords.length > 0
+    ? ((knownCount + shakyCount) / allCategoryWords.length) * 100
     : 0;
 
   // ── Study view ──
   return (
     <ScrollView contentContainerStyle={styles.deckContainer}>
 
-      {/* Progress */}
+      {/* Progress counters */}
       <View style={styles.progressBlock}>
         <View style={styles.progressRow}>
           <Text style={styles.progressLabel}>{remaining} remaining</Text>
-          <Text style={styles.progressLabel}>{Math.round(progressPct)}% done</Text>
-        </View>
-        <View style={[progressTrackStyle, { width: '100%', maxWidth: 480 } as any]}>
-          <View style={[styles.progressFill, { width: `${progressPct}%` as any }]} />
+          <Text style={styles.progressLabel}>{knownCount} cleared</Text>
         </View>
       </View>
 
@@ -131,19 +159,22 @@ function FlashcardDeck({ studyWords, totalWords }: DeckProps) {
         {currentWord && <FlashCard key={currentWord.id} word={currentWord} />}
       </View>
 
-      {/* Known / Unknown buttons */}
+      {/* Three action buttons: Unknown / Shaky / Known */}
       <View style={styles.buttonRow}>
         <TouchableOpacity style={[styles.actionButton, styles.unknownButton]} onPress={handleUnknown}>
-          <Text style={styles.unknownButtonText}>✗  Unknown</Text>
+          <Text style={styles.unknownButtonText}>Unknown</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionButton, styles.shakyButton]} onPress={handleShaky}>
+          <Text style={styles.shakyButtonText}>Shaky</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.actionButton, styles.knownButton]} onPress={handleKnown}>
-          <Text style={styles.knownButtonText}>✓  Known</Text>
+          <Text style={styles.knownButtonText}>Known</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Tally */}
+      {/* Small tally below buttons */}
       <Text style={styles.tallyText}>
-        {knownCount} cleared · {unknownCount} revisited
+        {knownCount} known · {shakyCount} shaky · {unknownCount} unknown
       </Text>
 
     </ScrollView>
@@ -156,10 +187,12 @@ export default function FlashcardsScreen() {
   const level = useLevelStore((state) => state.level);
   const words = VOCABULARY[level];
 
-  const [masteryMap, setMasteryMap] = useState<MasteryMap>(new Set());
+  const [masteryMap, setMasteryMap]       = useState<MasteryMap>(new Map());
   const [masteryLoading, setMasteryLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('All');
+  const [searchQuery, setSearchQuery]     = useState('');
 
+  // Load mastery from Supabase when the level changes
   useEffect(() => {
     setMasteryLoading(true);
     loadMastery().then((map) => {
@@ -168,9 +201,28 @@ export default function FlashcardsScreen() {
     });
   }, [level]);
 
-  const unstudiedWords = words.filter((w) => !masteryMap.has(w.id));
-  const studyWords = filterByCategory(unstudiedWords, selectedCategory);
+  // All words in the selected category (used for pill counts + Study Again)
+  const allCategoryWords = filterByCategory(words, selectedCategory);
 
+  // Words that aren't already marked 'known' — shaky/unknown/new all go in the deck
+  const unstudiedWords = allCategoryWords.filter(
+    (w) => masteryMap.get(w.id) !== 'known'
+  );
+
+  // Apply search filter on top (searches German word and English translation)
+  const trimmedQuery = searchQuery.trim().toLowerCase();
+  const studyWords = trimmedQuery
+    ? unstudiedWords.filter(
+        (w) =>
+          w.german.toLowerCase().includes(trimmedQuery) ||
+          w.english.toLowerCase().includes(trimmedQuery)
+      )
+    : unstudiedWords;
+
+  // Key for the deck — remounts when category or search query changes
+  const deckKey = `${selectedCategory}:${trimmedQuery}`;
+
+  // ── Loading state ──
   if (masteryLoading) {
     return (
       <View style={styles.centeredContainer}>
@@ -180,6 +232,7 @@ export default function FlashcardsScreen() {
     );
   }
 
+  // ── Empty level state ──
   if (words.length === 0) {
     return (
       <View style={styles.centeredContainer}>
@@ -192,7 +245,27 @@ export default function FlashcardsScreen() {
   return (
     <View style={styles.outerContainer}>
 
-      {/* Category pill row */}
+      {/* ── Search bar ── */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search words..."
+          placeholderTextColor={colors.textMuted}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCorrect={false}
+          autoCapitalize="none"
+          clearButtonMode="while-editing"
+        />
+        {/* Clear button for Android / web (iOS uses clearButtonMode) */}
+        {searchQuery.length > 0 && (
+          <TouchableOpacity style={styles.clearButton} onPress={() => setSearchQuery('')}>
+            <Text style={styles.clearButtonText}>✕</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* ── Category pills ── */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -218,11 +291,11 @@ export default function FlashcardsScreen() {
         })}
       </ScrollView>
 
-      {/* Deck — remounts on category change */}
+      {/* ── Deck — remounts on category or search change ── */}
       <FlashcardDeck
-        key={selectedCategory}
+        key={deckKey}
         studyWords={studyWords}
-        totalWords={words.length}
+        allCategoryWords={allCategoryWords}
       />
 
     </View>
@@ -237,25 +310,55 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
+  // ── Search bar ──
+  searchContainer: {
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  searchInput: {
+    flex: 1,
+    height: 38,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textPrimary,
+  },
+  clearButton: {
+    position: 'absolute',
+    right: spacing.xxl + spacing.md,
+    padding: spacing.sm,
+  },
+  clearButtonText: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+  },
+
   // ── Category pills ──
   pillRow: {
     paddingHorizontal: spacing.xxl,
     paddingVertical: spacing.md,
     gap: spacing.sm,
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.background,
+    height: 30,
   },
   pillSelected: {
     backgroundColor: colors.textPrimary,
@@ -275,7 +378,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   pillCountSelected: {
-    color: colors.textMuted,
+    color: '#888888',
   },
 
   // ── Deck ──
@@ -305,12 +408,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.textMuted,
   },
-  progressFill: {
-    height: '100%' as any,
-    backgroundColor: colors.accent,
-    borderRadius: 2,
-  },
-
   // ── Card ──
   cardContainer: {
     width: '100%',
@@ -319,10 +416,10 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxxl,
   },
 
-  // ── Buttons ──
+  // ── Three action buttons ──
   buttonRow: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
     marginBottom: spacing.lg,
     width: '100%',
     maxWidth: 380,
@@ -338,18 +435,27 @@ const styles = StyleSheet.create({
     borderColor: colors.error,
     backgroundColor: colors.errorLight,
   },
+  shakyButton: {
+    borderColor: colors.amber,
+    backgroundColor: colors.amberLight,
+  },
   knownButton: {
     borderColor: colors.success,
     backgroundColor: colors.successLight,
   },
   unknownButtonText: {
     fontFamily: font.semiBold,
-    fontSize: fontSize.md,
+    fontSize: fontSize.sm,
     color: colors.error,
+  },
+  shakyButtonText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.sm,
+    color: colors.amber,
   },
   knownButtonText: {
     fontFamily: font.semiBold,
-    fontSize: fontSize.md,
+    fontSize: fontSize.sm,
     color: colors.success,
   },
 
@@ -360,7 +466,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
 
-  // ── Done state ──
+  // ── Done / session summary ──
   doneTitle: {
     fontFamily: font.bold,
     fontSize: fontSize.xl,
@@ -381,13 +487,18 @@ const styles = StyleSheet.create({
   },
   summaryBox: {
     ...cardStyle,
-    width: 120,
+    width: 90,
     alignItems: 'center',
     paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.sm,
   },
   knownBox: {
     borderColor: colors.success,
     backgroundColor: colors.successLight,
+  },
+  shakyBox: {
+    borderColor: colors.amber,
+    backgroundColor: colors.amberLight,
   },
   unknownBox: {
     borderColor: colors.error,
@@ -413,6 +524,21 @@ const styles = StyleSheet.create({
     fontFamily: font.semiBold,
     fontSize: fontSize.md,
     color: colors.background,
+  },
+  weakButton: {
+    marginTop: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.amber,
+    borderRadius: radius.md,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.hero,
+    alignItems: 'center',
+    backgroundColor: colors.amberLight,
+  },
+  weakButtonText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.md,
+    color: colors.amber,
   },
 
   // ── Shared centered states ──
