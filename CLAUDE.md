@@ -272,7 +272,7 @@ Rules: be specific about what changed inside each file. No generic summaries lik
 - [x] Home page: "LERNE DEUTSCH" wordmark, TODAY'S FOCUS card (priority-based recommendation), 3-column stats strip, Feather icons replacing all emojis
 - Branch: `ui/fixes-round-2`
 
-### ⏳ Phase 10c — Flashcard Enhancements (In Progress)
+### ✅ Phase 10c — Flashcard Enhancements (Complete)
 - [x] Add third state: Shaky (amber/yellow) between Known and Unknown
 - [x] Update spaced repetition: Known = remove, Shaky = reinsert 8–12 ahead, Unknown = reinsert 3–5 ahead
 - [x] Update Supabase mastery storage to support 3 states (new `mastery` text column)
@@ -349,6 +349,7 @@ Rules: be specific about what changed inside each file. No generic summaries lik
 - [2026-03-29] Phase 10a complete — Full UI redesign. IBM Plex Mono, theme.ts, all screens restyled.
 - [2026-03-29] Phase 10b complete — Sidebar Feather icons + Inter font, #fafafa page backgrounds, card grid selectors (Games/Grammar/Exam), home page redesign with TODAY'S FOCUS + stats strip.
 - [2026-03-29] Phase 3 complete — Flashcards with flip animation and spaced repetition.
+- [2026-03-29] Phase 10c complete — Shaky state, 3-button rating, Study Weak, search bar, session summary, cleared counter fix, README.
 
 ---
 *This file is the single source of truth for the project.
