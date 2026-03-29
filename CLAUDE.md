@@ -287,10 +287,15 @@ Rules for the PR description:
 - Note: UI polish deferred to Phase 10
 - Note: the `partOfSpeech` field is already on every word — this is purely a UI filter
 
-### ⏳ Phase 8 — Daily Challenge + Streak
-- [ ] Daily challenge logic (mixed exercises from A1 content)
-- [ ] Streak counter (checks last active date on app open)
-- [ ] Update Supabase on completion
+### ✅ Phase 8 — Daily Challenge + Streak (Complete)
+- [x] Daily challenge: 5 grammar exercises seeded by today's date (same exercises all day, different tomorrow)
+- [x] Intro screen with current streak, done screen with score-aware messaging
+- [x] Already-done screen shows streak + next challenge date (tomorrow)
+- [x] useFocusEffect re-checks completion status on every tab visit
+- [x] Streak logic: consecutive days = streak+1, gap = reset to 1
+- [x] Supabase table: user_progress (user_id, streak_count, last_active_date, daily_challenge_completed_date)
+- [x] streakService.ts: loadProgress() and completeChallenge()
+- Note: UI polish deferred to Phase 10
 
 ### ⏳ Phase 9 — Progress Dashboard
 - [ ] Scores per section
@@ -362,6 +367,13 @@ Rules for the PR description:
   - Both types: Enter key advances to next exercise after answering
   - Multiple-choice: arrow key navigation (up/down), Enter to select, option A highlighted by default
   - Gemini quota hit during testing — "Generate More Exercises" deferred to Phase 10 for verification
+
+- [2026-03-29] Phase 8 complete — Daily Challenge + Streak.
+  - New Supabase table: user_progress (single row per device)
+  - streakService.ts: loadProgress(), completeChallenge(), getTodayString()
+  - Daily challenge: 5 grammar exercises, date-seeded for consistency
+  - useFocusEffect reloads on every tab visit so already-done state is always correct
+  - Score-aware done screen messaging (0/5 vs 3/5 vs 5/5 feel different)
 
 - [2026-03-29] Phase 6 complete — Mini Games.
   - Word Match, Gender Battle, Listening Quiz all working
