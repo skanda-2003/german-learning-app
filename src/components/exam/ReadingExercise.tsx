@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { generateReadingPassage, ReadingQuestion } from '../../lib/gemini';
 import useLevelStore from '../../store/useLevelStore';
+import { saveScore } from '../../lib/scoresService';
 
 // A few simple topics rotated on each generation so the passage is never the same
 const TOPICS = [
@@ -87,7 +88,12 @@ export default function ReadingExercise() {
 
   // ── Move to the next question ──
   function handleNext() {
-    setQuestionIndex((prev) => prev + 1);
+    const nextIndex = questionIndex + 1;
+    if (nextIndex >= questions.length) {
+      // About to show done screen — save score (fire and forget)
+      saveScore('exam_reading', score, questions.length);
+    }
+    setQuestionIndex(nextIndex);
   }
 
   const currentQuestion = questions[questionIndex] ?? null;

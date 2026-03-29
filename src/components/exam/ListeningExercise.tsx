@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { generateReadingPassage, ReadingQuestion } from '../../lib/gemini';
 import useLevelStore from '../../store/useLevelStore';
+import { saveScore } from '../../lib/scoresService';
 
 // Topics to rotate through
 const TOPICS = [
@@ -162,7 +163,11 @@ export default function ListeningExercise() {
   }
 
   function handleNext() {
-    setQuestionIndex((prev) => prev + 1);
+    const nextIndex = questionIndex + 1;
+    if (nextIndex >= questions.length) {
+      saveScore('exam_listening', score, questions.length);
+    }
+    setQuestionIndex(nextIndex);
   }
 
   const currentQuestion = questions[questionIndex] ?? null;

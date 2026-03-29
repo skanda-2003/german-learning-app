@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { getSpeakingFeedback } from '../../lib/gemini';
 import useLevelStore from '../../store/useLevelStore';
+import { saveCompletion } from '../../lib/scoresService';
 
 // ─── Speaking prompts ─────────────────────────────────────────────────────────
 // A1-appropriate prompts — conversational, short answers expected
@@ -145,6 +146,7 @@ export default function SpeakingExercise() {
       setError(result);
     } else {
       setFeedback(result);
+      saveCompletion('exam_speaking'); // fire and forget
     }
     setIsLoading(false);
   }

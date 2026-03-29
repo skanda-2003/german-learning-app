@@ -18,6 +18,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Word } from '../../data/vocabulary';
+import { saveCompletion } from '../../lib/scoresService';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -91,6 +92,8 @@ export default function WordMatchGame({ words, onExit }: Props) {
       const updated = [...matchedIds, id];
       setMatchedIds(updated);
       setSelectedId(null);
+      // All pairs matched — save completion
+      if (updated.length === ROUND_SIZE) saveCompletion('game_word_match');
     } else {
       // Wrong — flash both red for 600ms
       setWrongIds([selectedId, id]);
