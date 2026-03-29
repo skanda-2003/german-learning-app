@@ -231,13 +231,22 @@ ready to copy-paste directly into the GitHub Pull Request box.
 One sentence explaining what this PR does and why.
 
 **Changes**
-- New: `file/path.ts` — what it does, key functions/exports
-- Updated: `file/path.ts` — what changed and why
+List changes grouped by file. For each file, bullet the specific things that changed inside it — not a generic description of the file's purpose.
+
+Example format:
+`path/to/file.ts`:
+- Added X to Y section
+- Updated Z function to handle new case
+- Removed deprecated W
+
+`path/to/other.ts`:
+- Added new type Foo with fields a, b, c
+- Changed Bar function signature from (x: boolean) to (x: State)
 
 **Verification**
 - ✅ Thing tested and confirmed working
 
-Rules: specific file paths, function names, real details. Every file touched gets its own line.
+Rules: be specific about what changed inside each file. No generic summaries like "updated to support 3 states" — say exactly what was added, changed, or removed.
 
 ---
 
