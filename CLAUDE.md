@@ -280,15 +280,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
   - Gender Battle: plural below noun
   - Listening Quiz: conjugations below verb
 
-### ⏳ Phase 14 — Insights / Analytics · Effort: Medium
-- [ ] Add Insights to sidebar (icon: trending-up)
-- [ ] Weak Vocabulary: words most frequently marked Unknown or Shaky
-- [ ] Mistake Log: incorrect grammar answers (question / your answer / correct answer)
-  - New Supabase table: mistake_log (user_id, section, question, user_answer, correct_answer, timestamp)
-  - Wire into grammar.tsx to save wrong answers automatically
-- [ ] Weak Grammar Topics: sorted by lowest score with bar visualization
-- [ ] Activity Calendar: streak heatmap — last 3 months, coloured squares per day
-
 ### ⏳ Phase 15 — Supabase Authentication · Effort: Medium
 - [ ] Add sign up and login screens (email + password via Supabase Auth)
 - [ ] Protect all screens behind auth — redirect to login if not signed in
@@ -388,6 +379,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-29] Phase 10b complete — Sidebar Feather icons, #fafafa backgrounds, card grid selectors, home page redesign.
 - [2026-03-29] Phase 10c complete — Shaky state, 3-button rating, Study Weak, search bar, session summary.
 - [2026-03-29] Phase 14 complete — Insights screen with weak vocabulary, mistake log, weak grammar topics, activity calendar.
+- [2026-03-29] Phase 16 complete — Reading Mode with 15 shuffled A1 passages, per-word vocabulary lookup popup.
 
 ---
 *This file is the single source of truth for the project.
