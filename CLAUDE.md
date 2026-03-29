@@ -55,50 +55,48 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Daily Challenge (icon: calendar)
 - Exam Prep (icon: book-open)
 - Progress (icon: bar-chart-2)
-- Insights (icon: trending-up) ← new section
+- Insights (icon: trending-up)
+- Reading Mode (icon: book)
 
 ---
 
 ## Sections & Features
 
 ### 🏠 Home / Dashboard
-**Purpose: Forward-looking — tells the user what to do next (different from Progress which is backward-looking)**
+**Purpose: Forward-looking — tells the user what to do next**
 - App name + greeting with streak message (e.g. "You're on a 3 day streak")
 - TODAY'S FOCUS card — recommended section based on weakest area (lowest score)
 - CONTINUE WHERE YOU LEFT OFF — last section used
 - Quick stats strip: words known, best grammar score, daily challenge status
-- Quick-launch cards for all sections (no detailed stats — just action)
+- Quick-launch cards for all sections (icon + name + one stat line)
 - NO scrolling — everything fits in one view
 
 ### 🃏 Flashcards
 - German word on one side, English + example sentence on the other
-- On card back: verb conjugation table (ich/du/er/wir/ihr/sie) for verbs; plural form for nouns; comparative for adjectives
+- On card back: verb conjugation table for verbs; plural form for nouns; comparative for adjectives
 - Flip animation
 - THREE states: Known (green) / Shaky (amber) / Unknown (red)
   - Known: confident, show rarely in spaced repetition
   - Shaky: know it but want to revisit, show occasionally
   - Unknown: don't know, show frequently
 - Spaced repetition uses all three states
-- Session summary screen after finishing deck: X cards reviewed, Y known, Z shaky, W unknown
-- Word search bar to find any word directly
+- Session summary screen after finishing deck
+- Word search bar above category pills
 - Category filter pills: All / Nouns / Verbs / Adjectives / Prepositions / Other
-  - Pills are compact, fixed height, horizontally scrollable — not elongated
-  - Show count per category e.g. "Nouns 265"
-- Fix "Study Again" button (currently broken)
-- Vocabulary mastery saves to Supabase (3 states: known/shaky/unknown)
+- "Study Weak" button on done screen — restarts with shaky + unknown only
+- Vocabulary mastery saves to Supabase (3 states)
 
 ### 🎮 Mini Games
-**Selector screen: cards with 1px borders in a grid — NOT a plain text list**
-- Each game card shows: name, description, best score if played
-- Word Match — 6 random pairs per round, click-to-match, green/red feedback
-- Gender Battle — 10 rounds, der/die/das buttons; show plural form of noun below the word in small grey text
-- Listening Quiz — 10 rounds, Web Speech API (de-DE), 4 options; show conjugations below verb words
-- Fill in the Blank — Gemini generated (Phase 10b)
+**Selector screen: 2-column card grid with 1px borders**
+- Word Match — 6 random pairs per round, click-to-match
+- Gender Battle — 10 rounds, der/die/das; show plural below noun in grey
+- Listening Quiz — 10 rounds, Web Speech API; show conjugations below verbs in grey
+- Fill in the Blank — Gemini generated (Phase 17 — Later)
 
 ### 📝 Grammar Exercises
-**Selector screen: cards with 1px borders in a grid — NOT a plain text list**
-- Each topic shown as a card with: topic name, exercise count, best score if attempted
-- Level specific drills
+**Selector screen: 2-column card grid with 1px borders**
+- Each topic card shows: name, exercise count, best score if attempted
+- Level specific drills — A1: 111 exercises across 16 topics
 - Mix of pre-written templates and Gemini generated variations
 
 ### 📅 Daily Challenge
@@ -107,36 +105,34 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Score-aware completion messaging
 
 ### 🎓 Exam Prep
-**Selector screen: cards with 1px borders in a 2x2 grid — NOT a plain text list**
+**Selector screen: 2x2 card grid**
 - Reading, Listening, Writing, Speaking
 - Each card shows last score if attempted
 
 ### 📊 Progress
-**Purpose: Backward-looking — how have I done overall**
-**NO scrolling — everything fits in one view using compact grid layout**
-- TOP SECTION: compact stat grid (Coach Phelps style)
-  - Streak card, Vocabulary card, Grammar best score card, Daily challenge status
-  - All in a 4-column row, tight and data-dense
-- MIDDLE SECTION: per-section scores in compact rows
-  - Grammar, Exam Prep (Reading/Listening/Writing/Speaking), Mini Games
-  - Each shows best score + sessions completed
-- BOTTOM SECTION: two small visual charts
-  - Vocabulary mastery by category (bar per category: Nouns/Verbs/Adjectives etc.)
-  - Grammar topic breakdown (bar per topic showing best score)
+**Purpose: Backward-looking — how have I done overall. NO scrolling.**
+- Top row: 4 stat cards (Streak + last active date, Vocabulary, Grammar best, Daily Challenge)
+- Middle: per-section scores in compact 2-column layout
+- Bottom: two small visual charts
+  - Vocabulary mastery by category (bar per category with percentage label on right)
+  - Grammar topic breakdown (bar per topic)
 
-### 📈 Insights (NEW SECTION)
+### 📈 Insights
 **Purpose: Analytics — where am I weak, what do I keep getting wrong**
-- WEAK VOCABULARY: words most frequently marked Unknown or Shaky — shown as a list with their translations
-- MISTAKE LOG: grammar questions answered incorrectly — shows the question, your answer, correct answer
-- WEAK GRAMMAR TOPICS: topics sorted by lowest score with bar visualization
-- ACTIVITY CALENDAR: streak history grid (like Coach Phelps training activity heatmap) — last 3 months, one square per day, coloured if completed daily challenge
-- All data computed from existing Supabase tables — no new tables needed except mistake_log
+- Weak Vocabulary: words most frequently marked Unknown or Shaky
+- Mistake Log: incorrect grammar answers (question / your answer / correct answer)
+- Weak Grammar Topics: sorted by lowest score with bar visualization
+- Activity Calendar: streak heatmap — last 3 months, coloured squares per day
+
+### 📖 Reading Mode
+- Short German text at current level
+- Tap any word to see translation + part of speech popup
+- No questions — pure reading with on-demand word lookup
 
 ### 💡 Tips / Hints Bar
 - Always visible at the bottom of every screen
-- Left and right arrows to browse through tips
-- 25 tips for A1 across 8 categories
-- Tips are level-aware
+- Left and right arrows to browse
+- 25 tips for A1 across 8 categories, level-aware
 
 ---
 
@@ -145,10 +141,10 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Current level (A1 / A2 / B1 / B2)
 - Streak count + last active date
 - Progress / score per section
-- Vocabulary mastery per word (known / shaky / unknown) ← 3 states now
+- Vocabulary mastery per word (known / shaky / unknown)
 - Daily challenge completion status (resets daily)
 - section_scores table (user_id, section, best_score, best_total, sessions_completed)
-- mistake_log table (user_id, section, question, user_answer, correct_answer, timestamp) ← new for Insights
+- mistake_log table (user_id, section, question, user_answer, correct_answer, timestamp)
 
 ### Important Supabase Notes
 - Free tier limit is 500MB — more than enough for a single user
@@ -161,9 +157,9 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 ## AI Usage (Google Gemini API — Free Tier)
 - Feedback on Writing exercises — grammar, vocabulary, suggestions
 - Feedback on Speaking exercises — accuracy, pronunciation notes
-- Dynamic sentence generation for Fill in the Blank (varied, never repetitive)
+- Dynamic sentence generation for Fill in the Blank
 - Fresh reading passages on demand
-- Feedback tone adjusts by level — simple and encouraging at A1, more nuanced at B2
+- Feedback tone adjusts by level
 - Use Gemini free tier — do not exceed free tier limits
 
 ---
@@ -197,25 +193,23 @@ This project must remain completely free to run.
 
 ## GitHub Workflow Rules
 
-**IMPORTANT FOR CLAUDE: Never execute git commands. Always just print the commands for the user to run themselves. Do not use the Bash tool for any git operation. Do not ask the user if they want to run git commands — just output them.**
+**IMPORTANT: Never execute git commands. Always print the commands for the user to run themselves. Do not use the Bash tool for any git operation.**
 
-**Before starting any new phase/branch, give the user these commands to run:**
+Before starting any new phase, give the user these commands:
 ```bash
 git checkout main
 git pull
 git checkout -b branch-name
 ```
 
-At the start of every new phase, create one branch for the entire phase.
-
-Use this naming format for branches:
+Branch naming:
 - New phase/feature: feat/descriptive-name
 - Bug fix: fix/bug-name
 - UI change: ui/change-name
 
 **One branch per phase.**
 
-Once the phase is complete, give the user these commands to run:
+Once the phase is complete:
 ```bash
 git add .
 git commit -m "short message — main features only, not files"
@@ -224,29 +218,21 @@ git push origin branch-name
 Then open a Pull Request on GitHub to merge into main.
 
 ### Pull Request Descriptions
-After giving push commands, always generate a pull request description
-ready to copy-paste directly into the GitHub Pull Request box.
+After giving push commands, always generate a PR description ready to copy-paste.
 
 **Summary**
 One sentence explaining what this PR does and why.
 
 **Changes**
-List changes grouped by file. For each file, bullet the specific things that changed inside it — not a generic description of the file's purpose.
+List changes grouped by file. For each file, bullet the specific things that changed:
 
-Example format:
 `path/to/file.ts`:
-- Added X to Y section
-- Updated Z function to handle new case
+- Added X to Y
+- Updated Z to handle new case
 - Removed deprecated W
-
-`path/to/other.ts`:
-- Added new type Foo with fields a, b, c
-- Changed Bar function signature from (x: boolean) to (x: State)
 
 **Verification**
 - ✅ Thing tested and confirmed working
-
-Rules: be specific about what changed inside each file. No generic summaries like "updated to support 3 states" — say exactly what was added, changed, or removed.
 
 ---
 
@@ -254,75 +240,60 @@ Rules: be specific about what changed inside each file. No generic summaries lik
 
 ### ✅ Phase 0 — Planning (Complete)
 ### ✅ Phase 1 — Project Setup (Complete)
-### ✅ Phase 2 — Content Foundation for A1 (Complete)
-### ✅ Phase 3 — Flashcards (A1) (Complete)
-### ✅ Phase 4 — Grammar Exercises (A1) (Complete)
-### ✅ Phase 4b — Test & Fix Grammar Exercises (Complete)
-### ✅ Phase 5 — Exam Prep (A1) (Complete)
-### ✅ Phase 6 — Mini Games (A1) (Complete)
+### ✅ Phase 2 — Content Foundation A1 (Complete)
+### ✅ Phase 3 — Flashcards (Complete)
+### ✅ Phase 4 — Grammar Exercises (Complete)
+### ✅ Phase 4b — Grammar Testing & Fixes (Complete)
+### ✅ Phase 5 — Exam Prep (Complete)
+### ✅ Phase 6 — Mini Games (Complete)
 ### ✅ Phase 7 — Flashcard Categories (Complete)
 ### ✅ Phase 8 — Daily Challenge + Streak (Complete)
 ### ✅ Phase 9 — Progress Dashboard (Complete)
-### ✅ Phase 10a — UI Polish / Redesign (Complete)
+### ✅ Phase 10a — UI Redesign (Complete)
 ### ✅ Phase 10b — UI Fixes Round 2 (Complete)
 ### ✅ Phase 10c — Flashcard Enhancements (Complete)
-### ⏳ Phase 10d — Test Exam Prep
-### ⏳ Phase 10e — Flashcard Extra Info
-### ⏳ Phase 10f — Progress Page Redesign
-### ⏳ Phase 11 — Insights / Analytics
-### ⏳ Phase 12 — Reading Mode
-### ⏳ Phase 13 — Keyboard Shortcuts
-### ⏳ Phase 14 — Gemini Features Testing & Polish
-### ⏳ Phase 15 — Expand to A2, B1, B2
-### ⏳ Phase 16 — Deep Progress Insights
-### ⏳ Phase 17 — Multi-user (If Expanding)
 
 ---
 ## ACTIVE PIPELINE
 
-### ⏳ Phase 10d — Test Exam Prep
+### ⏳ Phase 11 — Test Exam Prep · Effort: Low
 - [ ] Test Reading: generate passage → answer questions → verify score and review screen
 - [ ] Test Listening: generate passage → play audio → answer questions → verify passage revealed
 - [ ] Test Writing: type a German response → submit → verify Gemini feedback appears
 - [ ] Test Speaking (mic): record → verify transcript → submit → verify feedback
 - [ ] Test Speaking (type): type response → submit → verify feedback
-- [ ] Test back button returns to Exam Prep selector from each sub-section
+- [ ] Test back button from each sub-section
 - [ ] Test Grammar "Generate More Exercises" button
 
-### ⏳ Phase 10e — Flashcard Extra Info
-- [ ] Right-side info panel — always-visible panel to the right of the card showing extra info
+### ⏳ Phase 12 — Progress Page Fixes · Effort: Low
+- [ ] Add last active date below streak number (e.g. "Last active: today" or "2 days ago")
+- [ ] Add percentage label on right end of vocabulary category bars (e.g. "5%")
+
+### ⏳ Phase 13 — Vocabulary Extra Info · Effort: High
 - [ ] Populate `plural` for all ~200 A1 nouns (e.g. "die Bücher")
 - [ ] Populate `conjugations` for all ~150 A1 verbs (ich/du/er/wir/ihr/sie present tense)
 - [ ] Populate `comparative` for all ~80 A1 adjectives (e.g. "älter")
-- [ ] Show conjugations/plurals in Mini Games — below the word in small grey text
-  - Gender Battle: show plural below noun
-  - Listening Quiz: show conjugations below verb
+- [ ] Right-side info panel in Flashcards — always-visible panel showing extra info for current word
+- [ ] Show conjugations/plurals in Mini Games below the word in small grey text
+  - Gender Battle: plural below noun
+  - Listening Quiz: conjugations below verb
 
-### ⏳ Phase 10f — Progress Page Redesign
-- [ ] Redesign as compact grid — NO scrolling, everything visible at once
-- [ ] Top row: 4 stat cards (Streak, Vocabulary, Grammar best, Daily Challenge status)
-- [ ] Middle: per-section scores in compact 2-column layout
-  - Grammar, Exam Prep (Reading/Listening/Writing/Speaking), Mini Games
-- [ ] Bottom: two small visual charts
-  - Vocabulary mastery by category (bar per category)
-  - Grammar topic breakdown (bar per topic)
-
-### ⏳ Phase 11 — Insights / Analytics
+### ⏳ Phase 14 — Insights / Analytics · Effort: Medium
 - [ ] Add Insights to sidebar (icon: trending-up)
 - [ ] Weak Vocabulary: words most frequently marked Unknown or Shaky
 - [ ] Mistake Log: incorrect grammar answers (question / your answer / correct answer)
   - New Supabase table: mistake_log (user_id, section, question, user_answer, correct_answer, timestamp)
   - Wire into grammar.tsx to save wrong answers automatically
-- [ ] Weak Grammar Topics: topics sorted by lowest score with bar visualization
+- [ ] Weak Grammar Topics: sorted by lowest score with bar visualization
 - [ ] Activity Calendar: streak heatmap — last 3 months, coloured squares per day
 
-### ⏳ Phase 12 — Reading Mode
-- [ ] New section in sidebar or inside Exam Prep
-- [ ] Display a short German text appropriate for current level
-- [ ] Tap any word to see a popup with its translation and part of speech
+### ⏳ Phase 15 — Reading Mode · Effort: Medium
+- [ ] Add Reading Mode to sidebar (icon: book)
+- [ ] Display a short German text at current level
+- [ ] Tap any word to see translation + part of speech popup
 - [ ] No questions — pure reading with on-demand word lookup
 
-### ⏳ Phase 13 — Keyboard Shortcuts
+### ⏳ Phase 16 — Keyboard Shortcuts · Effort: Low
 - [ ] Space to flip flashcard
 - [ ] 1/2/3 for Known/Shaky/Unknown in flashcards
 - [ ] M/F/N for der/die/das in Gender Battle
@@ -332,26 +303,27 @@ Rules: be specific about what changed inside each file. No generic summaries lik
 
 ---
 ## LATER
-*These phases are planned but not immediate — will be picked up after the active pipeline is complete.*
+*Planned but not immediate — picked up after active pipeline is complete.*
 
-### Phase 14 — Gemini Features Testing & Polish
+### Phase 17 — AI / Gemini Features · Effort: Medium
 - [ ] Test and verify "Generate More Exercises" in Grammar fully works
-- [ ] Test Fill in the Blank mini game (Gemini generated sentences)
+- [ ] Build Fill in the Blank mini game (Gemini generated sentences)
 - [ ] Performance check — loading states for all Gemini API calls
 - [ ] Error handling — friendly messages when Gemini quota is hit
+- [ ] Gemini feedback tone polish across Writing and Speaking
 
-### Phase 15 — Expand to A2, B1, B2
+### Phase 18 — Expand to A2, B1, B2 · Effort: High
 - [ ] Add A2 / B1 / B2 vocabulary lists
 - [ ] Add A2 / B1 / B2 grammar exercise templates
 - [ ] Write 20-30 tips for A2, B1, B2
 - [ ] Test level switching (A1 works, others show "coming soon" until content added)
 
-### Phase 16 — Deep Progress Insights
+### Phase 19 — Deep Progress Insights · Effort: Medium
 - [ ] Per-topic grammar score breakdown in Progress and Insights screens
 - [ ] New Supabase table: grammar_topic_scores (user_id, level, topic, best_score, sessions)
 - [ ] Update grammar.tsx to save per-topic results
 
-### Phase 17 — Multi-user (If Expanding)
+### Phase 20 — Multi-user · Effort: High
 - [ ] Auth screens (sign up / login via Supabase Auth)
 - [ ] Tie all progress to user accounts
 - [ ] Leaderboard for streaks
@@ -370,10 +342,10 @@ Rules: be specific about what changed inside each file. No generic summaries lik
 - [2026-03-29] Phase 7 complete — Flashcard category pills.
 - [2026-03-29] Phase 8 complete — Daily Challenge + streak tracking.
 - [2026-03-29] Phase 9 complete — Progress Dashboard with Supabase score tracking.
-- [2026-03-29] Phase 10a complete — Full UI redesign. IBM Plex Mono, theme.ts, all screens restyled.
-- [2026-03-29] Phase 10b complete — Sidebar Feather icons + Inter font, #fafafa page backgrounds, card grid selectors (Games/Grammar/Exam), home page redesign with TODAY'S FOCUS + stats strip.
 - [2026-03-29] Phase 3 complete — Flashcards with flip animation and spaced repetition.
-- [2026-03-29] Phase 10c complete — Shaky state, 3-button rating, Study Weak, search bar, session summary, cleared counter fix, README.
+- [2026-03-29] Phase 10a complete — Full UI redesign. IBM Plex Mono, theme.ts, all screens restyled.
+- [2026-03-29] Phase 10b complete — Sidebar Feather icons, #fafafa backgrounds, card grid selectors, home page redesign.
+- [2026-03-29] Phase 10c complete — Shaky state, 3-button rating, Study Weak, search bar, session summary.
 
 ---
 *This file is the single source of truth for the project.
