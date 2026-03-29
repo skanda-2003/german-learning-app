@@ -25,11 +25,18 @@ The app is called **Lerne Deutsch** (means "Learn German" in German).
 
 ---
 
-## Design
-- Clean and minimal UI
-- Sidebar navigation (always accessible)
-- Level toggle always visible at the top (affects all content globally)
-- Tips/Hints bar at the bottom of every screen with left/right arrows to browse
+## Design System
+- **Style:** Data-Forward Minimalism (inspired by developer dashboards like Linear, Vercel, Railway)
+- **Background:** `#fafafa` page background, `#ffffff` white cards on top
+- **Font:** IBM Plex Mono for all content, data, headings — Inter for sidebar/topbar navigation only
+- **Cards:** 1px `#e0e0e0` border, 4px border-radius, no shadows, no gradients
+- **Colors:** `#111111` primary text, `#888888` secondary/labels, `#2563eb` blue accent, `#16a34a` green, `#dc2626` red, `#f59e0b` amber (shaky state)
+- **Labels:** ALL CAPS, 11px, letter-spacing 0.08em, `#888888`
+- **Numbers/scores:** Bold, large (28-36px), `#111111`, IBM Plex Mono
+- **Sidebar:** Dark navy `#1a1a2e`, Inter font, clean Feather line icons (no emojis), active state = left 2px accent bar in blue
+- **Topbar:** Same dark navy, Inter font, level toggle top right
+- **Buttons:** Outlined (1px border, white bg, black text) for secondary; solid black bg white text for primary CTA
+- **Score display:** "X / Y" format where Y is grey
 
 ---
 
@@ -40,79 +47,108 @@ Switching level affects all content globally — flashcards, exercises, games, e
 ---
 
 ## Navigation (Sidebar)
-- 🏠 Home / Dashboard
-- 🃏 Flashcards
-- 🎮 Mini Games
-- 📝 Grammar Exercises
-- 📅 Daily Challenge
-- 🎓 Exam Prep
-- 📊 Progress
+Uses clean Feather line icons — NO emojis anywhere in the UI
+- Home (icon: home)
+- Flashcards (icon: layers)
+- Mini Games (icon: zap)
+- Grammar (icon: edit-3)
+- Daily Challenge (icon: calendar)
+- Exam Prep (icon: book-open)
+- Progress (icon: bar-chart-2)
+- Insights (icon: trending-up) ← new section
 
 ---
 
 ## Sections & Features
 
 ### 🏠 Home / Dashboard
-- Overview of streak, level, and progress across sections
+**Purpose: Forward-looking — tells the user what to do next (different from Progress which is backward-looking)**
+- App name + greeting with streak message (e.g. "You're on a 3 day streak")
+- TODAY'S FOCUS card — recommended section based on weakest area (lowest score)
+- CONTINUE WHERE YOU LEFT OFF — last section used
+- Quick stats strip: words known, best grammar score, daily challenge status
+- Quick-launch cards for all sections (no detailed stats — just action)
+- NO scrolling — everything fits in one view
 
 ### 🃏 Flashcards
 - German word on one side, English + example sentence on the other
+- On card back: verb conjugation table (ich/du/er/wir/ihr/sie) for verbs; plural form for nouns; comparative for adjectives
 - Flip animation
-- Mark as known / unknown
-- Spaced repetition — unknown words appear more frequently
-- Vocabulary sourced from CEFR / Goethe word lists per level
-- **[Future]** Category filter — let the user practise by part of speech (e.g. Nouns only,
-  Verbs only, Prepositions, Articles) so they can focus on what they don't know.
-  Categories map directly to the `partOfSpeech` field already on every word.
+- THREE states: Known (green) / Shaky (amber) / Unknown (red)
+  - Known: confident, show rarely in spaced repetition
+  - Shaky: know it but want to revisit, show occasionally
+  - Unknown: don't know, show frequently
+- Spaced repetition uses all three states
+- Session summary screen after finishing deck: X cards reviewed, Y known, Z shaky, W unknown
+- Word search bar to find any word directly
+- Category filter pills: All / Nouns / Verbs / Adjectives / Prepositions / Other
+  - Pills are compact, fixed height, horizontally scrollable — not elongated
+  - Show count per category e.g. "Nouns 265"
+- Fix "Study Again" button (currently broken)
+- Vocabulary mastery saves to Supabase (3 states: known/shaky/unknown)
 
 ### 🎮 Mini Games
-- **Word Match** — drag German words to their English meanings
-- **Fill in the Blank** — complete a sentence with the correct word (Gemini generates varied sentences)
-- **Gender Battle** — quickly pick der / die / das for a noun
-- **Listening Quiz** — hear a word via text-to-speech, pick the correct meaning
+**Selector screen: cards with 1px borders in a grid — NOT a plain text list**
+- Each game card shows: name, description, best score if played
+- Word Match — 6 random pairs per round, click-to-match, green/red feedback
+- Gender Battle — 10 rounds, der/die/das buttons; show plural form of noun below the word in small grey text
+- Listening Quiz — 10 rounds, Web Speech API (de-DE), 4 options; show conjugations below verb words
+- Fill in the Blank — Gemini generated (Phase 10b)
 
 ### 📝 Grammar Exercises
+**Selector screen: cards with 1px borders in a grid — NOT a plain text list**
+- Each topic shown as a card with: topic name, exercise count, best score if attempted
 - Level specific drills
-- A1: verb conjugation (sein, haben), basic sentence structure
-- A2: past tense (Perfekt), adjective endings
-- B1/B2: progressively more complex grammar
 - Mix of pre-written templates and Gemini generated variations
 
 ### 📅 Daily Challenge
-- Small mixed set of exercises, resets every day
-- Completing it increments the streak counter
+- 5 grammar exercises seeded by today's date
+- Streak tracking
+- Score-aware completion messaging
 
 ### 🎓 Exam Prep
-Four sub-sections, each with multiple exercises per level:
-- **Reading** — level appropriate passage with comprehension questions
-- **Listening** — audio clip via text-to-speech with comprehension questions
-- **Writing** — prompt shown, user types response, Gemini API gives feedback
-- **Speaking** — voice recording via mic + text input option, pronunciation checked, Gemini API evaluates
+**Selector screen: cards with 1px borders in a 2x2 grid — NOT a plain text list**
+- Reading, Listening, Writing, Speaking
+- Each card shows last score if attempted
 
 ### 📊 Progress
-- Scores per section
-- Vocabulary mastery visualization (known vs unknown words)
-- Streak display
-- Overall level coverage percentage
+**Purpose: Backward-looking — how have I done overall**
+**NO scrolling — everything fits in one view using compact grid layout**
+- TOP SECTION: compact stat grid (Coach Phelps style)
+  - Streak card, Vocabulary card, Grammar best score card, Daily challenge status
+  - All in a 4-column row, tight and data-dense
+- MIDDLE SECTION: per-section scores in compact rows
+  - Grammar, Exam Prep (Reading/Listening/Writing/Speaking), Mini Games
+  - Each shows best score + sessions completed
+- BOTTOM SECTION: two small visual charts
+  - Vocabulary mastery by category (bar per category: Nouns/Verbs/Adjectives etc.)
+  - Grammar topic breakdown (bar per topic showing best score)
+
+### 📈 Insights (NEW SECTION)
+**Purpose: Analytics — where am I weak, what do I keep getting wrong**
+- WEAK VOCABULARY: words most frequently marked Unknown or Shaky — shown as a list with their translations
+- MISTAKE LOG: grammar questions answered incorrectly — shows the question, your answer, correct answer
+- WEAK GRAMMAR TOPICS: topics sorted by lowest score with bar visualization
+- ACTIVITY CALENDAR: streak history grid (like Coach Phelps training activity heatmap) — last 3 months, one square per day, coloured if completed daily challenge
+- All data computed from existing Supabase tables — no new tables needed except mistake_log
 
 ### 💡 Tips / Hints Bar
 - Always visible at the bottom of every screen
 - Left and right arrows to browse through tips
-- 20-30 pre-written tips per level
+- 25 tips for A1 across 8 categories
 - Tips are level-aware
-- Example A1 tip: "All nouns in German are always capitalized!"
-- Example A1 tip: "There are 3 genders in German: der (masculine), die (feminine), das (neuter)"
 
 ---
 
 ## Database (Supabase) — Minimal Storage
-Only store what is necessary:
 - Username, email, password (hashed by Supabase auth)
 - Current level (A1 / A2 / B1 / B2)
 - Streak count + last active date
 - Progress / score per section
-- Vocabulary mastery per word (known / unknown)
+- Vocabulary mastery per word (known / shaky / unknown) ← 3 states now
 - Daily challenge completion status (resets daily)
+- section_scores table (user_id, section, best_score, best_total, sessions_completed)
+- mistake_log table (user_id, section, question, user_answer, correct_answer, timestamp) ← new for Insights
 
 ### Important Supabase Notes
 - Free tier limit is 500MB — more than enough for a single user
@@ -166,280 +202,156 @@ git checkout -b branch-name
 ```
 
 Use this naming format for branches:
-- New phase/feature: feat/descriptive-name (e.g. feat/flashcards, feat/mini-games, feat/grammar-exercises)
-- Bug fix: fix/bug-name (e.g. fix/level-toggle-bug)
-- UI change: ui/change-name (e.g. ui/sidebar-styling)
+- New phase/feature: feat/descriptive-name
+- Bug fix: fix/bug-name
+- UI change: ui/change-name
 
-**One branch per phase. All work for that phase — regardless of how many features it contains — goes on the same branch.**
-- ✅ Good: `feat/flashcards` (covers all of Phase 3), `feat/mini-games` (covers all of Phase 4)
-- ❌ Bad: `feat/phase3`, `feat/phase3-flashcards`, `feat/spaced-repetition` (too granular)
+**One branch per phase.**
 
-Once the phase is complete, give me these commands:
+Once the phase is complete:
 ```bash
 git add .
 git commit -m "describe what was done"
 git push origin branch-name
 ```
-
-Then remind me to open a Pull Request on GitHub to merge the branch into main.
+Then open a Pull Request on GitHub to merge into main.
 
 ### Pull Request Descriptions
 After giving push commands, always generate a pull request description
 ready to copy-paste directly into the GitHub Pull Request box.
 
-Use this exact format:
-
 **Summary**
 One sentence explaining what this PR does and why.
 
 **Changes**
-List every file that was created or modified:
-- New: `file/path.ts` — what it does, key functions/exports, data structures
-- Updated: `file/path.ts` — what changed inside it and why
+- New: `file/path.ts` — what it does, key functions/exports
+- Updated: `file/path.ts` — what changed and why
 
 **Verification**
-- ✅ Thing that was tested and confirmed working
-- ✅ Thing that was tested and confirmed working
+- ✅ Thing tested and confirmed working
 
-Rules for the PR description:
-- Be specific — mention actual file paths, function names, variable names
-- Not vague summaries — mention real details like "111 exercises across 16 topics"
-- Every file touched gets its own line in Changes
-- Verification items should reflect what was actually tested, not generic claims
+Rules: specific file paths, function names, real details. Every file touched gets its own line.
 
 ---
 
 ## Build Phases
 
 ### ✅ Phase 0 — Planning (Complete)
-- Full app plan discussed and finalised
-- Tech stack decided (Expo, TypeScript, Zustand, Supabase, Gemini API)
-- CLAUDE.md created
-
 ### ✅ Phase 1 — Project Setup (Complete)
-- [x] Initialize Expo project with TypeScript
-- [x] Set up folder structure
-- [x] Set up sidebar navigation
-- [x] Add level toggle (Zustand global state)
-- [x] Add tips bar component at the bottom (static content for now)
-- [x] Connect to GitHub repo (german-learning-app)
-- [x] Connect to Supabase project
-
 ### ✅ Phase 2 — Content Foundation for A1 (Complete)
-- [x] A1 vocabulary list — 665 words, full Goethe Institut A1 list (in src/data/vocabulary/a1.ts)
-- [x] A1 grammar exercise templates — 111 exercises across 16 topics (in src/data/grammar/a1.ts)
-- [x] A2/B1/B2 vocabulary and grammar scaffolded as empty arrays (to be filled in Phase 11)
-- [x] Write 20-30 tips for A1 — 25 tips written across 8 categories (in src/data/tips.ts)
-- [x] Set up Gemini API integration (reusable function in src/lib/gemini.ts)
-
 ### ✅ Phase 3 — Flashcards (A1) (Complete)
-- [x] Flashcard UI with flip animation
-- [x] Known / unknown marking
-- [x] Spaced repetition logic
-- [x] Connect vocabulary mastery to Supabase
-
 ### ✅ Phase 4 — Grammar Exercises (A1) (Complete)
-- [x] Exercise UI (fill-blank and multiple-choice screens)
-- [x] Gemini generated variations
-
 ### ✅ Phase 4b — Test & Fix Grammar Exercises (Complete)
-- [x] Test fill-blank exercises: type answer, check correct/incorrect feedback
-- [x] Test multiple-choice exercises: tap option, check colour feedback
-- [x] Test topic selector: pick a specific topic, verify only that topic's exercises show
-- [x] Test "All Topics": verify all 111 exercises cycle through
-- [x] Test done screen: score circle shows correct percentage
-- Bugs fixed during testing:
-  - Enter key now submits fill-blank answer (onSubmitEditing on TextInput)
-  - Enter key now advances to next exercise after answering (keydown listener)
-  - Multiple-choice: arrow key navigation + Enter to select (focusedIndex state + keydown listener)
-  - Multiple-choice: option A highlighted by default (autoFocus equivalent via focusedIndex=0)
-  - Fill-blank: auto-focuses on load (autoFocus prop)
-  - Fill-blank: removed browser focus outline box (outline: 'none')
-  - Gemini model updated: gemini-1.5-flash → gemini-2.0-flash (fixes 404 error)
-- ⚠️ "✨ Generate More Exercises" not yet verified — hit Gemini free tier daily quota during testing
-
 ### ✅ Phase 5 — Exam Prep (A1) (Complete)
-- [x] Reading (Gemini passage + multiple-choice comprehension questions)
-- [x] Listening (text-to-speech + comprehension questions, passage revealed on done screen)
-- [x] Writing (prompt shown, user types in German, Gemini gives feedback)
-- [x] Speaking (🎤 record via browser mic OR type, Gemini evaluates response)
-
-### ⏳ Phase 5b — Test Exam Prep (Deferred — Gemini quota)
-- Deferred to Phase 10 — all sub-sections require Gemini and free tier quota is exhausted
-- [ ] Test Reading: generate passage → answer all 3 questions → verify score and review screen
-- [ ] Test Listening: generate passage → play audio (German voice) → answer questions → verify passage revealed on done screen
-- [ ] Test Writing: type a German response → submit → verify Gemini feedback appears in purple card
-- [ ] Test Speaking (mic): tap Record → speak German → stop → verify transcript appears in text box → submit → verify feedback
-- [ ] Test Speaking (type): type a response directly → submit → verify Gemini feedback appears in pink card
-- [ ] Test back button returns to Exam Prep selector from each sub-section
-
 ### ✅ Phase 6 — Mini Games (A1) (Complete)
-- [x] Word Match — 6 random pairs per round, click-to-match, green/red feedback
-- [x] Gender Battle — 10 rounds, strip article, der/die/das buttons, auto-advance
-- [x] Listening Quiz — 10 rounds, Web Speech API (de-DE), 4 options
-- ⏳ Fill in the Blank — deferred to Phase 10 (requires Gemini)
-
 ### ✅ Phase 7 — Flashcard Categories (Complete)
-- [x] Category picker (horizontal pill row) above the flashcard deck
-- [x] Filter cards by part of speech: All, Nouns, Verbs, Adjectives, Prepositions, Other
-- [x] Category count shown on each pill (from full vocabulary, not mastery-filtered)
-- [x] Switching category resets queue cleanly (FlashcardDeck remounts via key=)
-- Note: UI polish deferred to Phase 10
-- Note: the `partOfSpeech` field is already on every word — this is purely a UI filter
-
 ### ✅ Phase 8 — Daily Challenge + Streak (Complete)
-- [x] Daily challenge: 5 grammar exercises seeded by today's date (same exercises all day, different tomorrow)
-- [x] Intro screen with current streak, done screen with score-aware messaging
-- [x] Already-done screen shows streak + next challenge date (tomorrow)
-- [x] useFocusEffect re-checks completion status on every tab visit
-- [x] Streak logic: consecutive days = streak+1, gap = reset to 1
-- [x] Supabase table: user_progress (user_id, streak_count, last_active_date, daily_challenge_completed_date)
-- [x] streakService.ts: loadProgress() and completeChallenge()
-- Note: UI polish deferred to Phase 10
-
 ### ✅ Phase 9 — Progress Dashboard (Complete)
-- [x] Streak card with daily challenge status
-- [x] Vocabulary mastery progress bar (known / total for current level)
-- [x] Section scores: Grammar, Exam Reading, Exam Listening (best % + sessions)
-- [x] Completion counts: Exam Writing, Exam Speaking, Word Match
-- [x] Mini Games scores: Gender Battle, Listening Quiz (best % + sessions)
-- [x] Score tracking wired into all sections (grammar.tsx, exam components, game components)
-- [x] Supabase table: section_scores (user_id, section, best_score, best_total, sessions_completed)
-- [x] scoresService.ts: saveScore(), saveCompletion(), loadAllScores()
-- [x] useFocusEffect reloads on every tab visit
-- Note: deeper insights deferred to Phase 9b and Phase 13 (see below)
-
-### ⏳ Phase 9b — Vocabulary Insights (Progress enhancement)
-- Add vocabulary mastery breakdown by part of speech to the Progress screen
-- No new database work needed — computed from existing mastery data + vocabulary
-- Show per-category bars: Nouns (210/265), Verbs (80/180), Adjectives (20/100), etc.
-- Add to Phase 10 Polish pass
-
 ### ✅ Phase 10a — UI Polish / Redesign (Complete)
-- [x] Created `src/styles/theme.ts` — central design system (colors, font, fontSize, spacing, radius)
-- [x] IBM Plex Mono font loaded via `@expo-google-fonts/ibm-plex-mono` in `app/_layout.tsx`
-- [x] All screens restyled: Home, Flashcards, Grammar, Daily Challenge, Games, Exam Prep, Progress
-- [x] All shared components restyled: LevelToggle, TipsBar, FlashCard, ExerciseCard
-- [x] All exam components restyled: ReadingExercise, ListeningExercise, WritingExercise, SpeakingExercise
-- [x] All game components restyled: WordMatchGame, GenderBattleGame, ListeningQuizGame
-- Design system: pure white background, 1px #e0e0e0 borders, 4px border-radius, no shadows, IBM Plex Mono throughout
-- Branch: `ui/polish-redesign`
 
-### ⏳ Phase 10b — Polish (remaining)
+### ⏳ Phase 10b — UI Fixes Round 2 (Current)
+Issues identified from screenshots:
+
+**Sidebar:**
+- [ ] Replace all emoji icons with Feather line icons (install @expo/vector-icons if not present)
+- [ ] Fix nav item text cutoff ("Daily Chall..." → "Daily Challenge" — widen sidebar or reduce font size)
+- [ ] Active state: replace grey highlight with left 2px blue accent bar
+- [ ] Use Inter font for sidebar nav items (not IBM Plex Mono)
+- [ ] Tighter, more precise spacing between nav items
+
+**Page backgrounds:**
+- [ ] Change all page backgrounds from pure white to `#fafafa`
+- [ ] Cards remain `#ffffff` — this creates depth without adding color
+
+**Home page redesign:**
+- [ ] Remove pixel-art emoji icons from section cards
+- [ ] Top section: greeting with streak ("You're on a 3 day streak") + today's recommended section (based on lowest score)
+- [ ] Middle: compact quick-stats strip (words known, best grammar score, daily challenge status)
+- [ ] Bottom: clean quick-launch grid for all sections — icon + name + one stat only
+- [ ] Fill the empty bottom half — no white voids
+- [ ] Differentiate clearly from Progress page (Home = what to do next, Progress = how I've done)
+
+**Mini Games selector:**
+- [ ] Replace plain text list with proper cards (1px border, white bg, padding)
+- [ ] Each card: game name bold, description grey below, best score top-right if played
+- [ ] Grid layout (2 columns) not a vertical list
+
+**Grammar selector:**
+- [ ] Same treatment as Mini Games — cards not a list
+- [ ] Each topic as a card with name, exercise count, best score
+
+**Exam Prep selector:**
+- [ ] Same treatment — 2x2 grid of cards, not a list
+
+**Topbar:**
+- [ ] Use Inter font for page title in topbar (not IBM Plex Mono)
+
+### ⏳ Phase 10c — Flashcard Enhancements
+- [ ] Add third state: Shaky (amber/yellow) between Known and Unknown
+- [ ] Update spaced repetition: Known = rare, Shaky = occasional, Unknown = frequent
+- [ ] Update Supabase mastery storage to support 3 states
+- [ ] Show extra info on card back:
+  - Verbs: conjugation table (ich/du/er/wir/ihr/sie forms)
+  - Nouns: plural form
+  - Adjectives: comparative form
+- [ ] Session summary screen after finishing deck (cards reviewed, known/shaky/unknown counts)
+- [ ] Word search bar above category pills
+- [ ] Fix "Study Again" button (currently broken)
+- [ ] Fix category pills: compact fixed-height, horizontally scrollable, show count e.g. "Nouns 265"
+
+### ⏳ Phase 10d — Test Exam Prep (Phase 5b deferred)
+- [ ] Test Reading, Listening, Writing, Speaking
+- [ ] Test back button from each sub-section
+- [ ] Test Grammar "Generate More Exercises"
+
+### ⏳ Phase 11 — Insights / Analytics (New Section)
+- [ ] Add Insights to sidebar navigation (icon: trending-up)
+- [ ] Weak Vocabulary list: words most frequently marked Unknown or Shaky
+- [ ] Mistake Log: incorrect grammar answers (question, your answer, correct answer)
+  - New Supabase table: mistake_log (user_id, section, question, user_answer, correct_answer, timestamp)
+  - Wire into grammar.tsx to save wrong answers
+- [ ] Weak Grammar Topics: topics sorted by lowest score with bar chart
+- [ ] Activity Calendar: streak heatmap grid — last 3 months, coloured squares per day
+- [ ] Reading Mode: display a short German text, tap any word to see its translation popup
+
+### ⏳ Phase 12 — Polish (A1 complete app)
 - [ ] Test level switching (A1 works, other levels show "coming soon")
-- [ ] Test on web
-- [ ] Performance check (loading states for AI calls)
-- [ ] Test Grammar Exercises: finish a topic → tap "✨ Generate More Exercises" → verify 5 new exercises load correctly
-- [ ] Complete Phase 5b — test all Exam Prep features (Reading, Listening, Writing, Speaking, back button) — deferred due to Gemini free tier quota
-- [ ] Add vocabulary mastery by part of speech to Progress screen (Phase 9b)
+- [ ] Performance check (loading states for all AI calls)
+- [ ] Fill in the Blank mini game (Gemini)
+- [ ] Vocabulary mastery by part of speech on Progress screen
+- [ ] Keyboard shortcuts (Space to flip card, 1/2/3 for Known/Shaky/Unknown, M/F/N for Gender Battle)
+  - Add a small "?" help button on each screen that shows available shortcuts
 
-### ⏳ Phase 11 — Expand to A2, B1, B2
-- [ ] Expand A1 vocabulary to full ~600 word Goethe list
+### ⏳ Phase 13 — Expand to A2, B1, B2
 - [ ] Add A2 / B1 / B2 vocabulary lists
-- [ ] Expand A1 grammar to cover all A1 topics
 - [ ] Add A2 / B1 / B2 grammar exercise templates
 - [ ] Write 20-30 tips for A2, B1, B2
 
-### ⏳ Phase 12 — Multi-user (If Expanding)
+### ⏳ Phase 14 — Deep Progress Insights
+- [ ] Per-topic grammar score breakdown in Progress screen
+- [ ] New Supabase table: grammar_topic_scores
+
+### ⏳ Phase 15 — Multi-user (If Expanding)
 - [ ] Auth screens (sign up / login)
 - [ ] Tie all progress to user accounts
 - [ ] Leaderboard for streaks
 
-### ⏳ Phase 13 — Deep Progress Insights
-- Replace single grammar score with per-topic breakdown (sein, haben, Akkusativ, Dativ, etc.)
-- New Supabase table: grammar_topic_scores (user_id, level, topic, best_score, best_total, sessions_completed)
-- Update grammar.tsx to save per-topic results when a specific topic is finished
-- Progress screen: show mini bar chart per grammar topic so user can see exactly where they're weak
-- Example: sein 80%, haben 60%, Akkusativ 40%, Dativ — not started
-
 ---
 
 ## Progress Log
-*Update this section as phases are completed.*
 
-- [2026-03-26] Project planning completed. Tech stack finalised. CLAUDE.md created.
-  - Platform: Web first, mobile later
-  - AI: Google Gemini API (free tier) — replaces Claude API
-  - Cost policy: Entire project must remain free to run
-
-- [2026-03-27] Phase 1 complete.
-  - Expo project initialised with TypeScript (SDK 55)
-  - app.json updated: name = "Lerne Deutsch", slug = "german-learning-app"
-  - Folder structure created: src/components, src/screens, src/store, src/data, src/lib
-  - Expo Router installed, all 7 screens created as placeholders
-  - Sidebar navigation working on web (permanent drawer, dark navy theme)
-  - Zustand level store (useLevelStore.ts) + LevelToggle component wired into header
-  - TipsBar component at bottom of every screen, level-aware, left/right navigation
-  - Supabase project created (free tier), client set up in src/lib/supabase.ts
-  - Project moved from Windows F drive to WSL filesystem to fix hot reload issues
-
-- [2026-03-28] Phase 2 complete — A1 content foundation.
-  - Strategy change: build full app with A1 content first, add A2/B1/B2 in Phase 11
-  - A1 vocabulary: expanded to full 665-word Goethe Institut A1 list in src/data/vocabulary/a1.ts
-  - A1 grammar: expanded from 31 → 111 exercises across 16 topics in src/data/grammar/a1.ts
-    - Topics: sein, haben, definite articles, negation, word order, indefinite articles,
-      personal pronouns, regular verbs, modal verbs, Akkusativ, possessive articles,
-      questions, separable verbs, plural nouns, imperative, prepositions
-  - A2/B1/B2 vocabulary and grammar: scaffolded as empty arrays, to be filled in Phase 11
-  - Tips: expanded A1 tips from 5 → 25 across 8 categories in src/data/tips.ts
-  - Gemini API integration complete: src/lib/gemini.ts with 4 exported functions
-  - Phase 2 complete.
-
-- [2026-03-28] Phase 4 complete — Grammar Exercises.
-  - ExerciseCard component: fill-blank (inline TextInput) + multiple-choice (4 tappable options)
-  - Grammar screen: topic selector (16 topics + All Topics), progress bar, score tracker, done screen
-  - Gemini integration: "Generate More Exercises" button on done screen fetches 5 fresh exercises
-  - Phases reordered: Mini Games moved to Phase 6, Flashcard Categories to Phase 7
-
-- [2026-03-29] Phase 4b complete — Grammar Exercises testing and UX fixes.
-  - Gemini model updated from gemini-1.5-flash → gemini-2.0-flash (fixes 404 error)
-  - Fill-blank: Enter key submits answer, auto-focuses on load, browser outline box removed
-  - Both types: Enter key advances to next exercise after answering
-  - Multiple-choice: arrow key navigation (up/down), Enter to select, option A highlighted by default
-  - Gemini quota hit during testing — "Generate More Exercises" deferred to Phase 10 for verification
-
-- [2026-03-29] Phase 9 complete — Progress Dashboard.
-  - New Supabase table: section_scores (one row per user per section)
-  - scoresService.ts: saveScore() keeps best %, saveCompletion() counts sessions, loadAllScores() fetches all
-  - Score tracking wired into: grammar, exam reading, exam listening, exam writing, exam speaking, gender battle, listening quiz, word match
-  - Progress screen: streak card, vocabulary mastery bar, section scores across Grammar / Exam Prep / Mini Games
-  - Deeper insights (per-topic grammar breakdown, vocab by category) deferred to Phase 9b / Phase 13
-
-- [2026-03-29] Phase 8 complete — Daily Challenge + Streak.
-  - New Supabase table: user_progress (single row per device)
-  - streakService.ts: loadProgress(), completeChallenge(), getTodayString()
-  - Daily challenge: 5 grammar exercises, date-seeded for consistency
-  - useFocusEffect reloads on every tab visit so already-done state is always correct
-  - Score-aware done screen messaging (0/5 vs 3/5 vs 5/5 feel different)
-
-- [2026-03-29] Phase 6 complete — Mini Games.
-  - Word Match, Gender Battle, Listening Quiz all working
-  - games.tsx: 4-card selector, Fill in the Blank disabled with "Soon" badge
-  - Fill in the Blank deferred to Phase 10 (Gemini quota)
-
-- [2026-03-29] Phase 7 complete — Flashcard Categories.
-  - 6 category pills (All / Nouns / Verbs / Adjectives / Prepositions / Other)
-  - Counts shown from full vocabulary; queue resets cleanly on category change
-  - FlashcardDeck extracted as sub-component; keyed by selectedCategory for clean remount
-  - UI polish deferred to Phase 10
-
-- [2026-03-28] Phase 5 complete — Exam Prep.
-  - Exam screen: selector with 4 cards, each opening its own sub-section
-  - Reading: Gemini generates a German passage + 3 multiple-choice comprehension questions, score + review on done screen
-  - Listening: same as Reading but passage is hidden — read aloud via Web Speech API (de-DE, 0.85x speed), passage revealed after answering
-  - Writing: rotating A1 prompts, multiline text input, Gemini reviews and gives structured feedback
-  - Speaking: 🎤 browser mic (SpeechRecognition, de-DE) transcribes speech into text box, falls back to typing if mic unavailable, Gemini evaluates response
-  - All 4 sub-sections live — no more "Coming Soon" badges
-
-- [2026-03-29] Phase 10a complete — UI Polish / Redesign.
-  - Created src/styles/theme.ts: colors, font (IBM Plex Mono), fontSize, spacing, radius, pre-built style objects
-  - IBM Plex Mono loaded in app/_layout.tsx via @expo-google-fonts/ibm-plex-mono; app shows ActivityIndicator until fonts ready
-  - All 7 screens rewritten with theme: app/index.tsx, flashcards.tsx, grammar.tsx, daily.tsx, games.tsx, exam.tsx, progress.tsx
-  - Shared components restyled: LevelToggle, TipsBar, FlashCard, ExerciseCard
-  - All exam sub-components restyled: ReadingExercise, ListeningExercise, WritingExercise, SpeakingExercise
-  - All game sub-components restyled: WordMatchGame, GenderBattleGame, ListeningQuizGame
-  - Design: pure white (#ffffff) content, 1px #e0e0e0 borders, 4px radius, no shadows, #1a1a2e sidebar/header
-  - Key fix: StyleSheet array syntax [base, condition && variant] used throughout — avoids TypeScript literal type conflicts from object spread
+- [2026-03-26] Project planning completed. CLAUDE.md created.
+- [2026-03-27] Phase 1 complete — Expo setup, sidebar, Zustand, Supabase, WSL move.
+- [2026-03-28] Phase 2 complete — 665 A1 words, 111 grammar exercises, 25 tips, Gemini integration.
+- [2026-03-28] Phase 4 complete — Grammar Exercises UI with fill-blank and multiple-choice.
+- [2026-03-28] Phase 5 complete — Exam Prep all 4 sub-sections live.
+- [2026-03-29] Phase 4b complete — Grammar UX fixes, keyboard nav, Gemini model updated.
+- [2026-03-29] Phase 6 complete — Word Match, Gender Battle, Listening Quiz.
+- [2026-03-29] Phase 7 complete — Flashcard category pills.
+- [2026-03-29] Phase 8 complete — Daily Challenge + streak tracking.
+- [2026-03-29] Phase 9 complete — Progress Dashboard with Supabase score tracking.
+- [2026-03-29] Phase 10a complete — Full UI redesign. IBM Plex Mono, theme.ts, all screens restyled.
+- [2026-03-29] Phase 3 complete — Flashcards with flip animation and spaced repetition.
 
 ---
 *This file is the single source of truth for the project.
