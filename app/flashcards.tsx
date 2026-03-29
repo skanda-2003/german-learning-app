@@ -4,41 +4,63 @@
 // Unknown words are recycled back into the deck until the user knows them.
 // Session ends only when every word has been marked as known.
 // Mastery (known/unknown per word) is saved to Supabase so progress persists.
+//
+// Category filter: the user can narrow the deck to a part of speech.
+// Changing the category remounts FlashcardDeck (via key=) which reinitialises
+// the spaced-repetition queue cleanly with the new filtered word list.
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 import useLevelStore from '../src/store/useLevelStore';
-import { VOCABULARY } from '../src/data/vocabulary';
+import { VOCABULARY, Word } from '../src/data/vocabulary';
 import FlashCard from '../src/components/FlashCard';
 import { useSpacedRepetition } from '../src/hooks/useSpacedRepetition';
 import { loadMastery, saveMastery, MasteryMap } from '../src/lib/masteryService';
 
-export default function FlashcardsScreen() {
-  // Get the currently selected level from global state
-  const level = useLevelStore((state) => state.level);
+// ─── Category definitions ──────────────────────────────────────────────────────
 
-  // Get the word list for this level
-  const words = VOCABULARY[level];
+type CategoryId = 'All' | 'Nouns' | 'Verbs' | 'Adjectives' | 'Prepositions' | 'Other';
 
-  // Mastery data loaded from Supabase — which word IDs the user already knows
-  const [masteryMap, setMasteryMap] = useState<MasteryMap>(new Set());
-  const [masteryLoading, setMasteryLoading] = useState(true);
+// Filter a word list to those matching a given category
+function filterByCategory(words: Word[], category: CategoryId): Word[] {
+  switch (category) {
+    case 'All':          return words;
+    case 'Nouns':        return words.filter(w => w.partOfSpeech === 'noun');
+    case 'Verbs':        return words.filter(w => w.partOfSpeech === 'verb');
+    case 'Adjectives':   return words.filter(w => w.partOfSpeech === 'adjective');
+    case 'Prepositions': return words.filter(w => w.partOfSpeech === 'preposition');
+    case 'Other':
+      // Everything that isn't covered by the four named categories above
+      return words.filter(w =>
+        !['noun', 'verb', 'adjective', 'preposition'].includes(w.partOfSpeech)
+      );
+  }
+}
 
-  // Load mastery from Supabase when the screen first opens or level changes.
-  // Words already marked as known are filtered out of the starting queue.
-  useEffect(() => {
-    setMasteryLoading(true);
-    loadMastery().then((map) => {
-      setMasteryMap(map);
-      setMasteryLoading(false);
-    });
-  }, [level]);
+const CATEGORIES: CategoryId[] = ['All', 'Nouns', 'Verbs', 'Adjectives', 'Prepositions', 'Other'];
 
-  // Filter out words the user has already mastered so they don't appear in the deck.
-  // If all words are mastered, studyWords will be empty and the done screen shows.
-  const studyWords = words.filter((w) => !masteryMap.has(w.id));
+// ─── FlashcardDeck sub-component ──────────────────────────────────────────────
+// Holds all the study logic (hook + card + buttons + done screen).
+// It lives here rather than in its own file because it's only ever used by
+// FlashcardsScreen.
+//
+// IMPORTANT: FlashcardsScreen renders this with key={selectedCategory}.
+// When the category changes, React unmounts and remounts this component,
+// which reinitialises useSpacedRepetition with the new word list cleanly.
 
-  // All queue logic is handled by this hook
+type DeckProps = {
+  studyWords: Word[];   // pre-filtered and mastery-filtered list to study
+  totalWords: number;   // total words in the level (for progress bar denominator)
+};
+
+function FlashcardDeck({ studyWords, totalWords }: DeckProps) {
   const {
     currentWord,
     remaining,
@@ -50,53 +72,28 @@ export default function FlashcardsScreen() {
     restart,
   } = useSpacedRepetition(studyWords);
 
-  // ── Wrap markKnown / markUnknown to also save to Supabase ──
   function handleKnown() {
     if (!currentWord) return;
-    saveMastery(currentWord.id, true);  // fire and forget — no need to await
+    saveMastery(currentWord.id, true);
     markKnown();
   }
 
   function handleUnknown() {
     if (!currentWord) return;
-    saveMastery(currentWord.id, false); // fire and forget
+    saveMastery(currentWord.id, false);
     markUnknown();
   }
 
-  // ─── Loading state (fetching mastery from Supabase) ──────────────────────
-  if (masteryLoading) {
-    return (
-      <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#4fc3f7" />
-        <Text style={styles.loadingText}>Loading your progress...</Text>
-      </View>
-    );
-  }
-
-  // ─── Empty state (level has no words yet) ─────────────────────────────────
-  if (words.length === 0) {
-    return (
-      <View style={styles.centeredContainer}>
-        <Text style={styles.emptyEmoji}>🚧</Text>
-        <Text style={styles.emptyTitle}>{level} Vocabulary Coming Soon</Text>
-        <Text style={styles.emptySubtitle}>
-          Switch to A1 using the level toggle at the top to start practising.
-        </Text>
-      </View>
-    );
-  }
-
-  // ─── Done state (queue is empty — every word has been marked known) ────────
+  // ── Done state ──
   if (isDone) {
     return (
       <View style={styles.centeredContainer}>
         <Text style={styles.doneEmoji}>🎉</Text>
         <Text style={styles.doneTitle}>All Done!</Text>
         <Text style={styles.doneSubtitle}>
-          You cleared all {words.length} words.
+          You cleared all {studyWords.length} words.
         </Text>
 
-        {/* Summary row */}
         <View style={styles.summaryRow}>
           <View style={[styles.summaryBox, styles.knownBox]}>
             <Text style={styles.summaryCount}>{knownCount}</Text>
@@ -115,13 +112,11 @@ export default function FlashcardsScreen() {
     );
   }
 
-  // ─── Main study view ───────────────────────────────────────────────────────
+  // ── Study view ──
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
-      {/* ── Progress bar ──
-          Shows how many words are left to clear, not a simple counter.
-          The bar fills as the queue shrinks. */}
+      {/* Progress bar — based on total level words, not just filtered set */}
       <View style={styles.progressContainer}>
         <Text style={styles.progressText}>
           {remaining} word{remaining !== 1 ? 's' : ''} remaining
@@ -130,23 +125,20 @@ export default function FlashcardsScreen() {
           <View
             style={[
               styles.progressBarFill,
-              // Fill = how much of the original list has been cleared
-              { width: `${((words.length - remaining) / words.length) * 100}%` },
+              { width: `${((totalWords - remaining) / totalWords) * 100}%` },
             ]}
           />
         </View>
       </View>
 
-      {/* ── The card ──
-          key={currentWord.id} remounts FlashCard on every new word,
-          resetting the flip animation back to the front face. */}
+      {/* The card */}
       <View style={styles.cardContainer}>
         {currentWord && (
           <FlashCard key={currentWord.id} word={currentWord} />
         )}
       </View>
 
-      {/* ── Known / Unknown buttons ── */}
+      {/* Known / Unknown buttons */}
       <View style={styles.buttonRow}>
         <TouchableOpacity style={[styles.button, styles.unknownButton]} onPress={handleUnknown}>
           <Text style={styles.buttonIcon}>✗</Text>
@@ -159,7 +151,7 @@ export default function FlashcardsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* ── Session tally ── */}
+      {/* Session tally */}
       <View style={styles.tallyRow}>
         <Text style={styles.tallyText}>✓ {knownCount} cleared</Text>
         <Text style={styles.tallyDivider}>·</Text>
@@ -170,8 +162,150 @@ export default function FlashcardsScreen() {
   );
 }
 
+// ─── Main screen ──────────────────────────────────────────────────────────────
+
+export default function FlashcardsScreen() {
+  const level = useLevelStore((state) => state.level);
+  const words = VOCABULARY[level];
+
+  // Mastery data loaded from Supabase
+  const [masteryMap, setMasteryMap] = useState<MasteryMap>(new Set());
+  const [masteryLoading, setMasteryLoading] = useState(true);
+
+  // Currently selected category — 'All' by default
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId>('All');
+
+  useEffect(() => {
+    setMasteryLoading(true);
+    loadMastery().then((map) => {
+      setMasteryMap(map);
+      setMasteryLoading(false);
+    });
+  }, [level]);
+
+  // Words the user hasn't mastered yet
+  const unstudiedWords = words.filter((w) => !masteryMap.has(w.id));
+
+  // Further filtered by the selected category
+  const studyWords = filterByCategory(unstudiedWords, selectedCategory);
+
+  // ── Loading state ──
+  if (masteryLoading) {
+    return (
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color="#4fc3f7" />
+        <Text style={styles.loadingText}>Loading your progress...</Text>
+      </View>
+    );
+  }
+
+  // ── Empty state (level has no words yet) ──
+  if (words.length === 0) {
+    return (
+      <View style={styles.centeredContainer}>
+        <Text style={styles.emptyEmoji}>🚧</Text>
+        <Text style={styles.emptyTitle}>{level} Vocabulary Coming Soon</Text>
+        <Text style={styles.emptySubtitle}>
+          Switch to A1 using the level toggle at the top to start practising.
+        </Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.outerContainer}>
+
+      {/* ── Category pill row ──
+          Scrollable horizontally so all 6 pills fit on narrow screens.
+          Each pill shows the category name and the count from the full word list
+          (not mastery-filtered) so the numbers stay stable as you study. */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.pillRow}
+      >
+        {CATEGORIES.map((cat) => {
+          const count = filterByCategory(words, cat).length;
+          const isSelected = cat === selectedCategory;
+          return (
+            <TouchableOpacity
+              key={cat}
+              style={[styles.pill, isSelected && styles.pillSelected]}
+              onPress={() => setSelectedCategory(cat)}
+            >
+              <Text style={[styles.pillText, isSelected && styles.pillTextSelected]}>
+                {cat}
+              </Text>
+              <Text style={[styles.pillCount, isSelected && styles.pillCountSelected]}>
+                {count}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* ── Flashcard deck ──
+          key={selectedCategory} causes a full remount when the category changes,
+          which reinitialises the spaced-repetition queue with the new word list. */}
+      <FlashcardDeck
+        key={selectedCategory}
+        studyWords={studyWords}
+        totalWords={words.length}
+      />
+
+    </View>
+  );
+}
+
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
+
+  // ── Outer container (wraps pill row + deck) ──
+  outerContainer: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+
+  // ── Category pills ──
+  pillRow: {
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    gap: 8,
+    flexDirection: 'row',
+  },
+  pill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+  },
+  pillSelected: {
+    backgroundColor: '#1a1a2e',
+    borderColor: '#1a1a2e',
+  },
+  pillText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#555',
+  },
+  pillTextSelected: {
+    color: '#fff',
+  },
+  pillCount: {
+    fontSize: 12,
+    color: '#aaa',
+    fontWeight: '500',
+  },
+  pillCountSelected: {
+    color: '#aaa',
+  },
+
+  // ── Deck (study view) ──
   container: {
     flexGrow: 1,
     padding: 24,
@@ -262,7 +396,7 @@ const styles = StyleSheet.create({
     color: '#cccccc',
   },
 
-  // ── Empty / done states ──
+  // ── Empty / done / loading states ──
   centeredContainer: {
     flex: 1,
     alignItems: 'center',

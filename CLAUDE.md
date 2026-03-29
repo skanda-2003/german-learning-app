@@ -273,17 +273,18 @@ Rules for the PR description:
 - [ ] Test Speaking (type): type a response directly → submit → verify Gemini feedback appears in pink card
 - [ ] Test back button returns to Exam Prep selector from each sub-section
 
-### ⏳ Phase 6 — Mini Games (A1)
-- [ ] Word Match
-- [ ] Fill in the Blank (Gemini generated sentences)
-- [ ] Gender Battle
-- [ ] Listening Quiz (Web Speech API)
+### ✅ Phase 6 — Mini Games (A1) (Complete)
+- [x] Word Match — 6 random pairs per round, click-to-match, green/red feedback
+- [x] Gender Battle — 10 rounds, strip article, der/die/das buttons, auto-advance
+- [x] Listening Quiz — 10 rounds, Web Speech API (de-DE), 4 options
+- ⏳ Fill in the Blank — deferred to Phase 10 (requires Gemini)
 
-### ⏳ Phase 7 — Flashcard Categories
-- [ ] Add a category picker above the flashcard deck
-- [ ] Filter cards by part of speech: All, Nouns, Verbs, Adjectives, Prepositions, Other
-- [ ] Remember the selected category per session
-- [ ] Show card count per category (e.g. "Nouns — 210 words")
+### ✅ Phase 7 — Flashcard Categories (Complete)
+- [x] Category picker (horizontal pill row) above the flashcard deck
+- [x] Filter cards by part of speech: All, Nouns, Verbs, Adjectives, Prepositions, Other
+- [x] Category count shown on each pill (from full vocabulary, not mastery-filtered)
+- [x] Switching category resets queue cleanly (FlashcardDeck remounts via key=)
+- Note: UI polish deferred to Phase 10
 - Note: the `partOfSpeech` field is already on every word — this is purely a UI filter
 
 ### ⏳ Phase 8 — Daily Challenge + Streak
@@ -361,6 +362,17 @@ Rules for the PR description:
   - Both types: Enter key advances to next exercise after answering
   - Multiple-choice: arrow key navigation (up/down), Enter to select, option A highlighted by default
   - Gemini quota hit during testing — "Generate More Exercises" deferred to Phase 10 for verification
+
+- [2026-03-29] Phase 6 complete — Mini Games.
+  - Word Match, Gender Battle, Listening Quiz all working
+  - games.tsx: 4-card selector, Fill in the Blank disabled with "Soon" badge
+  - Fill in the Blank deferred to Phase 10 (Gemini quota)
+
+- [2026-03-29] Phase 7 complete — Flashcard Categories.
+  - 6 category pills (All / Nouns / Verbs / Adjectives / Prepositions / Other)
+  - Counts shown from full vocabulary; queue resets cleanly on category change
+  - FlashcardDeck extracted as sub-component; keyed by selectedCategory for clean remount
+  - UI polish deferred to Phase 10
 
 - [2026-03-28] Phase 5 complete — Exam Prep.
   - Exam screen: selector with 4 cards, each opening its own sub-section
