@@ -25,6 +25,7 @@ import {
   getTodayString,
   UserProgress,
 } from '../src/lib/streakService';
+import { logActivity } from '../src/lib/activityService';
 import {
   colors, font, fontSize, spacing, radius,
   cardStyle, progressTrackStyle,
@@ -103,7 +104,11 @@ export default function DailyScreen() {
     if (wasCorrect) setCorrectCount(prev => prev + 1);
     const nextIndex = currentIndex + 1;
     if (nextIndex >= CHALLENGE_SIZE) {
-      const updated = await completeChallenge();
+      // Save streak + log today's activity for the calendar (fire-and-forget)
+      const [updated] = await Promise.all([
+        completeChallenge(),
+        logActivity(),
+      ]);
       setProgress(updated);
       setScreen('done');
     } else {

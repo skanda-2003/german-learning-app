@@ -133,6 +133,7 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Always visible at the bottom of every screen
 - Left and right arrows to browse
 - 25 tips for A1 across 8 categories, level-aware
+- Auto-shuffle on navigation — tip rotates every time user navigates to a new screen
 
 ---
 
@@ -287,13 +288,46 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Weak Grammar Topics: sorted by lowest score with bar visualization
 - [ ] Activity Calendar: streak heatmap — last 3 months, coloured squares per day
 
-### ⏳ Phase 15 — Reading Mode · Effort: Medium
+### ⏳ Phase 15 — Supabase Authentication · Effort: Medium
+- [ ] Add sign up and login screens (email + password via Supabase Auth)
+- [ ] Protect all screens behind auth — redirect to login if not signed in
+- [ ] Migrate all existing Supabase tables to use auth user_id instead of device ID
+  - user_progress, section_scores, vocabulary_mastery
+- [ ] Persist level selection to user account (currently stored locally in Zustand only)
+- [ ] Add sign out option in sidebar
+- [ ] Add next_review_date column to vocabulary_mastery table
+- [ ] Update flashcard spaced repetition logic:
+  - Known → next_review_date = today + 7 days
+  - Shaky → next_review_date = today + 2 days
+  - Unknown → next_review_date = today + 1 day
+  - On session start: show only words where next_review_date <= today
+- Note: prerequisite for Insights, proper spaced repetition, and eventual multi-user expansion
+
+### ⏳ Phase 16 — Reading Mode · Effort: Medium
 - [ ] Add Reading Mode to sidebar (icon: book)
 - [ ] Display a short German text at current level
 - [ ] Tap any word to see translation + part of speech popup
 - [ ] No questions — pure reading with on-demand word lookup
 
-### ⏳ Phase 16 — Keyboard Shortcuts · Effort: Low
+### ⏳ Phase 17 — Pronunciation Guide · Effort: Low
+- [ ] Add Pronunciation Guide to sidebar (icon: volume-2)
+- [ ] Static reference screen — no AI, no external service
+- [ ] ~25-30 entries covering: vowels, umlauts (ä/ö/ü), special combos (ei/ie/eu/äu/au/ch/sch/st/sp/tz/z), the ß
+- [ ] Each entry: letter/combo, plain English pronunciation rule, example German word
+- [ ] ▶ Play button per entry using Web Speech API (de-DE) — same as Listening Quiz
+- [ ] Content written as a static data file, not AI generated
+
+### ⏳ Phase 18 — Sentence Builder · Effort: Medium
+- [ ] Add Sentence Builder to Mini Games selector
+- [ ] 80 pre-written A1 sentences stored in a data file (src/data/sentenceBuilder.ts)
+- [ ] Each entry: scrambled words array, correct order, English translation, grammar note
+- [ ] 10 rounds per session — randomly selected from pool of 80, no repeats within a session
+- [ ] Drag-and-drop word tiles UI — click/tap to place words in order
+- [ ] Green/red feedback on submit, correct sentence shown after each round
+- [ ] Score tracked per session (X/10), saved to Supabase section_scores
+- [ ] Score feeds into Progress and Insights screens
+
+### ⏳ Phase 19 — Keyboard Shortcuts · Effort: Low
 - [ ] Space to flip flashcard
 - [ ] 1/2/3 for Known/Shaky/Unknown in flashcards
 - [ ] M/F/N for der/die/das in Gender Battle
@@ -305,29 +339,35 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ## LATER
 *Planned but not immediate — picked up after active pipeline is complete.*
 
-### Phase 17 — AI / Gemini Features · Effort: Medium
+### Phase 20 — AI / Gemini Features · Effort: Medium
 - [ ] Test and verify "Generate More Exercises" in Grammar fully works
 - [ ] Build Fill in the Blank mini game (Gemini generated sentences)
 - [ ] Performance check — loading states for all Gemini API calls
 - [ ] Error handling — friendly messages when Gemini quota is hit
 - [ ] Gemini feedback tone polish across Writing and Speaking
 
-### Phase 18 — Expand to A2, B1, B2 · Effort: High
+### Phase 21 — Expand to A2, B1, B2 · Effort: High
 - [ ] Add A2 / B1 / B2 vocabulary lists
 - [ ] Add A2 / B1 / B2 grammar exercise templates
 - [ ] Write 20-30 tips for A2, B1, B2
 - [ ] Test level switching (A1 works, others show "coming soon" until content added)
 
-### Phase 19 — Deep Progress Insights · Effort: Medium
+### Phase 22 — Deep Progress Insights · Effort: Medium
 - [ ] Per-topic grammar score breakdown in Progress and Insights screens
 - [ ] New Supabase table: grammar_topic_scores (user_id, level, topic, best_score, sessions)
 - [ ] Update grammar.tsx to save per-topic results
 
-### Phase 20 — Multi-user · Effort: High
-- [ ] Auth screens (sign up / login via Supabase Auth)
-- [ ] Tie all progress to user accounts
+### Phase 23 — Multi-user · Effort: High
+- [ ] Auth already handled in Phase 14 — this phase adds multi-user features on top
 - [ ] Leaderboard for streaks
+- [ ] User profiles
+- [ ] Shared progress comparisons
 
+### Phase 24 — Smart Interruption Tips · Effort: Medium
+- [ ] Wire tips to mistake log data — show contextual tips based on recent wrong answers
+- [ ] Replace auto-shuffle with targeted tips after completing exercises
+- [ ] Example: user keeps getting der/die/das wrong → tip about noun genders appears
+- [ ] Requires Phase 15 (Insights/mistake log) to be complete first
 ---
 
 ## Progress Log
