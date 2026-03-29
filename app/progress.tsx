@@ -1,107 +1,220 @@
-// progress.tsx — Progress Dashboard
+// progress.tsx — Progress Dashboard (Phase 10f redesign)
 //
-// Shows the user's overall progress across all sections:
-//   - Streak and daily challenge status
-//   - Vocabulary mastery (known vs total)
-//   - Best scores for: Grammar, Exam Reading, Exam Listening
-//   - Completion counts for: Exam Writing, Exam Speaking
-//   - Best scores for: Gender Battle, Listening Quiz
-//   - Completion count for: Word Match
-//
-// Reloads data every time the screen comes into focus (useFocusEffect).
+// Layout: compact grid with NO scrolling — everything visible at once.
+//   Header:  page title + level/word count
+//   Top row: 4 stat cards (Streak, Vocabulary, Grammar best, Daily Challenge)
+//   Bottom:  3 cards side by side —
+//              • Section scores (2-column compact grid)
+//              • Vocabulary mastery by category (stacked bars)
+//              • Grammar topics (exercise count per topic)
 
 import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   ActivityIndicator,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import useLevelStore from '../src/store/useLevelStore';
 import { VOCABULARY } from '../src/data/vocabulary';
+import { GRAMMAR } from '../src/data/grammar';
 import { loadMastery } from '../src/lib/masteryService';
 import { loadProgress, getTodayString } from '../src/lib/streakService';
 import { loadAllScores, SectionScore } from '../src/lib/scoresService';
 import {
-  colors, font, fontSize, spacing, radius,
-  cardStyle, labelStyle, progressTrackStyle, statNumberStyle,
+  colors, font, fontSize, spacing, radius, labelStyle,
 } from '../src/styles/theme';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
+// Format a scored section as a percentage, or "—" if never attempted
 function pct(score: SectionScore): string {
   if (score.bestTotal === 0) return '—';
   return `${Math.round((score.bestScore / score.bestTotal) * 100)}%`;
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
+// Format sessions as "Nx" (e.g. "3×"), or "—" if never attempted
+function sess(score: SectionScore): string {
+  if (score.sessionsCompleted === 0) return '—';
+  return `${score.sessionsCompleted}×`;
+}
 
-type ScoreRowProps = {
-  label: string;
-  score: SectionScore;
-  type: 'scored' | 'completion';
+// ─── StatCard ─────────────────────────────────────────────────────────────────
+// One of the four top summary cards (Streak / Vocabulary / Grammar / Challenge).
+
+type StatCardProps = {
+  label: string;    // ALL CAPS label above the number
+  value: string;    // the main big value
+  sub: string;      // small line below (unit / context)
+  accent?: string;  // optional color override for the value text
 };
 
-function ScoreRow({ label, score, type }: ScoreRowProps) {
-  const isAttempted = score.sessionsCompleted > 0;
-
+function StatCard({ label, value, sub, accent }: StatCardProps) {
   return (
-    <View style={rowStyles.row}>
-      <Text style={rowStyles.label}>{label}</Text>
-      <View style={rowStyles.right}>
-        {type === 'scored' ? (
-          <>
-            <Text style={rowStyles.value}>{pct(score)}</Text>
-            <Text style={rowStyles.meta}>
-              {isAttempted ? `${score.sessionsCompleted} sessions` : 'Not started'}
-            </Text>
-          </>
-        ) : (
-          <>
-            <Text style={rowStyles.value}>
-              {isAttempted ? score.sessionsCompleted : '—'}
-            </Text>
-            <Text style={rowStyles.meta}>
-              {isAttempted ? 'sessions' : 'Not started'}
-            </Text>
-          </>
-        )}
-      </View>
+    <View style={statCard.card}>
+      <Text style={statCard.label}>{label}</Text>
+      <Text style={[statCard.value, accent ? { color: accent } : null]}>{value}</Text>
+      <Text style={statCard.sub}>{sub}</Text>
     </View>
   );
 }
 
-const rowStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+const statCard = StyleSheet.create({
+  card: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginHorizontal: 4,
   },
   label: {
-    fontFamily: font.regular,
-    fontSize: fontSize.sm,
-    color: colors.textPrimary,
-    flex: 1,
-  },
-  right: {
-    alignItems: 'flex-end',
+    fontFamily: font.semiBold,
+    fontSize: fontSize.xxs,
+    color: colors.textSecondary,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    marginBottom: spacing.xs,
   },
   value: {
     fontFamily: font.bold,
-    fontSize: fontSize.md,
+    fontSize: fontSize.xl,
     color: colors.textPrimary,
+    marginBottom: 2,
   },
-  meta: {
+  sub: {
     fontFamily: font.regular,
     fontSize: fontSize.xxs,
     color: colors.textMuted,
   },
 });
+
+// ─── MiniScoreRow ─────────────────────────────────────────────────────────────
+// A single label + value row inside the Section Scores card.
+
+type MiniScoreRowProps = {
+  label: string;
+  value: string;
+  isLast?: boolean;  // omits the bottom border on the last row
+};
+
+function MiniScoreRow({ label, value, isLast }: MiniScoreRowProps) {
+  return (
+    <View style={[miniRow.row, isLast ? { borderBottomWidth: 0 } : null]}>
+      <Text style={miniRow.label}>{label}</Text>
+      <Text style={miniRow.value}>{value}</Text>
+    </View>
+  );
+}
+
+const miniRow = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  label: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  value: {
+    fontFamily: font.bold,
+    fontSize: fontSize.xs,
+    color: colors.textPrimary,
+  },
+});
+
+// ─── CategoryBar ──────────────────────────────────────────────────────────────
+// A stacked bar showing known (green) + shaky (amber) out of total words.
+// The remaining width stays as the track background colour (grey).
+
+type CategoryBarProps = {
+  label: string;
+  total: number;
+  known: number;
+  shaky: number;
+  isLast?: boolean;
+};
+
+function CategoryBar({ label, total, known, shaky, isLast }: CategoryBarProps) {
+  // Percentages for absolute-positioned fill bars
+  const knownPct = total > 0 ? (known / total) * 100 : 0;
+  const shakyPct = total > 0 ? (shaky / total) * 100 : 0;
+
+  return (
+    <View style={[catBar.row, isLast ? null : { marginBottom: 10 }]}>
+      {/* Label row: category name on left, counts on right */}
+      <View style={catBar.labelRow}>
+        <Text style={catBar.label}>{label}</Text>
+        <Text style={catBar.count}>{known + shaky} / {total}</Text>
+      </View>
+
+      {/* Stacked bar track */}
+      <View style={catBar.track}>
+        {/* Green fill: known words */}
+        <View style={[catBar.fill, { left: 0, width: `${knownPct}%` as any, backgroundColor: colors.success }]} />
+        {/* Amber fill: shaky words, starts right after the green section */}
+        <View style={[catBar.fill, { left: `${knownPct}%` as any, width: `${shakyPct}%` as any, backgroundColor: colors.amber }]} />
+      </View>
+    </View>
+  );
+}
+
+const catBar = StyleSheet.create({
+  row: {},
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  label: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textPrimary,
+  },
+  count: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xxs,
+    color: colors.textMuted,
+  },
+  track: {
+    height: 5,
+    backgroundColor: colors.border,
+    borderRadius: 3,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  fill: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+  },
+});
+
+// ─── TopicRow ────────────────────────────────────────────────────────────────
+// A compact row inside the Grammar Topics card: topic name + exercise count.
+
+type TopicRowProps = {
+  topic: string;
+  count: number;
+  isLast?: boolean;
+};
+
+function TopicRow({ topic, count, isLast }: TopicRowProps) {
+  return (
+    <View style={[miniRow.row, isLast ? { borderBottomWidth: 0 } : null]}>
+      <Text style={[miniRow.label, { fontSize: fontSize.xxs }]} numberOfLines={1}>{topic}</Text>
+      <Text style={[miniRow.value, { fontSize: fontSize.xxs, color: colors.textMuted }]}>{count} ex</Text>
+    </View>
+  );
+}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
@@ -109,19 +222,18 @@ export default function ProgressScreen() {
   const level = useLevelStore((state) => state.level);
 
   const [loading, setLoading] = useState(true);
-  const [knownCount, setKnownCount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
+  const [masteryMap, setMasteryMap] = useState<Map<string, string>>(new Map());
   const [streak, setStreak] = useState(0);
   const [challengeDoneToday, setChallengeDoneToday] = useState(false);
   const [scores, setScores] = useState<Awaited<ReturnType<typeof loadAllScores>> | null>(null);
 
+  // Reload all data whenever this screen comes into focus
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
 
       async function load() {
         setLoading(true);
-        const vocab = VOCABULARY[level];
 
         const [mastery, progress, allScores] = await Promise.all([
           loadMastery(),
@@ -130,8 +242,7 @@ export default function ProgressScreen() {
         ]);
 
         if (!cancelled) {
-          setKnownCount(vocab.filter(w => mastery.get(w.id) === 'known').length);
-          setTotalCount(vocab.length);
+          setMasteryMap(mastery);
           setStreak(progress.streakCount);
           setChallengeDoneToday(progress.dailyChallengeCompletedDate === getTodayString());
           setScores(allScores);
@@ -152,78 +263,166 @@ export default function ProgressScreen() {
     );
   }
 
-  const masteryPct = totalCount > 0 ? knownCount / totalCount : 0;
+  // ── Vocabulary stats ──────────────────────────────────────────────────────
+
+  const vocab = VOCABULARY[level];
+  const totalCount = vocab.length;
+  const knownCount = vocab.filter(w => masteryMap.get(w.id) === 'known').length;
+  const masteryPct = totalCount > 0 ? Math.round((knownCount / totalCount) * 100) : 0;
+
+  // ── Vocabulary by category ────────────────────────────────────────────────
+  // Group words into 4 buckets: Nouns / Verbs / Adjectives / Other.
+  // For each bucket count how many are known vs shaky.
+
+  const vocabCats = [
+    { key: 'noun',      label: 'Nouns' },
+    { key: 'verb',      label: 'Verbs' },
+    { key: 'adjective', label: 'Adjectives' },
+    { key: 'other',     label: 'Other' },
+  ].map(({ key, label }) => {
+    const words = key === 'other'
+      ? vocab.filter(w => !['noun', 'verb', 'adjective'].includes(w.partOfSpeech))
+      : vocab.filter(w => w.partOfSpeech === key);
+    const known = words.filter(w => masteryMap.get(w.id) === 'known').length;
+    const shaky = words.filter(w => masteryMap.get(w.id) === 'shaky').length;
+    return { label, total: words.length, known, shaky };
+  });
+
+  // ── Grammar topic counts ──────────────────────────────────────────────────
+  // Count how many exercises exist per topic. No per-topic scores yet
+  // (those come in Phase 16 — for now we show exercise counts as a reference).
+
+  const grammarExercises = GRAMMAR[level];
+  const topicMap = new Map<string, number>();
+  for (const ex of grammarExercises) {
+    topicMap.set(ex.topic, (topicMap.get(ex.topic) ?? 0) + 1);
+  }
+  // Sorted by exercise count descending, cap at 10 rows to stay compact
+  const topics = Array.from(topicMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  // ─────────────────────────────────────────────────────────────────────────
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.container}>
 
-      <Text style={styles.pageTitle}>Progress</Text>
-      <Text style={styles.pageSubtitle}>{level} · {totalCount} words</Text>
+      {/* ── Header ── */}
+      <View style={styles.header}>
+        <Text style={styles.pageTitle}>PROGRESS</Text>
+        <Text style={styles.pageSubtitle}>{level} · {totalCount} words</Text>
+      </View>
 
-      {/* ── Streak ── */}
-      <View style={[cardStyle, styles.streakCard]}>
-        <View style={styles.streakLeft}>
-          <Text style={[labelStyle, { marginBottom: spacing.xs }]}>STREAK</Text>
-          <Text style={statNumberStyle}>{streak}</Text>
-          <Text style={styles.streakUnit}>days</Text>
-        </View>
-        <View style={styles.streakRight}>
-          <Text style={styles.fireEmoji}>🔥</Text>
-          <View style={[
-            styles.challengeBadge,
-            challengeDoneToday ? styles.challengeDone : styles.challengePending,
-          ]}>
-            <Text style={[
-              styles.challengeBadgeText,
-              challengeDoneToday ? styles.challengeDoneText : styles.challengePendingText,
-            ]}>
-              {challengeDoneToday ? 'DONE TODAY' : 'PENDING'}
-            </Text>
+      {/* ── 4 Stat Cards ── */}
+      <View style={styles.statRow}>
+        <StatCard
+          label="STREAK"
+          value={`${streak}`}
+          sub="days"
+        />
+        <StatCard
+          label="VOCABULARY"
+          value={`${knownCount} / ${totalCount}`}
+          sub={`${masteryPct}% mastered`}
+        />
+        <StatCard
+          label="GRAMMAR"
+          value={pct(scores.grammar)}
+          sub={scores.grammar.sessionsCompleted > 0
+            ? `${scores.grammar.sessionsCompleted} sessions`
+            : 'not started'}
+        />
+        <StatCard
+          label="CHALLENGE"
+          value={challengeDoneToday ? 'DONE' : '—'}
+          sub={challengeDoneToday ? 'completed today' : 'pending'}
+          accent={challengeDoneToday ? colors.success : undefined}
+        />
+      </View>
+
+      {/* ── Bottom: 3 cards side by side ── */}
+      <View style={styles.bottomRow}>
+
+        {/* Card 1: Section Scores in 2-column grid */}
+        <View style={[styles.card, styles.scoresCard]}>
+          <Text style={[labelStyle, styles.cardLabel]}>SECTION SCORES</Text>
+          <View style={styles.scoresGrid}>
+
+            {/* Left column */}
+            <View style={styles.scoresCol}>
+              <MiniScoreRow label="Grammar"    value={pct(scores.grammar)} />
+              <MiniScoreRow label="Reading"    value={pct(scores.exam_reading)} />
+              <MiniScoreRow label="Listening"  value={pct(scores.exam_listening)} />
+              <MiniScoreRow label="Writing"    value={sess(scores.exam_writing)}  isLast />
+            </View>
+
+            {/* Vertical divider */}
+            <View style={styles.scoresDivider} />
+
+            {/* Right column */}
+            <View style={styles.scoresCol}>
+              <MiniScoreRow label="Speaking"      value={sess(scores.exam_speaking)} />
+              <MiniScoreRow label="Gender Battle" value={pct(scores.game_gender_battle)} />
+              <MiniScoreRow label="L. Quiz"       value={pct(scores.game_listening_quiz)} />
+              <MiniScoreRow label="Word Match"    value={sess(scores.game_word_match)} isLast />
+            </View>
+
           </View>
         </View>
-      </View>
 
-      {/* ── Vocabulary ── */}
-      <View style={[cardStyle, styles.section]}>
-        <Text style={[labelStyle, styles.sectionLabel]}>VOCABULARY</Text>
-        <View style={styles.masteryRow}>
-          <Text style={statNumberStyle}>{knownCount}</Text>
-          <Text style={styles.masteryTotal}> / {totalCount}</Text>
+        {/* Card 2: Vocabulary mastery by category */}
+        <View style={[styles.card, styles.chartCard]}>
+          <Text style={[labelStyle, styles.cardLabel]}>VOCABULARY BY CATEGORY</Text>
+          {vocabCats.map((cat, i) => (
+            <CategoryBar
+              key={cat.label}
+              label={cat.label}
+              total={cat.total}
+              known={cat.known}
+              shaky={cat.shaky}
+              isLast={i === vocabCats.length - 1}
+            />
+          ))}
+          {/* Legend */}
+          <View style={styles.legend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: colors.success }]} />
+              <Text style={styles.legendLabel}>Known</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: colors.amber }]} />
+              <Text style={styles.legendLabel}>Shaky</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: colors.border }]} />
+              <Text style={styles.legendLabel}>Unknown</Text>
+            </View>
+          </View>
         </View>
-        <View style={[progressTrackStyle, styles.progressTrack]}>
-          <View style={[styles.progressFill, { width: `${Math.round(masteryPct * 100)}%` as any }]} />
+
+        {/* Card 3: Grammar topics with exercise counts */}
+        <View style={[styles.card, styles.chartCard]}>
+          <Text style={[labelStyle, styles.cardLabel]}>GRAMMAR TOPICS</Text>
+          {topics.map(([topic, count], i) => (
+            <TopicRow
+              key={topic}
+              topic={topic}
+              count={count}
+              isLast={i === topics.length - 1}
+            />
+          ))}
+          {topics.length === 0 && (
+            <Text style={styles.emptyText}>No exercises yet</Text>
+          )}
         </View>
-        <Text style={styles.masteryLabel}>{Math.round(masteryPct * 100)}% mastered</Text>
+
       </View>
 
-      {/* ── Grammar ── */}
-      <View style={[cardStyle, styles.section]}>
-        <Text style={[labelStyle, styles.sectionLabel]}>GRAMMAR</Text>
-        <ScoreRow label="Exercises" score={scores.grammar} type="scored" />
-      </View>
-
-      {/* ── Exam Prep ── */}
-      <View style={[cardStyle, styles.section]}>
-        <Text style={[labelStyle, styles.sectionLabel]}>EXAM PREP</Text>
-        <ScoreRow label="Reading"   score={scores.exam_reading}   type="scored" />
-        <ScoreRow label="Listening" score={scores.exam_listening} type="scored" />
-        <ScoreRow label="Writing"   score={scores.exam_writing}   type="completion" />
-        <ScoreRow label="Speaking"  score={scores.exam_speaking}  type="completion" />
-      </View>
-
-      {/* ── Mini Games ── */}
-      <View style={[cardStyle, styles.section]}>
-        <Text style={[labelStyle, styles.sectionLabel]}>MINI GAMES</Text>
-        <ScoreRow label="Gender Battle"  score={scores.game_gender_battle}  type="scored" />
-        <ScoreRow label="Listening Quiz" score={scores.game_listening_quiz} type="scored" />
-        <ScoreRow label="Word Match"     score={scores.game_word_match}     type="completion" />
-      </View>
-
-    </ScrollView>
+    </View>
   );
 }
 
-// ─── Styles ────────────────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   loadingContainer: {
@@ -233,100 +432,106 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
+  // Root container: fills the whole page, no scroll, vertical flex column
   container: {
-    padding: spacing.xxl,
-    paddingBottom: spacing.hero,
+    flex: 1,
     backgroundColor: colors.background,
+    padding: spacing.xxl,
+    gap: spacing.md,
   },
 
+  // Header: title on left, subtitle on right, baseline-aligned
+  header: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.md,
+  },
   pageTitle: {
     fontFamily: font.bold,
-    fontSize: fontSize.xl,
+    fontSize: fontSize.lg,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
   },
   pageSubtitle: {
     fontFamily: font.regular,
     fontSize: fontSize.sm,
     color: colors.textSecondary,
-    marginBottom: spacing.xxl,
   },
 
-  // ── Streak card ──
-  streakCard: {
+  // 4 stat cards in a row — negative horizontal margin cancels card margins
+  statRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    marginHorizontal: -4,
+  },
+
+  // Bottom section: 3 cards side by side, taking all remaining vertical space
+  bottomRow: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+
+  // Shared card base style
+  card: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+  },
+
+  // Section Scores card: fixed width so the two flex charts get equal space
+  scoresCard: {
+    width: 340,
+  },
+
+  // Each chart card stretches to fill remaining width equally
+  chartCard: {
+    flex: 1,
+  },
+
+  cardLabel: {
     marginBottom: spacing.md,
   },
-  streakLeft: {
-    gap: 2,
-  },
-  streakUnit: {
-    fontFamily: font.regular,
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  streakRight: {
-    alignItems: 'flex-end',
+
+  // Section Scores: two equal columns with a thin divider between them
+  scoresGrid: {
+    flexDirection: 'row',
     gap: spacing.sm,
   },
-  fireEmoji: {
-    fontSize: 28,
+  scoresCol: {
+    flex: 1,
   },
-  challengeBadge: {
-    borderWidth: 1,
-    borderRadius: radius.sm,
-    paddingVertical: 2,
-    paddingHorizontal: spacing.sm,
+  scoresDivider: {
+    width: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: spacing.xs,
   },
-  challengeDone: {
-    borderColor: colors.success,
-    backgroundColor: colors.successLight,
+
+  // Legend for the category bars (Known / Shaky / Unknown)
+  legend: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.md,
   },
-  challengePending: {
-    borderColor: colors.border,
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
-  challengeBadgeText: {
-    fontFamily: font.semiBold,
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendLabel: {
+    fontFamily: font.regular,
     fontSize: fontSize.xxs,
-    letterSpacing: 0.5,
-  },
-  challengeDoneText: {
-    color: colors.success,
-  },
-  challengePendingText: {
     color: colors.textMuted,
   },
 
-  // ── Cards ──
-  section: {
-    marginBottom: spacing.md,
-  },
-  sectionLabel: {
-    marginBottom: spacing.sm,
-  },
-
-  // ── Vocabulary ──
-  masteryRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: spacing.md,
-  },
-  masteryTotal: {
-    fontFamily: font.regular,
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-  },
-  progressTrack: {
-    marginBottom: spacing.sm,
-  },
-  progressFill: {
-    height: '100%' as any,
-    backgroundColor: colors.accent,
-    borderRadius: 2,
-  },
-  masteryLabel: {
+  emptyText: {
     fontFamily: font.regular,
     fontSize: fontSize.xs,
     color: colors.textMuted,
