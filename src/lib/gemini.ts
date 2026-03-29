@@ -23,7 +23,7 @@ if (!API_KEY) {
 const genAI = new GoogleGenerativeAI(API_KEY ?? '');
 
 // Get the specific model we want to use
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
 // ─── Helper: level-aware tone instruction ─────────────────────────────────────
 
