@@ -37,15 +37,16 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { route: 'index',      label: 'Home',           icon: 'home'        },
-  { route: 'flashcards', label: 'Flashcards',      icon: 'layers'      },
-  { route: 'games',      label: 'Mini Games',      icon: 'zap'         },
-  { route: 'grammar',    label: 'Grammar',         icon: 'edit-3'      },
-  { route: 'daily',      label: 'Daily Challenge', icon: 'calendar'    },
-  { route: 'exam',       label: 'Exam Prep',       icon: 'book-open'   },
-  { route: 'progress',   label: 'Progress',        icon: 'bar-chart-2' },
-  { route: 'insights',   label: 'Insights',        icon: 'trending-up' },
-  { route: 'reading',    label: 'Reading Mode',    icon: 'book'        },
+  { route: 'index',         label: 'Home',           icon: 'home'        },
+  { route: 'flashcards',    label: 'Flashcards',     icon: 'layers'      },
+  { route: 'games',         label: 'Mini Games',     icon: 'zap'         },
+  { route: 'grammar',       label: 'Grammar',        icon: 'edit-3'      },
+  { route: 'daily',         label: 'Daily Challenge',icon: 'calendar'    },
+  { route: 'reading',       label: 'Reading Mode',   icon: 'book'        },
+  { route: 'pronunciation', label: 'Pronunciation',  icon: 'volume-2'    },
+  { route: 'exam',          label: 'Exam Prep',      icon: 'book-open'   },
+  { route: 'progress',      label: 'Progress',       icon: 'bar-chart-2' },
+  { route: 'insights',      label: 'Insights',       icon: 'trending-up' },
 ];
 
 // ─── Custom drawer content ────────────────────────────────────────────────────
@@ -211,7 +212,8 @@ export default function RootLayout() {
           <Drawer.Screen name="exam"       options={{ title: 'Exam Prep' }} />
           <Drawer.Screen name="progress"   options={{ title: 'Progress' }} />
           <Drawer.Screen name="insights"   options={{ title: 'Insights' }} />
-          <Drawer.Screen name="reading"    options={{ title: 'Reading Mode' }} />
+          <Drawer.Screen name="reading"       options={{ title: 'Reading Mode' }} />
+          <Drawer.Screen name="pronunciation" options={{ title: 'Pronunciation' }} />
         </Drawer>
 
         {/* TipsBar sits below the Drawer — appears on every screen */}

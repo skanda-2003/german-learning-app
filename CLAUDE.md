@@ -254,6 +254,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 10b — UI Fixes Round 2 (Complete)
 ### ✅ Phase 10c — Flashcard Enhancements (Complete)
 ### ✅ Phase 12 — Progress Page Fixes (Complete)
+### ✅ Phase 17 — Pronunciation Guide (Complete)
 ### ✅ Phase 14 — Insights / Analytics (Complete)
 ### ✅ Phase 16 — Reading Mode (Complete)
 
@@ -296,14 +297,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
   - Unknown → next_review_date = today + 1 day
   - On session start: show only words where next_review_date <= today
 - Note: prerequisite for Insights, proper spaced repetition, and eventual multi-user expansion
-
-### ⏳ Phase 17 — Pronunciation Guide · Effort: Low
-- [ ] Add Pronunciation Guide to sidebar (icon: volume-2)
-- [ ] Static reference screen — no AI, no external service
-- [ ] ~25-30 entries covering: vowels, umlauts (ä/ö/ü), special combos (ei/ie/eu/äu/au/ch/sch/st/sp/tz/z), the ß
-- [ ] Each entry: letter/combo, plain English pronunciation rule, example German word
-- [ ] ▶ Play button per entry using Web Speech API (de-DE) — same as Listening Quiz
-- [ ] Content written as a static data file, not AI generated
 
 ### ⏳ Phase 18 — Sentence Builder · Effort: Medium
 - [ ] Add Sentence Builder to Mini Games selector
@@ -377,6 +370,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-29] Phase 12 complete — Progress page: last active date on streak card, percentage labels on vocabulary category bars.
 - [2026-03-29] Phase 14 complete — Insights screen with weak vocabulary, mistake log, weak grammar topics, activity calendar.
 - [2026-03-29] Phase 16 complete — Reading Mode with 15 shuffled A1 passages, per-word vocabulary lookup popup.
+- [2026-03-29] Phase 17 complete — Pronunciation Guide with 28 entries across 4 groups, Web Speech API play buttons.
 
 ---
 *This file is the single source of truth for the project.
