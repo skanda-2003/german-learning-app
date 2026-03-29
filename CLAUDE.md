@@ -264,71 +264,85 @@ Rules: be specific about what changed inside each file. No generic summaries lik
 ### ✅ Phase 8 — Daily Challenge + Streak (Complete)
 ### ✅ Phase 9 — Progress Dashboard (Complete)
 ### ✅ Phase 10a — UI Polish / Redesign (Complete)
-
 ### ✅ Phase 10b — UI Fixes Round 2 (Complete)
-- [x] Sidebar: Feather icons, Inter font, 2px blue left-border active state, `CustomDrawerContent`, width 240, "LERNE DEUTSCH" wordmark
-- [x] Page backgrounds: `colors.background` → `#fafafa`, surface stays `#ffffff`, amber colors added to theme
-- [x] Mini Games / Grammar / Exam Prep selectors: 2-column bordered card grids with live score badges
-- [x] Home page: "LERNE DEUTSCH" wordmark, TODAY'S FOCUS card (priority-based recommendation), 3-column stats strip, Feather icons replacing all emojis
-- Branch: `ui/fixes-round-2`
-
 ### ✅ Phase 10c — Flashcard Enhancements (Complete)
-- [x] Add third state: Shaky (amber/yellow) between Known and Unknown
-- [x] Update spaced repetition: Known = remove, Shaky = reinsert 8–12 ahead, Unknown = reinsert 3–5 ahead
-- [x] Update Supabase mastery storage to support 3 states (new `mastery` text column)
-- [x] Session summary screen after finishing deck (known/shaky/unknown counts)
-- [x] Word search bar above category pills
-- [x] Fix "Study Again" button
-- [x] Fix category pills: compact fixed-height, horizontally scrollable, show count e.g. "Nouns 265"
-- [x] Fix "Cleared" counter — only increment on Known, not Shaky
-- [x] Add "Study Weak" button on done screen — restarts with only shaky + unknown words
-- [x] Remove separator line between pill row and deck area
-- [x] README file
-- [ ] Right-side info panel (deferred — see Phase 10f)
-- [ ] Vocabulary data: populate plural/conjugations/comparative for A1 words (deferred — see Phase 10f)
-- Branch: `feat/flashcard-enhancements`
 
-### ⏳ Phase 10e — Test Exam Prep (deferred from earlier)
-- [ ] Test Reading, Listening, Writing, Speaking
-- [ ] Test back button from each sub-section
-- [ ] Test Grammar "Generate More Exercises"
+---
+## ACTIVE PIPELINE
 
-### ⏳ Phase 10f — Flashcard Extra Info (Deferred from 10c)
-**Context: The Word type already has optional plural/conjugations/comparative fields. The card back is already wired to show them. This phase is just adding the data and the right-side panel.**
-- [ ] Right-side info panel — always-visible panel to the right of the card showing the extra info for the current word (two-column layout: card left, panel right)
-- [ ] Populate `plural` for all ~200 A1 nouns (e.g. `"die Bücher"`)
+### ⏳ Phase 10d — Test Exam Prep
+- [ ] Test Reading: generate passage → answer questions → verify score and review screen
+- [ ] Test Listening: generate passage → play audio → answer questions → verify passage revealed
+- [ ] Test Writing: type a German response → submit → verify Gemini feedback appears
+- [ ] Test Speaking (mic): record → verify transcript → submit → verify feedback
+- [ ] Test Speaking (type): type response → submit → verify feedback
+- [ ] Test back button returns to Exam Prep selector from each sub-section
+- [ ] Test Grammar "Generate More Exercises" button
+
+### ⏳ Phase 10e — Flashcard Extra Info
+- [ ] Right-side info panel — always-visible panel to the right of the card showing extra info
+- [ ] Populate `plural` for all ~200 A1 nouns (e.g. "die Bücher")
 - [ ] Populate `conjugations` for all ~150 A1 verbs (ich/du/er/wir/ihr/sie present tense)
-- [ ] Populate `comparative` for all ~80 A1 adjectives (e.g. `"älter"`)
+- [ ] Populate `comparative` for all ~80 A1 adjectives (e.g. "älter")
+- [ ] Show conjugations/plurals in Mini Games — below the word in small grey text
+  - Gender Battle: show plural below noun
+  - Listening Quiz: show conjugations below verb
 
-### ⏳ Phase 11 — Insights / Analytics (New Section)
-- [ ] Add Insights to sidebar navigation (icon: trending-up)
-- [ ] Weak Vocabulary list: words most frequently marked Unknown or Shaky
-- [ ] Mistake Log: incorrect grammar answers (question, your answer, correct answer)
+### ⏳ Phase 10f — Progress Page Redesign
+- [ ] Redesign as compact grid — NO scrolling, everything visible at once
+- [ ] Top row: 4 stat cards (Streak, Vocabulary, Grammar best, Daily Challenge status)
+- [ ] Middle: per-section scores in compact 2-column layout
+  - Grammar, Exam Prep (Reading/Listening/Writing/Speaking), Mini Games
+- [ ] Bottom: two small visual charts
+  - Vocabulary mastery by category (bar per category)
+  - Grammar topic breakdown (bar per topic)
+
+### ⏳ Phase 11 — Insights / Analytics
+- [ ] Add Insights to sidebar (icon: trending-up)
+- [ ] Weak Vocabulary: words most frequently marked Unknown or Shaky
+- [ ] Mistake Log: incorrect grammar answers (question / your answer / correct answer)
   - New Supabase table: mistake_log (user_id, section, question, user_answer, correct_answer, timestamp)
-  - Wire into grammar.tsx to save wrong answers
-- [ ] Weak Grammar Topics: topics sorted by lowest score with bar chart
-- [ ] Activity Calendar: streak heatmap grid — last 3 months, coloured squares per day
-- [ ] Reading Mode: display a short German text, tap any word to see its translation popup
+  - Wire into grammar.tsx to save wrong answers automatically
+- [ ] Weak Grammar Topics: topics sorted by lowest score with bar visualization
+- [ ] Activity Calendar: streak heatmap — last 3 months, coloured squares per day
 
-### ⏳ Phase 12 — Polish (A1 complete app)
-- [ ] Test level switching (A1 works, other levels show "coming soon")
-- [ ] Performance check (loading states for all AI calls)
-- [ ] Fill in the Blank mini game (Gemini)
-- [ ] Vocabulary mastery by part of speech on Progress screen
-- [ ] Keyboard shortcuts (Space to flip card, 1/2/3 for Known/Shaky/Unknown, M/F/N for Gender Battle)
-  - Add a small "?" help button on each screen that shows available shortcuts
+### ⏳ Phase 12 — Reading Mode
+- [ ] New section in sidebar or inside Exam Prep
+- [ ] Display a short German text appropriate for current level
+- [ ] Tap any word to see a popup with its translation and part of speech
+- [ ] No questions — pure reading with on-demand word lookup
 
-### ⏳ Phase 13 — Expand to A2, B1, B2
+### ⏳ Phase 13 — Keyboard Shortcuts
+- [ ] Space to flip flashcard
+- [ ] 1/2/3 for Known/Shaky/Unknown in flashcards
+- [ ] M/F/N for der/die/das in Gender Battle
+- [ ] Arrow keys + Enter for multiple choice in Grammar
+- [ ] Escape to go back from any sub-section
+- [ ] Small "?" help button on each screen listing available shortcuts
+
+---
+## LATER
+*These phases are planned but not immediate — will be picked up after the active pipeline is complete.*
+
+### Phase 14 — Gemini Features Testing & Polish
+- [ ] Test and verify "Generate More Exercises" in Grammar fully works
+- [ ] Test Fill in the Blank mini game (Gemini generated sentences)
+- [ ] Performance check — loading states for all Gemini API calls
+- [ ] Error handling — friendly messages when Gemini quota is hit
+
+### Phase 15 — Expand to A2, B1, B2
 - [ ] Add A2 / B1 / B2 vocabulary lists
 - [ ] Add A2 / B1 / B2 grammar exercise templates
 - [ ] Write 20-30 tips for A2, B1, B2
+- [ ] Test level switching (A1 works, others show "coming soon" until content added)
 
-### ⏳ Phase 14 — Deep Progress Insights
-- [ ] Per-topic grammar score breakdown in Progress screen
-- [ ] New Supabase table: grammar_topic_scores
+### Phase 16 — Deep Progress Insights
+- [ ] Per-topic grammar score breakdown in Progress and Insights screens
+- [ ] New Supabase table: grammar_topic_scores (user_id, level, topic, best_score, sessions)
+- [ ] Update grammar.tsx to save per-topic results
 
-### ⏳ Phase 15 — Multi-user (If Expanding)
-- [ ] Auth screens (sign up / login)
+### Phase 17 — Multi-user (If Expanding)
+- [ ] Auth screens (sign up / login via Supabase Auth)
 - [ ] Tie all progress to user accounts
 - [ ] Leaderboard for streaks
 
