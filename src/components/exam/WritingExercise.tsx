@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { getWritingFeedback } from '../../lib/gemini';
 import useLevelStore from '../../store/useLevelStore';
+import { saveCompletion } from '../../lib/scoresService';
 
 // ─── Writing prompts ──────────────────────────────────────────────────────────
 // A1-appropriate prompts — simple, personal topics the student can write about
@@ -68,6 +69,7 @@ export default function WritingExercise() {
       setError(result);
     } else {
       setFeedback(result);
+      saveCompletion('exam_writing'); // fire and forget
     }
     setIsLoading(false);
   }

@@ -20,6 +20,7 @@ import useLevelStore from '../src/store/useLevelStore';
 import { GRAMMAR, GrammarExercise } from '../src/data/grammar';
 import ExerciseCard from '../src/components/ExerciseCard';
 import { generateGrammarExercises } from '../src/lib/gemini';
+import { saveScore } from '../src/lib/scoresService';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -132,11 +133,13 @@ export default function GrammarScreen() {
 
   // Called by ExerciseCard when the user taps "Next"
   function handleNext(wasCorrect: boolean) {
-    if (wasCorrect) setCorrectCount((prev) => prev + 1);
+    const newCorrectCount = wasCorrect ? correctCount + 1 : correctCount;
+    if (wasCorrect) setCorrectCount(newCorrectCount);
 
     const nextIndex = currentIndex + 1;
     if (nextIndex >= totalExercises) {
-      // No more exercises — show the done screen
+      // Save best score to Supabase (fire and forget)
+      saveScore('grammar', newCorrectCount, totalExercises);
       setScreen('done');
     } else {
       setCurrentIndex(nextIndex);

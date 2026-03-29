@@ -297,18 +297,32 @@ Rules for the PR description:
 - [x] streakService.ts: loadProgress() and completeChallenge()
 - Note: UI polish deferred to Phase 10
 
-### ⏳ Phase 9 — Progress Dashboard
-- [ ] Scores per section
-- [ ] Vocabulary mastery visualization
-- [ ] Streak display
+### ✅ Phase 9 — Progress Dashboard (Complete)
+- [x] Streak card with daily challenge status
+- [x] Vocabulary mastery progress bar (known / total for current level)
+- [x] Section scores: Grammar, Exam Reading, Exam Listening (best % + sessions)
+- [x] Completion counts: Exam Writing, Exam Speaking, Word Match
+- [x] Mini Games scores: Gender Battle, Listening Quiz (best % + sessions)
+- [x] Score tracking wired into all sections (grammar.tsx, exam components, game components)
+- [x] Supabase table: section_scores (user_id, section, best_score, best_total, sessions_completed)
+- [x] scoresService.ts: saveScore(), saveCompletion(), loadAllScores()
+- [x] useFocusEffect reloads on every tab visit
+- Note: deeper insights deferred to Phase 9b and Phase 13 (see below)
+
+### ⏳ Phase 9b — Vocabulary Insights (Progress enhancement)
+- Add vocabulary mastery breakdown by part of speech to the Progress screen
+- No new database work needed — computed from existing mastery data + vocabulary
+- Show per-category bars: Nouns (210/265), Verbs (80/180), Adjectives (20/100), etc.
+- Add to Phase 10 Polish pass
 
 ### ⏳ Phase 10 — Polish (A1 complete app)
-- [ ] Consistent styling across all screens
+- [ ] Consistent styling across all screens (all screens flagged as needing UI work)
 - [ ] Test level switching (A1 works, other levels show "coming soon")
 - [ ] Test on web
 - [ ] Performance check (loading states for AI calls)
 - [ ] Test Grammar Exercises: finish a topic → tap "✨ Generate More Exercises" → verify 5 new exercises load correctly
 - [ ] Complete Phase 5b — test all Exam Prep features (Reading, Listening, Writing, Speaking, back button) — deferred due to Gemini free tier quota
+- [ ] Add vocabulary mastery by part of speech to Progress screen (Phase 9b)
 
 ### ⏳ Phase 11 — Expand to A2, B1, B2
 - [ ] Expand A1 vocabulary to full ~600 word Goethe list
@@ -321,6 +335,13 @@ Rules for the PR description:
 - [ ] Auth screens (sign up / login)
 - [ ] Tie all progress to user accounts
 - [ ] Leaderboard for streaks
+
+### ⏳ Phase 13 — Deep Progress Insights
+- Replace single grammar score with per-topic breakdown (sein, haben, Akkusativ, Dativ, etc.)
+- New Supabase table: grammar_topic_scores (user_id, level, topic, best_score, best_total, sessions_completed)
+- Update grammar.tsx to save per-topic results when a specific topic is finished
+- Progress screen: show mini bar chart per grammar topic so user can see exactly where they're weak
+- Example: sein 80%, haben 60%, Akkusativ 40%, Dativ — not started
 
 ---
 
@@ -367,6 +388,13 @@ Rules for the PR description:
   - Both types: Enter key advances to next exercise after answering
   - Multiple-choice: arrow key navigation (up/down), Enter to select, option A highlighted by default
   - Gemini quota hit during testing — "Generate More Exercises" deferred to Phase 10 for verification
+
+- [2026-03-29] Phase 9 complete — Progress Dashboard.
+  - New Supabase table: section_scores (one row per user per section)
+  - scoresService.ts: saveScore() keeps best %, saveCompletion() counts sessions, loadAllScores() fetches all
+  - Score tracking wired into: grammar, exam reading, exam listening, exam writing, exam speaking, gender battle, listening quiz, word match
+  - Progress screen: streak card, vocabulary mastery bar, section scores across Grammar / Exam Prep / Mini Games
+  - Deeper insights (per-topic grammar breakdown, vocab by category) deferred to Phase 9b / Phase 13
 
 - [2026-03-29] Phase 8 complete — Daily Challenge + Streak.
   - New Supabase table: user_progress (single row per device)

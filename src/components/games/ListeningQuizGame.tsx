@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Word } from '../../data/vocabulary';
+import { saveScore } from '../../lib/scoresService';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,9 @@ export default function ListeningQuizGame({ words, onExit }: Props) {
   // ── Advance to next round ──
   function handleNext() {
     const nextIndex = currentIndex + 1;
+    if (nextIndex >= TOTAL_ROUNDS) {
+      saveScore('game_listening_quiz', correctCount, TOTAL_ROUNDS);
+    }
     setCurrentIndex(nextIndex);
     setSelectedId(null);
     if (nextIndex < TOTAL_ROUNDS) {

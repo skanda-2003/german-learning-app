@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Word } from '../../data/vocabulary';
+import { saveScore } from '../../lib/scoresService';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -72,7 +73,11 @@ export default function GenderBattleGame({ words, onExit }: Props) {
     if (result === null) return;
 
     const timer = setTimeout(() => {
-      setCurrentIndex(prev => prev + 1);
+      const nextIndex = currentIndex + 1;
+      if (nextIndex >= TOTAL_ROUNDS) {
+        saveScore('game_gender_battle', correctCount, TOTAL_ROUNDS);
+      }
+      setCurrentIndex(nextIndex);
       setResult(null);
       setPickedGender(null);
     }, RESULT_DISPLAY_MS);
