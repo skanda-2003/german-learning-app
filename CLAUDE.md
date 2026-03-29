@@ -196,10 +196,15 @@ This project must remain completely free to run.
 ---
 
 ## GitHub Workflow Rules
-At the start of every new phase, create one branch for the entire phase:
+
+**Before starting any new phase/branch, always run:**
 ```bash
+git checkout main
+git pull
 git checkout -b branch-name
 ```
+
+At the start of every new phase, create one branch for the entire phase.
 
 Use this naming format for branches:
 - New phase/feature: feat/descriptive-name
@@ -211,7 +216,7 @@ Use this naming format for branches:
 Once the phase is complete:
 ```bash
 git add .
-git commit -m "describe what was done"
+git commit -m "short message — main features only, not files"
 git push origin branch-name
 ```
 Then open a Pull Request on GitHub to merge into main.
@@ -249,47 +254,12 @@ Rules: specific file paths, function names, real details. Every file touched get
 ### ✅ Phase 9 — Progress Dashboard (Complete)
 ### ✅ Phase 10a — UI Polish / Redesign (Complete)
 
-### ⏳ Phase 10b — UI Fixes Round 2 (Current)
-Issues identified from screenshots:
-
-**Sidebar:** ✅ Complete
-- [x] Replace all emoji icons with Feather line icons (`@expo/vector-icons` bundled with Expo)
-- [x] Fix nav item text cutoff — widened sidebar from 220 → 240px
-- [x] Active state: 2px left blue (`#2563eb`) accent bar, transparent background
-- [x] Use Inter font for sidebar nav labels (`Inter_500Medium` / `Inter_600SemiBold`)
-- [x] Custom `CustomDrawerContent` component using `DrawerContentScrollView`
-- [x] "LERNE DEUTSCH" wordmark at top of sidebar in dim ALL CAPS Inter
-- [x] Installed `@expo-google-fonts/inter`
-
-**Page backgrounds:** ✅ Complete
-- [x] `colors.background` changed from `#ffffff` → `#fafafa` in theme.ts
-- [x] `colors.surface` stays `#ffffff` — cards visually sit above the page
-- [x] Added `colors.amber` (`#f59e0b`) and `colors.amberLight` for future shaky state
-
-**Mini Games selector:** ✅ Complete
-- [x] 2-column card grid (1px border, white bg, 4px radius)
-- [x] Each card: game name bold top-left, best score in blue top-right if played, description grey below
-- [x] Fill in the Blank card: dimmed with `SOON` badge
-- [x] Loads scores via `loadAllScores()` + `useFocusEffect`
-
-**Grammar selector:** ✅ Complete
-- [x] "All Topics" full-width card at top
-- [x] Individual topics in 2-column card grid with exercise count
-- [x] Exercise flow (exercise screen, done screen) unchanged
-
-**Exam Prep selector:** ✅ Complete
-- [x] 2x2 card grid replacing flat rows
-- [x] Reading/Listening show best %; Writing/Speaking show session count
-- [x] Loads scores via `loadAllScores()` + `useFocusEffect`
-
-**Home page redesign:** ⏳ Next — Fix 4 (not yet started)
-- [ ] Remove emoji icons from section cards, replace with Feather icons
-- [ ] Add TODAY'S FOCUS card (recommended section based on lowest score)
-- [ ] Compact stats strip (words known, best grammar %, daily challenge status)
-- [ ] Fill empty bottom half
-
-**Topbar:**
-- [ ] Use Inter font for page title in topbar (not IBM Plex Mono)
+### ✅ Phase 10b — UI Fixes Round 2 (Complete)
+- [x] Sidebar: Feather icons, Inter font, 2px blue left-border active state, `CustomDrawerContent`, width 240, "LERNE DEUTSCH" wordmark
+- [x] Page backgrounds: `colors.background` → `#fafafa`, surface stays `#ffffff`, amber colors added to theme
+- [x] Mini Games / Grammar / Exam Prep selectors: 2-column bordered card grids with live score badges
+- [x] Home page: "LERNE DEUTSCH" wordmark, TODAY'S FOCUS card (priority-based recommendation), 3-column stats strip, Feather icons replacing all emojis
+- Branch: `ui/fixes-round-2`
 
 ### ⏳ Phase 10c — Flashcard Enhancements
 - [ ] Add third state: Shaky (amber/yellow) between Known and Unknown
@@ -356,11 +326,7 @@ Issues identified from screenshots:
 - [2026-03-29] Phase 8 complete — Daily Challenge + streak tracking.
 - [2026-03-29] Phase 9 complete — Progress Dashboard with Supabase score tracking.
 - [2026-03-29] Phase 10a complete — Full UI redesign. IBM Plex Mono, theme.ts, all screens restyled.
-- [2026-03-29] Phase 10b in progress — Sidebar, backgrounds, and selector card grids complete. Home page redesign (Fix 4) still pending.
-  - Sidebar: Feather icons, Inter font, 2px blue left-border active state, CustomDrawerContent, width 240, "LERNE DEUTSCH" wordmark
-  - Backgrounds: colors.background → #fafafa, surface stays #ffffff, amber colors added to theme
-  - Games/Exam/Grammar selectors: all converted from flat lists to 2-column bordered card grids with live score badges
-  - Branch: ui/fixes-round-2
+- [2026-03-29] Phase 10b complete — Sidebar Feather icons + Inter font, #fafafa page backgrounds, card grid selectors (Games/Grammar/Exam), home page redesign with TODAY'S FOCUS + stats strip.
 - [2026-03-29] Phase 3 complete — Flashcards with flip animation and spaced repetition.
 
 ---
