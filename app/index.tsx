@@ -28,7 +28,7 @@ import { loadProgress, getTodayString } from '../src/lib/streakService';
 import { loadAllScores } from '../src/lib/scoresService';
 import {
   colors, font, fontSize, spacing, radius,
-  labelStyle, progressTrackStyle,
+  labelStyle,
 } from '../src/styles/theme';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
