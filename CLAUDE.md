@@ -264,7 +264,8 @@ Rules for the PR description:
 - [x] Writing (prompt shown, user types in German, Gemini gives feedback)
 - [x] Speaking (🎤 record via browser mic OR type, Gemini evaluates response)
 
-### ⏳ Phase 5b — Test Exam Prep
+### ⏳ Phase 5b — Test Exam Prep (Deferred — Gemini quota)
+- Deferred to Phase 10 — all sub-sections require Gemini and free tier quota is exhausted
 - [ ] Test Reading: generate passage → answer all 3 questions → verify score and review screen
 - [ ] Test Listening: generate passage → play audio (German voice) → answer questions → verify passage revealed on done screen
 - [ ] Test Writing: type a German response → submit → verify Gemini feedback appears in purple card
@@ -301,7 +302,7 @@ Rules for the PR description:
 - [ ] Test on web
 - [ ] Performance check (loading states for AI calls)
 - [ ] Test Grammar Exercises: finish a topic → tap "✨ Generate More Exercises" → verify 5 new exercises load correctly
-- [ ] Test all Exam Prep Gemini features (Reading, Listening, Writing, Speaking) — deferred from Phase 5b due to free tier quota
+- [ ] Complete Phase 5b — test all Exam Prep features (Reading, Listening, Writing, Speaking, back button) — deferred due to Gemini free tier quota
 
 ### ⏳ Phase 11 — Expand to A2, B1, B2
 - [ ] Expand A1 vocabulary to full ~600 word Goethe list
