@@ -7,9 +7,14 @@
 //   - The front face rotates from 0° → 180° (it spins away).
 //   - The back face rotates from 180° → 360° (it spins into view).
 //   - backfaceVisibility: 'hidden' ensures only the correct face shows at any time.
+//
+// Card back extra info (shown when data is present in the word object):
+//   - Nouns: plural form
+//   - Verbs: conjugation table (ich/du/er/wir/ihr/sie)
+//   - Adjectives: comparative form
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -30,6 +35,55 @@ type Props = {
   word: Word;
 };
 
+// ─── Verb conjugation table component ────────────────────────────────────────
+// Shown on the card back for verb words when conjugation data is available.
+function ConjugationTable({ conj }: { conj: NonNullable<Word['conjugations']> }) {
+  const rows: [string, string][] = [
+    ['ich', conj.ich],
+    ['du', conj.du],
+    ['er/sie/es', conj.er],
+    ['wir', conj.wir],
+    ['ihr', conj.ihr],
+    ['sie/Sie', conj.sie],
+  ];
+
+  return (
+    <View style={conjStyles.table}>
+      {rows.map(([pronoun, form]) => (
+        <View key={pronoun} style={conjStyles.row}>
+          <Text style={conjStyles.pronoun}>{pronoun}</Text>
+          <Text style={conjStyles.form}>{form}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const conjStyles = StyleSheet.create({
+  table: {
+    width: '100%',
+    marginTop: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+  },
+  pronoun: {
+    fontFamily: 'IBMPlexMono_400Regular',
+    fontSize: 11,
+    color: '#aaaaaa',
+    width: 70,
+  },
+  form: {
+    fontFamily: 'IBMPlexMono_500Medium',
+    fontSize: 11,
+    color: '#333333',
+    flex: 1,
+    textAlign: 'right',
+  },
+});
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function FlashCard({ word }: Props) {
   // flipValue: 0 = front side showing, 1 = back side showing
@@ -40,11 +94,9 @@ export default function FlashCard({ word }: Props) {
   // Called when the user taps the card
   function handleFlip() {
     if (isFlipped.value) {
-      // Flip back to front
       flipValue.value = withTiming(0, { duration: 400 });
       isFlipped.value = false;
     } else {
-      // Flip to back
       flipValue.value = withTiming(1, { duration: 400 });
       isFlipped.value = true;
     }
@@ -66,11 +118,16 @@ export default function FlashCard({ word }: Props) {
     };
   });
 
-  // Pick the gender colour, or use a neutral grey if the word has no gender
   const genderColor = word.gender ? GENDER_COLORS[word.gender] : '#aaaaaa';
+
+  // Determine if we have extra info to show on the back
+  const hasConjugations = word.partOfSpeech === 'verb' && word.conjugations;
+  const hasPlural       = word.partOfSpeech === 'noun' && word.plural;
+  const hasComparative  = word.partOfSpeech === 'adjective' && word.comparative;
 
   return (
     <TouchableOpacity onPress={handleFlip} activeOpacity={0.95} style={styles.wrapper}>
+
       {/* ── FRONT FACE ── */}
       <Animated.View style={[styles.card, styles.front, frontAnimatedStyle]}>
         <Text style={styles.tapHint}>Tap to reveal</Text>
@@ -91,15 +148,41 @@ export default function FlashCard({ word }: Props) {
 
       {/* ── BACK FACE ── */}
       <Animated.View style={[styles.card, styles.back, backAnimatedStyle]}>
+
         {/* English translation */}
         <Text style={styles.englishWord}>{word.english}</Text>
 
         <View style={styles.divider} />
 
-        {/* Example sentence in German */}
+        {/* Example sentence */}
         <Text style={styles.exampleLabel}>Example</Text>
         <Text style={styles.exampleDe}>{word.exampleDe}</Text>
         <Text style={styles.exampleEn}>{word.exampleEn}</Text>
+
+        {/* Extra info: plural form for nouns */}
+        {hasPlural && (
+          <View style={styles.extraInfo}>
+            <Text style={styles.extraLabel}>Plural</Text>
+            <Text style={styles.extraValue}>{word.plural}</Text>
+          </View>
+        )}
+
+        {/* Extra info: conjugation table for verbs */}
+        {hasConjugations && (
+          <View style={styles.extraInfo}>
+            <Text style={styles.extraLabel}>Conjugation</Text>
+            <ConjugationTable conj={word.conjugations!} />
+          </View>
+        )}
+
+        {/* Extra info: comparative for adjectives */}
+        {hasComparative && (
+          <View style={styles.extraInfo}>
+            <Text style={styles.extraLabel}>Comparative</Text>
+            <Text style={styles.extraValue}>{word.comparative}</Text>
+          </View>
+        )}
+
       </Animated.View>
     </TouchableOpacity>
   );
@@ -122,10 +205,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    padding: 28,
+    padding: 20,
     alignItems: 'center',
     justifyContent: 'center',
     backfaceVisibility: 'hidden',
+    overflow: 'hidden',
   },
 
   front: {
@@ -177,17 +261,17 @@ const styles = StyleSheet.create({
 
   englishWord: {
     fontFamily: 'IBMPlexMono_700Bold',
-    fontSize: 26,
+    fontSize: 22,
     color: '#111111',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 10,
   },
 
   divider: {
     width: 32,
     height: 1,
     backgroundColor: '#e0e0e0',
-    marginBottom: 14,
+    marginBottom: 10,
   },
 
   exampleLabel: {
@@ -195,23 +279,45 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: '#aaaaaa',
     letterSpacing: 1,
-    marginBottom: 6,
+    marginBottom: 4,
     textTransform: 'uppercase',
   },
 
   exampleDe: {
     fontFamily: 'IBMPlexMono_400Regular',
-    fontSize: 13,
+    fontSize: 12,
     color: '#333333',
     textAlign: 'center',
-    marginBottom: 4,
-    lineHeight: 19,
+    marginBottom: 2,
+    lineHeight: 17,
   },
 
   exampleEn: {
     fontFamily: 'IBMPlexMono_400Regular',
-    fontSize: 12,
+    fontSize: 11,
     color: '#888888',
     textAlign: 'center',
+  },
+
+  // Extra info block (plural / conjugation / comparative)
+  extraInfo: {
+    marginTop: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+
+  extraLabel: {
+    fontFamily: 'IBMPlexMono_600SemiBold',
+    fontSize: 9,
+    color: '#aaaaaa',
+    letterSpacing: 1,
+    marginBottom: 2,
+    textTransform: 'uppercase',
+  },
+
+  extraValue: {
+    fontFamily: 'IBMPlexMono_500Medium',
+    fontSize: 13,
+    color: '#333333',
   },
 });

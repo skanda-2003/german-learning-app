@@ -197,7 +197,9 @@ This project must remain completely free to run.
 
 ## GitHub Workflow Rules
 
-**Before starting any new phase/branch, always run:**
+**IMPORTANT FOR CLAUDE: Never execute git commands. Always just print the commands for the user to run themselves. Do not use the Bash tool for any git operation. Do not ask the user if they want to run git commands — just output them.**
+
+**Before starting any new phase/branch, give the user these commands to run:**
 ```bash
 git checkout main
 git pull
@@ -213,7 +215,7 @@ Use this naming format for branches:
 
 **One branch per phase.**
 
-Once the phase is complete:
+Once the phase is complete, give the user these commands to run:
 ```bash
 git add .
 git commit -m "short message — main features only, not files"
