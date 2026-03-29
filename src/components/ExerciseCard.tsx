@@ -21,10 +21,23 @@ import {
 import { GrammarExercise } from '../data/grammar';
 import { colors, font, fontSize, spacing, radius } from '../styles/theme';
 
+// ─── Types ─────────────────────────────────────────────────────────────────────
+
+// When the user answers incorrectly, this data is passed to onNext so the
+// parent screen can save it to the mistake log.
+export type MistakeData = {
+  topic: string;
+  question: string;
+  userAnswer: string;
+  correctAnswer: string;
+};
+
 // ─── Props ─────────────────────────────────────────────────────────────────────
 type Props = {
   exercise: GrammarExercise;
-  onNext: (wasCorrect: boolean) => void; // called when user taps Next
+  // wasCorrect: whether the user got it right
+  // mistake: only provided when wasCorrect is false — used by grammar.tsx to log the error
+  onNext: (wasCorrect: boolean, mistake?: MistakeData) => void;
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -54,7 +67,18 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
 
   // ── Handle Next ──
   function handleNext() {
-    onNext(result === true);
+    // If the user got it wrong, build a mistake object for the parent to log
+    const mistake: MistakeData | undefined =
+      result === false
+        ? {
+            topic: exercise.topic,
+            question: exercise.question,
+            userAnswer: selectedOption ?? inputValue,
+            correctAnswer: exercise.answer,
+          }
+        : undefined;
+
+    onNext(result === true, mistake);
     // Reset local state for the next exercise
     setInputValue('');
     setResult(null);

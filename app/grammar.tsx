@@ -21,6 +21,8 @@ import { GRAMMAR, GrammarExercise } from '../src/data/grammar';
 import ExerciseCard from '../src/components/ExerciseCard';
 import { generateGrammarExercises } from '../src/lib/gemini';
 import { saveScore } from '../src/lib/scoresService';
+import { saveMistake } from '../src/lib/mistakeService';
+import type { MistakeData } from '../src/components/ExerciseCard';
 import {
   colors, font, fontSize, spacing, radius,
   labelStyle, progressTrackStyle,
@@ -99,9 +101,20 @@ export default function GrammarScreen() {
     setScreen('exercise');
   }
 
-  function handleNext(wasCorrect: boolean) {
+  function handleNext(wasCorrect: boolean, mistake?: MistakeData) {
     const newCorrectCount = wasCorrect ? correctCount + 1 : correctCount;
     if (wasCorrect) setCorrectCount(newCorrectCount);
+
+    // Save wrong answers to the mistake log (fire-and-forget — no await needed)
+    if (!wasCorrect && mistake) {
+      saveMistake(
+        `grammar:${mistake.topic}`,
+        mistake.question,
+        mistake.userAnswer,
+        mistake.correctAnswer
+      );
+    }
+
     const nextIndex = currentIndex + 1;
     if (nextIndex >= totalExercises) {
       saveScore('grammar', newCorrectCount, totalExercises);
