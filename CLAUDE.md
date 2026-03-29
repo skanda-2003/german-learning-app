@@ -252,36 +252,41 @@ Rules: specific file paths, function names, real details. Every file touched get
 ### ⏳ Phase 10b — UI Fixes Round 2 (Current)
 Issues identified from screenshots:
 
-**Sidebar:**
-- [ ] Replace all emoji icons with Feather line icons (install @expo/vector-icons if not present)
-- [ ] Fix nav item text cutoff ("Daily Chall..." → "Daily Challenge" — widen sidebar or reduce font size)
-- [ ] Active state: replace grey highlight with left 2px blue accent bar
-- [ ] Use Inter font for sidebar nav items (not IBM Plex Mono)
-- [ ] Tighter, more precise spacing between nav items
+**Sidebar:** ✅ Complete
+- [x] Replace all emoji icons with Feather line icons (`@expo/vector-icons` bundled with Expo)
+- [x] Fix nav item text cutoff — widened sidebar from 220 → 240px
+- [x] Active state: 2px left blue (`#2563eb`) accent bar, transparent background
+- [x] Use Inter font for sidebar nav labels (`Inter_500Medium` / `Inter_600SemiBold`)
+- [x] Custom `CustomDrawerContent` component using `DrawerContentScrollView`
+- [x] "LERNE DEUTSCH" wordmark at top of sidebar in dim ALL CAPS Inter
+- [x] Installed `@expo-google-fonts/inter`
 
-**Page backgrounds:**
-- [ ] Change all page backgrounds from pure white to `#fafafa`
-- [ ] Cards remain `#ffffff` — this creates depth without adding color
+**Page backgrounds:** ✅ Complete
+- [x] `colors.background` changed from `#ffffff` → `#fafafa` in theme.ts
+- [x] `colors.surface` stays `#ffffff` — cards visually sit above the page
+- [x] Added `colors.amber` (`#f59e0b`) and `colors.amberLight` for future shaky state
 
-**Home page redesign:**
-- [ ] Remove pixel-art emoji icons from section cards
-- [ ] Top section: greeting with streak ("You're on a 3 day streak") + today's recommended section (based on lowest score)
-- [ ] Middle: compact quick-stats strip (words known, best grammar score, daily challenge status)
-- [ ] Bottom: clean quick-launch grid for all sections — icon + name + one stat only
-- [ ] Fill the empty bottom half — no white voids
-- [ ] Differentiate clearly from Progress page (Home = what to do next, Progress = how I've done)
+**Mini Games selector:** ✅ Complete
+- [x] 2-column card grid (1px border, white bg, 4px radius)
+- [x] Each card: game name bold top-left, best score in blue top-right if played, description grey below
+- [x] Fill in the Blank card: dimmed with `SOON` badge
+- [x] Loads scores via `loadAllScores()` + `useFocusEffect`
 
-**Mini Games selector:**
-- [ ] Replace plain text list with proper cards (1px border, white bg, padding)
-- [ ] Each card: game name bold, description grey below, best score top-right if played
-- [ ] Grid layout (2 columns) not a vertical list
+**Grammar selector:** ✅ Complete
+- [x] "All Topics" full-width card at top
+- [x] Individual topics in 2-column card grid with exercise count
+- [x] Exercise flow (exercise screen, done screen) unchanged
 
-**Grammar selector:**
-- [ ] Same treatment as Mini Games — cards not a list
-- [ ] Each topic as a card with name, exercise count, best score
+**Exam Prep selector:** ✅ Complete
+- [x] 2x2 card grid replacing flat rows
+- [x] Reading/Listening show best %; Writing/Speaking show session count
+- [x] Loads scores via `loadAllScores()` + `useFocusEffect`
 
-**Exam Prep selector:**
-- [ ] Same treatment — 2x2 grid of cards, not a list
+**Home page redesign:** ⏳ Next — Fix 4 (not yet started)
+- [ ] Remove emoji icons from section cards, replace with Feather icons
+- [ ] Add TODAY'S FOCUS card (recommended section based on lowest score)
+- [ ] Compact stats strip (words known, best grammar %, daily challenge status)
+- [ ] Fill empty bottom half
 
 **Topbar:**
 - [ ] Use Inter font for page title in topbar (not IBM Plex Mono)
@@ -351,6 +356,11 @@ Issues identified from screenshots:
 - [2026-03-29] Phase 8 complete — Daily Challenge + streak tracking.
 - [2026-03-29] Phase 9 complete — Progress Dashboard with Supabase score tracking.
 - [2026-03-29] Phase 10a complete — Full UI redesign. IBM Plex Mono, theme.ts, all screens restyled.
+- [2026-03-29] Phase 10b in progress — Sidebar, backgrounds, and selector card grids complete. Home page redesign (Fix 4) still pending.
+  - Sidebar: Feather icons, Inter font, 2px blue left-border active state, CustomDrawerContent, width 240, "LERNE DEUTSCH" wordmark
+  - Backgrounds: colors.background → #fafafa, surface stays #ffffff, amber colors added to theme
+  - Games/Exam/Grammar selectors: all converted from flat lists to 2-column bordered card grids with live score badges
+  - Branch: ui/fixes-round-2
 - [2026-03-29] Phase 3 complete — Flashcards with flip animation and spaced repetition.
 
 ---

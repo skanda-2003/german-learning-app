@@ -1,9 +1,10 @@
 // exam.tsx — Exam Prep screen
 //
-// Shows 4 sub-section cards: Reading, Listening, Writing, Speaking.
+// Shows a 2x2 card grid of the four exam skills.
+// Each card shows the skill name, description, and last score if attempted.
 // Tapping a card opens that sub-section.
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,45 +12,55 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import ReadingExercise from '../src/components/exam/ReadingExercise';
 import ListeningExercise from '../src/components/exam/ListeningExercise';
 import WritingExercise from '../src/components/exam/WritingExercise';
 import SpeakingExercise from '../src/components/exam/SpeakingExercise';
-import {
-  colors, font, fontSize, spacing,
-  labelStyle,
-} from '../src/styles/theme';
+import { loadAllScores } from '../src/lib/scoresService';
+import { colors, font, fontSize, spacing, radius, labelStyle } from '../src/styles/theme';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
 type SubSection = 'reading' | 'listening' | 'writing' | 'speaking';
 
-type SubSectionCard = {
+type SubSectionDef = {
   id: SubSection;
+  scoreKey: string;
   title: string;
   description: string;
+  // 'percent' sections show a best %; 'count' sections show sessions completed
+  scoreType: 'percent' | 'count';
 };
 
-const SUB_SECTIONS: SubSectionCard[] = [
+const SUB_SECTIONS: SubSectionDef[] = [
   {
     id: 'reading',
+    scoreKey: 'exam_reading',
     title: 'Reading',
     description: 'Read a short German passage and answer comprehension questions.',
+    scoreType: 'percent',
   },
   {
     id: 'listening',
+    scoreKey: 'exam_listening',
     title: 'Listening',
-    description: 'Listen to a German passage read aloud and answer questions.',
+    description: 'Listen to a passage read aloud and answer questions.',
+    scoreType: 'percent',
   },
   {
     id: 'writing',
+    scoreKey: 'exam_writing',
     title: 'Writing',
-    description: 'Write a short response to a prompt and get AI feedback.',
+    description: 'Write a response to a prompt and get AI feedback.',
+    scoreType: 'count',
   },
   {
     id: 'speaking',
+    scoreKey: 'exam_speaking',
     title: 'Speaking',
-    description: 'Speak or type a response and get AI pronunciation feedback.',
+    description: 'Speak or type a response and get AI feedback.',
+    scoreType: 'count',
   },
 ];
 
@@ -58,6 +69,16 @@ const SUB_SECTIONS: SubSectionCard[] = [
 export default function ExamScreen() {
   const [activeSection, setActiveSection] = useState<SubSection | null>(null);
 
+  type ScoreMap = Record<string, { bestScore: number; bestTotal: number; sessionsCompleted: number }>;
+  const [scores, setScores] = useState<ScoreMap>({});
+
+  useFocusEffect(
+    useCallback(() => {
+      loadAllScores().then(setScores);
+    }, [])
+  );
+
+  // ── Back button shown inside each sub-section ──
   const backButton = (
     <TouchableOpacity style={styles.backButton} onPress={() => setActiveSection(null)}>
       <Text style={styles.backText}>← Exam Prep</Text>
@@ -105,22 +126,42 @@ export default function ExamScreen() {
         Practise the four skills tested in the Goethe Institut A1 exam.
       </Text>
 
-      <Text style={[labelStyle, styles.sectionLabel]}>FOUR SKILLS</Text>
+      <Text style={[labelStyle, styles.gridLabel]}>FOUR SKILLS</Text>
 
-      {SUB_SECTIONS.map((section) => (
-        <TouchableOpacity
-          key={section.id}
-          style={styles.row}
-          onPress={() => setActiveSection(section.id)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.rowLeft}>
-            <Text style={styles.rowTitle}>{section.title}</Text>
-            <Text style={styles.rowDescription}>{section.description}</Text>
-          </View>
-          <Text style={styles.rowArrow}>→</Text>
-        </TouchableOpacity>
-      ))}
+      {/* 2x2 card grid */}
+      <View style={styles.grid}>
+        {SUB_SECTIONS.map((section) => {
+          const s = scores[section.scoreKey];
+
+          // Build the score badge string
+          let scoreBadge: string | null = null;
+          if (s) {
+            if (section.scoreType === 'percent' && s.bestTotal > 0) {
+              scoreBadge = `${Math.round((s.bestScore / s.bestTotal) * 100)}%`;
+            } else if (section.scoreType === 'count' && s.sessionsCompleted > 0) {
+              scoreBadge = `${s.sessionsCompleted} session${s.sessionsCompleted === 1 ? '' : 's'}`;
+            }
+          }
+
+          return (
+            <TouchableOpacity
+              key={section.id}
+              style={styles.card}
+              onPress={() => setActiveSection(section.id)}
+              activeOpacity={0.75}
+            >
+              {/* Top row: title + score badge */}
+              <View style={styles.cardTopRow}>
+                <Text style={styles.cardTitle}>{section.title}</Text>
+                {scoreBadge && (
+                  <Text style={styles.scoreBadge}>{scoreBadge}</Text>
+                )}
+              </View>
+              <Text style={styles.cardDescription}>{section.description}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </ScrollView>
   );
 }
@@ -147,38 +188,51 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
-  sectionLabel: {
-    marginBottom: spacing.sm,
+  gridLabel: {
+    marginBottom: spacing.md,
   },
 
-  row: {
+  // ── Card grid ──
+  grid: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  card: {
+    width: '47%' as any,
+    minWidth: 140,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+  },
+
+  cardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    marginBottom: spacing.xs,
+    gap: spacing.xs,
   },
-  rowLeft: {
-    flex: 1,
-    marginRight: spacing.md,
-  },
-  rowTitle: {
+  cardTitle: {
     fontFamily: font.semiBold,
-    fontSize: fontSize.md,
-    color: colors.textPrimary,
-    marginBottom: 3,
-  },
-  rowDescription: {
-    fontFamily: font.regular,
     fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    lineHeight: 18,
+    color: colors.textPrimary,
+    flex: 1,
   },
-  rowArrow: {
+  cardDescription: {
     fontFamily: font.regular,
-    fontSize: fontSize.md,
-    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    color: colors.textSecondary,
+    lineHeight: 17,
+  },
+
+  // Score shown top-right of card (blue for %, muted for count)
+  scoreBadge: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.xs,
+    color: colors.accent,
   },
 
   // ── Sub-section wrapper ──
