@@ -37,28 +37,29 @@ export default function LevelToggle() {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',      // buttons side by side
-    backgroundColor: 'transparent',
+    flexDirection: 'row',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    gap: 8,
+    gap: 4,
   },
   button: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 3,
     borderWidth: 1,
-    borderColor: '#4fc3f7',
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   activeButton: {
-    backgroundColor: '#4fc3f7', // filled when selected
+    backgroundColor: '#ffffff',
+    borderColor: '#ffffff',
   },
   buttonText: {
-    color: '#4fc3f7',
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontFamily: 'IBMPlexMono_600SemiBold',
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.5)',
+    letterSpacing: 0.5,
   },
   activeText: {
-    color: '#1a1a2e', // dark text on the filled button
+    color: '#1a1a2e',
   },
 });

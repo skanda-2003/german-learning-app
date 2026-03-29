@@ -23,161 +23,200 @@ import useLevelStore from '../src/store/useLevelStore';
 import { VOCABULARY } from '../src/data/vocabulary';
 import { loadMastery } from '../src/lib/masteryService';
 import { loadProgress, getTodayString } from '../src/lib/streakService';
-import { loadAllScores, SectionScore, SectionKey } from '../src/lib/scoresService';
+import { loadAllScores, SectionScore } from '../src/lib/scoresService';
+import {
+  colors, font, fontSize, spacing, radius,
+  cardStyle, labelStyle, progressTrackStyle, statNumberStyle,
+} from '../src/styles/theme';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-// Format a score as a percentage string, e.g. "80%"
 function pct(score: SectionScore): string {
   if (score.bestTotal === 0) return '—';
   return `${Math.round((score.bestScore / score.bestTotal) * 100)}%`;
 }
 
-// Format a score as "N / T", e.g. "8 / 10"
-function fraction(score: SectionScore): string {
-  if (score.bestTotal === 0) return '—';
-  return `${score.bestScore} / ${score.bestTotal}`;
-}
-
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
-// A single section row showing best score or completions
 type ScoreRowProps = {
-  emoji: string;
   label: string;
   score: SectionScore;
-  type: 'scored' | 'completion'; // scored = show %, completion = show "N sessions"
+  type: 'scored' | 'completion';
 };
 
-function ScoreRow({ emoji, label, score, type }: ScoreRowProps) {
+function ScoreRow({ label, score, type }: ScoreRowProps) {
   const isAttempted = score.sessionsCompleted > 0;
 
   return (
-    <View style={styles.scoreRow}>
-      <Text style={styles.scoreRowEmoji}>{emoji}</Text>
-      <View style={styles.scoreRowContent}>
-        <Text style={styles.scoreRowLabel}>{label}</Text>
-        {!isAttempted ? (
-          <Text style={styles.scoreRowNotStarted}>Not started</Text>
-        ) : type === 'completion' ? (
-          <Text style={styles.scoreRowValue}>
-            {score.sessionsCompleted} session{score.sessionsCompleted !== 1 ? 's' : ''} completed
-          </Text>
+    <View style={rowStyles.row}>
+      <Text style={rowStyles.label}>{label}</Text>
+      <View style={rowStyles.right}>
+        {type === 'scored' ? (
+          <>
+            <Text style={rowStyles.value}>{pct(score)}</Text>
+            <Text style={rowStyles.meta}>
+              {isAttempted ? `${score.sessionsCompleted} sessions` : 'Not started'}
+            </Text>
+          </>
         ) : (
-          <Text style={styles.scoreRowValue}>
-            Best: <Text style={styles.scoreRowHighlight}>{pct(score)}</Text>
-            {'  '}({fraction(score)}){'  '}·{'  '}
-            {score.sessionsCompleted} session{score.sessionsCompleted !== 1 ? 's' : ''}
-          </Text>
+          <>
+            <Text style={rowStyles.value}>
+              {isAttempted ? score.sessionsCompleted : '—'}
+            </Text>
+            <Text style={rowStyles.meta}>
+              {isAttempted ? 'sessions' : 'Not started'}
+            </Text>
+          </>
         )}
       </View>
     </View>
   );
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const rowStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  label: {
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textPrimary,
+    flex: 1,
+  },
+  right: {
+    alignItems: 'flex-end',
+  },
+  value: {
+    fontFamily: font.bold,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+  },
+  meta: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xxs,
+    color: colors.textMuted,
+  },
+});
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ProgressScreen() {
-  const level = useLevelStore(state => state.level);
-  const words = VOCABULARY[level];
+  const level = useLevelStore((state) => state.level);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [knownCount, setKnownCount] = useState(0);
-  const [streakCount, setStreakCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [streak, setStreak] = useState(0);
   const [challengeDoneToday, setChallengeDoneToday] = useState(false);
-  const [scores, setScores] = useState<Record<SectionKey, SectionScore> | null>(null);
+  const [scores, setScores] = useState<Awaited<ReturnType<typeof loadAllScores>> | null>(null);
 
-  // Reload everything every time the tab is focused
   useFocusEffect(
     useCallback(() => {
-      setIsLoading(true);
+      let cancelled = false;
 
-      Promise.all([
-        loadMastery(),
-        loadProgress(),
-        loadAllScores(),
-      ]).then(([masteryMap, progress, allScores]) => {
-        setKnownCount(masteryMap.size);
-        setStreakCount(progress.streakCount);
-        setChallengeDoneToday(progress.dailyChallengeCompletedDate === getTodayString());
-        setScores(allScores);
-        setIsLoading(false);
-      });
-    }, [])
+      async function load() {
+        setLoading(true);
+        const vocab = VOCABULARY[level];
+
+        const [mastery, progress, allScores] = await Promise.all([
+          loadMastery(),
+          loadProgress(),
+          loadAllScores(),
+        ]);
+
+        if (!cancelled) {
+          setKnownCount(vocab.filter(w => mastery.has(w.id)).length);
+          setTotalCount(vocab.length);
+          setStreak(progress.streakCount);
+          setChallengeDoneToday(progress.dailyChallengeCompletedDate === getTodayString());
+          setScores(allScores);
+          setLoading(false);
+        }
+      }
+
+      load();
+      return () => { cancelled = true; };
+    }, [level])
   );
 
-  // ─── Loading ────────────────────────────────────────────────────────────────
-  if (isLoading || !scores) {
+  if (loading || !scores) {
     return (
-      <View style={styles.centeredContainer}>
-        <ActivityIndicator size="large" color="#4fc3f7" />
-        <Text style={styles.loadingText}>Loading your progress...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" color={colors.accent} />
       </View>
     );
   }
 
-  const totalWords = words.length;
-  const masteryPct = totalWords > 0 ? Math.round((knownCount / totalWords) * 100) : 0;
+  const masteryPct = totalCount > 0 ? knownCount / totalCount : 0;
 
-  // ─── Main screen ────────────────────────────────────────────────────────────
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.screenTitle}>Progress</Text>
-      <Text style={styles.screenSubtitle}>Level {level}</Text>
 
-      {/* ── Streak card ── */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Daily Streak</Text>
-        <View style={styles.streakRow}>
-          <Text style={styles.streakFlame}>🔥</Text>
-          <Text style={styles.streakCount}>{streakCount}</Text>
-          <Text style={styles.streakLabel}>day{streakCount !== 1 ? 's' : ''}</Text>
+      <Text style={styles.pageTitle}>Progress</Text>
+      <Text style={styles.pageSubtitle}>{level} · {totalCount} words</Text>
+
+      {/* ── Streak ── */}
+      <View style={[cardStyle, styles.streakCard]}>
+        <View style={styles.streakLeft}>
+          <Text style={[labelStyle, { marginBottom: spacing.xs }]}>STREAK</Text>
+          <Text style={statNumberStyle}>{streak}</Text>
+          <Text style={styles.streakUnit}>days</Text>
         </View>
-        <Text style={styles.challengeStatus}>
-          {challengeDoneToday ? '✅ Challenge completed today' : '⏳ Daily challenge not done yet'}
-        </Text>
+        <View style={styles.streakRight}>
+          <Text style={styles.fireEmoji}>🔥</Text>
+          <View style={[
+            styles.challengeBadge,
+            challengeDoneToday ? styles.challengeDone : styles.challengePending,
+          ]}>
+            <Text style={[
+              styles.challengeBadgeText,
+              challengeDoneToday ? styles.challengeDoneText : styles.challengePendingText,
+            ]}>
+              {challengeDoneToday ? 'DONE TODAY' : 'PENDING'}
+            </Text>
+          </View>
+        </View>
       </View>
 
-      {/* ── Vocabulary mastery card ── */}
-      <View style={styles.card}>
-        <View style={styles.cardTitleRow}>
-          <Text style={styles.cardTitle}>Vocabulary Mastery</Text>
-          <Text style={styles.masteryFraction}>{knownCount} / {totalWords}</Text>
+      {/* ── Vocabulary ── */}
+      <View style={[cardStyle, styles.section]}>
+        <Text style={[labelStyle, styles.sectionLabel]}>VOCABULARY</Text>
+        <View style={styles.masteryRow}>
+          <Text style={statNumberStyle}>{knownCount}</Text>
+          <Text style={styles.masteryTotal}> / {totalCount}</Text>
         </View>
-
-        {/* Progress bar */}
-        <View style={styles.masteryBarBackground}>
-          <View style={[styles.masteryBarFill, { width: `${masteryPct}%` as any }]} />
+        <View style={[progressTrackStyle, styles.progressTrack]}>
+          <View style={[styles.progressFill, { width: `${Math.round(masteryPct * 100)}%` as any }]} />
         </View>
-        <Text style={styles.masteryPct}>{masteryPct}% of {level} vocabulary known</Text>
+        <Text style={styles.masteryLabel}>{Math.round(masteryPct * 100)}% mastered</Text>
       </View>
 
       {/* ── Grammar ── */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Grammar Exercises</Text>
-        <ScoreRow
-          emoji="📝"
-          label="Grammar"
-          score={scores.grammar}
-          type="scored"
-        />
+      <View style={[cardStyle, styles.section]}>
+        <Text style={[labelStyle, styles.sectionLabel]}>GRAMMAR</Text>
+        <ScoreRow label="Exercises" score={scores.grammar} type="scored" />
       </View>
 
       {/* ── Exam Prep ── */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Exam Prep</Text>
-        <ScoreRow emoji="📖" label="Reading"  score={scores.exam_reading}  type="scored" />
-        <ScoreRow emoji="🎧" label="Listening" score={scores.exam_listening} type="scored" />
-        <ScoreRow emoji="✍️" label="Writing"  score={scores.exam_writing}  type="completion" />
-        <ScoreRow emoji="🎤" label="Speaking"  score={scores.exam_speaking}  type="completion" />
+      <View style={[cardStyle, styles.section]}>
+        <Text style={[labelStyle, styles.sectionLabel]}>EXAM PREP</Text>
+        <ScoreRow label="Reading"   score={scores.exam_reading}   type="scored" />
+        <ScoreRow label="Listening" score={scores.exam_listening} type="scored" />
+        <ScoreRow label="Writing"   score={scores.exam_writing}   type="completion" />
+        <ScoreRow label="Speaking"  score={scores.exam_speaking}  type="completion" />
       </View>
 
       {/* ── Mini Games ── */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Mini Games</Text>
-        <ScoreRow emoji="⚔️" label="Gender Battle"  score={scores.game_gender_battle}  type="scored" />
-        <ScoreRow emoji="🎧" label="Listening Quiz"  score={scores.game_listening_quiz} type="scored" />
-        <ScoreRow emoji="🔗" label="Word Match"      score={scores.game_word_match}     type="completion" />
+      <View style={[cardStyle, styles.section]}>
+        <Text style={[labelStyle, styles.sectionLabel]}>MINI GAMES</Text>
+        <ScoreRow label="Gender Battle"  score={scores.game_gender_battle}  type="scored" />
+        <ScoreRow label="Listening Quiz" score={scores.game_listening_quiz} type="scored" />
+        <ScoreRow label="Word Match"     score={scores.game_word_match}     type="completion" />
       </View>
 
     </ScrollView>
@@ -187,142 +226,109 @@ export default function ProgressScreen() {
 // ─── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  centeredContainer: {
+  loadingContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f5f5f5',
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#888',
+    backgroundColor: colors.background,
   },
 
   container: {
-    padding: 24,
-    backgroundColor: '#f5f5f5',
-    paddingBottom: 40,
+    padding: spacing.xxl,
+    paddingBottom: spacing.hero,
+    backgroundColor: colors.background,
   },
 
-  screenTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-    marginBottom: 2,
+  pageTitle: {
+    fontFamily: font.bold,
+    fontSize: fontSize.xl,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
-  screenSubtitle: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 24,
+  pageSubtitle: {
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    marginBottom: spacing.xxl,
+  },
+
+  // ── Streak card ──
+  streakCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
+  },
+  streakLeft: {
+    gap: 2,
+  },
+  streakUnit: {
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+  },
+  streakRight: {
+    alignItems: 'flex-end',
+    gap: spacing.sm,
+  },
+  fireEmoji: {
+    fontSize: 28,
+  },
+  challengeBadge: {
+    borderWidth: 1,
+    borderRadius: radius.sm,
+    paddingVertical: 2,
+    paddingHorizontal: spacing.sm,
+  },
+  challengeDone: {
+    borderColor: colors.success,
+    backgroundColor: colors.successLight,
+  },
+  challengePending: {
+    borderColor: colors.border,
+  },
+  challengeBadgeText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.xxs,
+    letterSpacing: 0.5,
+  },
+  challengeDoneText: {
+    color: colors.success,
+  },
+  challengePendingText: {
+    color: colors.textMuted,
   },
 
   // ── Cards ──
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+  section: {
+    marginBottom: spacing.md,
   },
-  cardTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#aaa',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 14,
-  },
-  cardTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
+  sectionLabel: {
+    marginBottom: spacing.sm,
   },
 
-  // ── Streak ──
-  streakRow: {
+  // ── Vocabulary ──
+  masteryRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
+    alignItems: 'baseline',
+    marginBottom: spacing.md,
   },
-  streakFlame: { fontSize: 32 },
-  streakCount: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#e65100',
+  masteryTotal: {
+    fontFamily: font.regular,
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
   },
-  streakLabel: {
-    fontSize: 16,
-    color: '#bf360c',
-    fontWeight: '600',
+  progressTrack: {
+    marginBottom: spacing.sm,
   },
-  challengeStatus: {
-    fontSize: 13,
-    color: '#888',
+  progressFill: {
+    height: '100%' as any,
+    backgroundColor: colors.accent,
+    borderRadius: 2,
   },
-
-  // ── Mastery bar ──
-  masteryFraction: {
-    fontSize: 13,
-    color: '#888',
-    fontWeight: '600',
-  },
-  masteryBarBackground: {
-    height: 10,
-    backgroundColor: '#eee',
-    borderRadius: 5,
-    overflow: 'hidden',
-    marginBottom: 8,
-  },
-  masteryBarFill: {
-    height: '100%',
-    backgroundColor: '#4fc3f7',
-    borderRadius: 5,
-  },
-  masteryPct: {
-    fontSize: 13,
-    color: '#888',
-  },
-
-  // ── Score rows ──
-  scoreRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-  },
-  scoreRowEmoji: {
-    fontSize: 18,
-    marginRight: 12,
-    marginTop: 1,
-  },
-  scoreRowContent: {
-    flex: 1,
-  },
-  scoreRowLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1a1a2e',
-    marginBottom: 2,
-  },
-  scoreRowValue: {
-    fontSize: 13,
-    color: '#888',
-  },
-  scoreRowHighlight: {
-    color: '#1a1a2e',
-    fontWeight: '700',
-  },
-  scoreRowNotStarted: {
-    fontSize: 13,
-    color: '#ccc',
-    fontStyle: 'italic',
+  masteryLabel: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
   },
 });

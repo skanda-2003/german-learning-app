@@ -21,6 +21,7 @@ import {
 import { generateReadingPassage, ReadingQuestion } from '../../lib/gemini';
 import useLevelStore from '../../store/useLevelStore';
 import { saveScore } from '../../lib/scoresService';
+import { colors, font, fontSize, spacing, radius } from '../../styles/theme';
 
 // Topics to rotate through
 const TOPICS = [
@@ -279,31 +280,24 @@ export default function ListeningExercise() {
           <Text style={styles.questionText}>{currentQuestion.question}</Text>
 
           <View style={styles.optionsContainer}>
-            {currentQuestion.options.map((option) => {
-              let optionStyle = styles.optionButton;
-              let textStyle = styles.optionText;
-
-              if (isAnswered) {
-                if (option === currentQuestion.answer) {
-                  optionStyle = { ...styles.optionButton, ...styles.optionCorrect };
-                  textStyle = { ...styles.optionText, ...styles.correctText };
-                } else if (option === currentAnswer) {
-                  optionStyle = { ...styles.optionButton, ...styles.optionIncorrect };
-                  textStyle = { ...styles.optionText, ...styles.incorrectText };
-                }
-              }
-
-              return (
-                <TouchableOpacity
-                  key={option}
-                  style={optionStyle}
-                  onPress={() => !isAnswered && handleAnswer(option)}
-                  disabled={isAnswered}
-                >
-                  <Text style={textStyle}>{option}</Text>
-                </TouchableOpacity>
-              );
-            })}
+            {currentQuestion.options.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[
+                  styles.optionButton,
+                  isAnswered && option === currentQuestion.answer && styles.optionCorrect,
+                  isAnswered && option === currentAnswer && option !== currentQuestion.answer && styles.optionIncorrect,
+                ]}
+                onPress={() => !isAnswered && handleAnswer(option)}
+                disabled={isAnswered}
+              >
+                <Text style={[
+                  styles.optionText,
+                  isAnswered && option === currentQuestion.answer && styles.correctText,
+                  isAnswered && option === currentAnswer && option !== currentQuestion.answer && styles.incorrectText,
+                ]}>{option}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           {isAnswered && (
@@ -365,179 +359,95 @@ export default function ListeningExercise() {
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   centeredContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    padding: spacing.xxxl, backgroundColor: colors.background,
   },
-  container: {
-    padding: 24,
-    paddingBottom: 40,
-  },
+  container: { padding: spacing.xxl, paddingBottom: 40, backgroundColor: colors.background },
 
-  // ── Start screen ──
-  sectionEmoji: { fontSize: 48, marginBottom: 16 },
-  sectionTitle: { fontSize: 24, fontWeight: 'bold', color: '#1a1a2e', marginBottom: 10 },
+  sectionEmoji: { fontSize: 40, marginBottom: spacing.lg },
+  sectionTitle: { fontFamily: font.bold, fontSize: fontSize.xl, color: colors.textPrimary, marginBottom: spacing.sm },
   sectionSubtitle: {
-    fontSize: 14,
-    color: '#888888',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 20,
+    fontFamily: font.regular, fontSize: fontSize.sm, color: colors.textSecondary,
+    textAlign: 'center', lineHeight: 20, marginBottom: spacing.xl,
   },
   warningText: {
-    fontSize: 13,
-    color: '#e65100',
-    textAlign: 'center',
-    marginBottom: 16,
-    lineHeight: 18,
+    fontFamily: font.regular, fontSize: fontSize.sm, color: colors.error,
+    textAlign: 'center', marginBottom: spacing.lg, lineHeight: 18,
   },
-  errorText: { fontSize: 13, color: '#d32f2f', marginBottom: 16, textAlign: 'center' },
-  generateButton: {
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-  },
-  generateButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+  errorText: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.error, marginBottom: spacing.lg, textAlign: 'center' },
+  generateButton: { backgroundColor: colors.textPrimary, paddingVertical: spacing.lg, paddingHorizontal: spacing.hero, borderRadius: radius.md },
+  generateButtonText: { fontFamily: font.semiBold, color: colors.background, fontSize: fontSize.md },
 
-  // ── Loading ──
-  loadingText: { marginTop: 16, fontSize: 14, color: '#888888' },
+  loadingText: { fontFamily: font.regular, marginTop: spacing.lg, fontSize: fontSize.sm, color: colors.textSecondary },
 
-  // ── Audio controls ──
-  audioContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    gap: 16,
-  },
-  audioTitle: { fontSize: 20, fontWeight: 'bold', color: '#1a1a2e' },
-  audioSubtitle: {
-    fontSize: 14,
-    color: '#888888',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
+  audioContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xxxl, gap: spacing.lg },
+  audioTitle: { fontFamily: font.bold, fontSize: fontSize.lg, color: colors.textPrimary },
+  audioSubtitle: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
   playButton: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: '#1a1a2e',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 6,
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: colors.textPrimary,
+    alignItems: 'center', justifyContent: 'center', marginVertical: spacing.sm,
   },
-  playButtonIcon: { fontSize: 36, color: '#ffffff' },
-  audioStatus: { fontSize: 13, color: '#aaaaaa' },
+  playButtonIcon: { fontSize: 32, color: colors.background },
+  audioStatus: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.textMuted },
   replayButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#cccccc',
+    paddingVertical: spacing.sm, paddingHorizontal: spacing.xxl,
+    borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
   },
-  replayButtonText: { fontSize: 14, color: '#555555', fontWeight: '600' },
+  replayButtonText: { fontFamily: font.semiBold, fontSize: fontSize.sm, color: colors.textPrimary },
   answerButton: {
-    backgroundColor: '#4fc3f7',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-    marginTop: 8,
+    backgroundColor: colors.accent, paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.hero, borderRadius: radius.md, marginTop: spacing.sm,
   },
-  answerButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+  answerButtonText: { fontFamily: font.semiBold, color: colors.background, fontSize: fontSize.md },
 
-  // ── Questions ──
   replayMini: {
-    alignSelf: 'flex-start',
-    marginBottom: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#dddddd',
-    backgroundColor: '#ffffff',
+    alignSelf: 'flex-start', marginBottom: spacing.lg,
+    paddingVertical: spacing.xs, paddingHorizontal: spacing.md,
+    borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
   },
-  replayMiniText: { fontSize: 13, color: '#555555' },
-  questionProgress: { fontSize: 12, color: '#aaaaaa', marginBottom: 10 },
+  replayMiniText: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.textSecondary },
+  questionProgress: { fontFamily: font.regular, fontSize: fontSize.xs, color: colors.textMuted, marginBottom: spacing.sm },
   questionCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border,
+    borderRadius: radius.md, padding: spacing.xl,
   },
-  questionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a2e',
-    marginBottom: 16,
-    lineHeight: 24,
-  },
-  optionsContainer: { gap: 10 },
+  questionText: { fontFamily: font.semiBold, fontSize: fontSize.md, color: colors.textPrimary, marginBottom: spacing.lg, lineHeight: 24 },
+  optionsContainer: { gap: spacing.sm },
   optionButton: {
-    borderWidth: 1.5,
-    borderColor: '#dddddd',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#fafafa',
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
+    paddingVertical: spacing.md, paddingHorizontal: spacing.lg, backgroundColor: colors.background,
   },
-  optionCorrect: { borderColor: '#a5d6a7', backgroundColor: '#e8f5e9' },
-  optionIncorrect: { borderColor: '#ef9a9a', backgroundColor: '#ffebee' },
-  optionText: { fontSize: 15, color: '#1a1a2e' },
-  correctText: { color: '#388e3c' },
-  incorrectText: { color: '#d32f2f' },
+  optionCorrect: { borderColor: colors.success, backgroundColor: colors.successLight },
+  optionIncorrect: { borderColor: colors.error, backgroundColor: colors.errorLight },
+  optionText: { fontFamily: font.regular, fontSize: fontSize.md, color: colors.textPrimary },
+  correctText: { color: colors.success, fontFamily: font.semiBold },
+  incorrectText: { color: colors.error },
   nextButton: {
-    alignSelf: 'flex-end',
-    marginTop: 16,
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    alignSelf: 'flex-end', marginTop: spacing.lg,
+    backgroundColor: colors.textPrimary, paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl, borderRadius: radius.md,
   },
-  nextButtonText: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
+  nextButtonText: { fontFamily: font.semiBold, color: colors.background, fontSize: fontSize.sm },
 
-  // ── Done screen ──
-  doneContainer: { padding: 24, paddingBottom: 40, alignItems: 'center' },
-  doneEmoji: { fontSize: 52, marginBottom: 12 },
-  doneTitle: { fontSize: 26, fontWeight: 'bold', color: '#1a1a2e', marginBottom: 4 },
-  doneSubtitle: { fontSize: 15, color: '#888888', marginBottom: 24 },
+  doneContainer: { padding: spacing.xxl, paddingBottom: 40, alignItems: 'center', backgroundColor: colors.background },
+  doneEmoji: { fontSize: 40, marginBottom: spacing.lg },
+  doneTitle: { fontFamily: font.bold, fontSize: fontSize.xxl, color: colors.textPrimary, marginBottom: spacing.xs },
+  doneSubtitle: { fontFamily: font.regular, fontSize: fontSize.md, color: colors.textSecondary, marginBottom: spacing.xxl },
   passageReveal: {
-    width: '100%',
-    backgroundColor: '#f0f4ff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#c5cae9',
+    width: '100%', backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.md, padding: spacing.lg, marginBottom: spacing.xl,
+    borderWidth: 1, borderColor: colors.border,
   },
   passageRevealLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#7986cb',
-    letterSpacing: 1,
-    marginBottom: 8,
+    fontFamily: font.semiBold, fontSize: fontSize.xxs, color: colors.textMuted,
+    letterSpacing: 0.9, textTransform: 'uppercase', marginBottom: spacing.sm,
   },
-  passageRevealText: { fontSize: 15, color: '#1a1a2e', lineHeight: 24 },
-  reviewCard: {
-    width: '100%',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1.5,
-  },
-  reviewCorrect: { backgroundColor: '#e8f5e9', borderColor: '#a5d6a7' },
-  reviewIncorrect: { backgroundColor: '#ffebee', borderColor: '#ef9a9a' },
-  reviewQuestion: { fontSize: 14, fontWeight: '600', color: '#1a1a2e', marginBottom: 6 },
-  reviewAnswer: { fontSize: 13 },
-  reviewCorrectAnswer: { fontSize: 13, color: '#388e3c', marginTop: 4 },
+  passageRevealText: { fontFamily: font.regular, fontSize: fontSize.md, color: colors.textPrimary, lineHeight: 24 },
+  reviewCard: { width: '100%', borderRadius: radius.md, padding: spacing.lg, marginBottom: spacing.sm, borderWidth: 1 },
+  reviewCorrect: { backgroundColor: colors.successLight, borderColor: colors.success },
+  reviewIncorrect: { backgroundColor: colors.errorLight, borderColor: colors.error },
+  reviewQuestion: { fontFamily: font.semiBold, fontSize: fontSize.sm, color: colors.textPrimary, marginBottom: spacing.xs },
+  reviewAnswer: { fontFamily: font.regular, fontSize: fontSize.sm },
+  reviewCorrectAnswer: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.success, marginTop: spacing.xs },
 });

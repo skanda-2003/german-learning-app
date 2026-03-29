@@ -4,11 +4,31 @@
 
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
-import { Platform, View } from 'react-native';
+import { Platform, View, ActivityIndicator } from 'react-native';
 import LevelToggle from '../src/components/LevelToggle';
 import TipsBar from '../src/components/TipsBar';
+import {
+  useFonts,
+  IBMPlexMono_400Regular,
+  IBMPlexMono_500Medium,
+  IBMPlexMono_600SemiBold,
+  IBMPlexMono_700Bold,
+} from '@expo-google-fonts/ibm-plex-mono';
 
 export default function RootLayout() {
+  // Load IBM Plex Mono — all 4 weights used across the design system
+  const [fontsLoaded] = useFonts({
+    IBMPlexMono_400Regular,
+    IBMPlexMono_500Medium,
+    IBMPlexMono_600SemiBold,
+    IBMPlexMono_700Bold,
+  });
+
+  // Don't render anything until fonts are ready (avoids flash of wrong font)
+  if (!fontsLoaded) {
+    return <ActivityIndicator style={{ flex: 1 }} />;
+  }
+
   return (
     // GestureHandlerRootView is required for the drawer to work
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -20,20 +40,36 @@ export default function RootLayout() {
           // On mobile, it will slide in/out as a normal drawer
           drawerType: Platform.OS === 'web' ? 'permanent' : 'front',
           drawerStyle: {
-            backgroundColor: '#1a1a2e', // dark navy sidebar background
+            backgroundColor: '#1a1a2e',
             width: 220,
+            borderRightWidth: 0,
           },
           drawerLabelStyle: {
-            color: '#ffffff', // white text in sidebar
-            fontSize: 15,
+            fontFamily: 'IBMPlexMono_500Medium',
+            fontSize: 13,
+            color: '#ffffff',
+            letterSpacing: 0.3,
           },
-          drawerActiveTintColor: '#4fc3f7',   // light blue when selected
-          drawerInactiveTintColor: '#aaaaaa', // grey when not selected
+          drawerActiveTintColor: '#ffffff',
+          drawerInactiveTintColor: '#888888',
+          drawerActiveBackgroundColor: 'rgba(255,255,255,0.08)',
+          drawerItemStyle: {
+            borderRadius: 4,
+            marginHorizontal: 8,
+          },
           headerStyle: {
-            backgroundColor: '#1a1a2e', // match header to sidebar
+            backgroundColor: '#1a1a2e',
+            borderBottomWidth: 0,
+            elevation: 0,
+            shadowOpacity: 0,
           },
-          headerTintColor: '#ffffff', // white header text
-          // LevelToggle placed on the right side of the header bar
+          headerTitleStyle: {
+            fontFamily: 'IBMPlexMono_600SemiBold',
+            fontSize: 14,
+            color: '#ffffff',
+            letterSpacing: 0.5,
+          },
+          headerTintColor: '#ffffff',
           headerRight: () => <LevelToggle />,
         }}
       >

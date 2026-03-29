@@ -23,6 +23,7 @@ import {
 import { getSpeakingFeedback } from '../../lib/gemini';
 import useLevelStore from '../../store/useLevelStore';
 import { saveCompletion } from '../../lib/scoresService';
+import { colors, font, fontSize, spacing, radius } from '../../styles/theme';
 
 // ─── Speaking prompts ─────────────────────────────────────────────────────────
 // A1-appropriate prompts — conversational, short answers expected
@@ -278,192 +279,72 @@ function randomPrompt(): string {
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    paddingBottom: 40,
-  },
+  container: { padding: spacing.xxl, paddingBottom: 40, backgroundColor: colors.background },
 
-  // ── Prompt ──
   promptCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    borderWidth: 1.5,
-    borderColor: '#fce4ec',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border,
+    borderRadius: radius.md, padding: spacing.xl, marginBottom: spacing.xxl,
   },
   promptLabel: {
-    fontSize: 11,
-    color: '#f48fb1',
-    fontWeight: '700',
-    letterSpacing: 1,
-    marginBottom: 10,
+    fontFamily: font.semiBold, fontSize: fontSize.xxs, color: colors.textMuted,
+    letterSpacing: 0.9, textTransform: 'uppercase', marginBottom: spacing.md,
   },
-  promptText: {
-    fontSize: 17,
-    color: '#1a1a2e',
-    lineHeight: 26,
-    fontWeight: '500',
-  },
+  promptText: { fontFamily: font.regular, fontSize: fontSize.md, color: colors.textPrimary, lineHeight: 26 },
 
-  // ── Record button ──
-  recordRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    marginBottom: 16,
-  },
+  recordRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg, marginBottom: spacing.lg },
   recordButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    backgroundColor: colors.textPrimary, paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl, borderRadius: radius.md,
   },
-  recordButtonActive: {
-    backgroundColor: '#d32f2f',
-  },
-  recordIcon: {
-    fontSize: 18,
-  },
-  recordButtonText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  recordingStatus: {
-    fontSize: 14,
-    color: '#d32f2f',
-    fontWeight: '600',
-  },
-  recordError: {
-    fontSize: 13,
-    color: '#e65100',
-    marginBottom: 12,
-    lineHeight: 18,
-  },
+  recordButtonActive: { backgroundColor: colors.error },
+  recordIcon: { fontSize: 16 },
+  recordButtonText: { fontFamily: font.semiBold, color: colors.background, fontSize: fontSize.md },
+  recordingStatus: { fontFamily: font.semiBold, fontSize: fontSize.sm, color: colors.error },
+  recordError: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.error, marginBottom: spacing.md, lineHeight: 18 },
 
-  // ── Input ──
-  orLabel: {
-    fontSize: 12,
-    color: '#aaaaaa',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
+  orLabel: { fontFamily: font.regular, fontSize: fontSize.xs, color: colors.textMuted, textAlign: 'center', marginBottom: spacing.md },
   textInput: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#dddddd',
-    padding: 16,
-    fontSize: 16,
-    color: '#1a1a2e',
-    minHeight: 160,
-    lineHeight: 24,
+    backgroundColor: colors.background, borderRadius: radius.md, borderWidth: 1,
+    borderColor: colors.border, padding: spacing.lg, fontFamily: font.regular,
+    fontSize: fontSize.md, color: colors.textPrimary, minHeight: 160, lineHeight: 24,
   },
   charCount: {
-    fontSize: 12,
-    color: '#cccccc',
-    textAlign: 'right',
-    marginTop: 6,
-    marginBottom: 20,
+    fontFamily: font.regular, fontSize: fontSize.xxs, color: colors.textMuted,
+    textAlign: 'right', marginTop: spacing.xs, marginBottom: spacing.xl,
   },
-  errorText: {
-    fontSize: 13,
-    color: '#d32f2f',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
+  errorText: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.error, marginBottom: spacing.md, textAlign: 'center' },
 
-  // ── Submit ──
   submitButton: {
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 8,
+    backgroundColor: colors.textPrimary, paddingVertical: spacing.lg,
+    borderRadius: radius.md, alignItems: 'center', marginBottom: spacing.sm,
   },
-  submitDisabled: {
-    backgroundColor: '#cccccc',
-  },
-  submitButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  loadingText: {
-    fontSize: 13,
-    color: '#888888',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  changePromptButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  changePromptText: {
-    fontSize: 14,
-    color: '#4fc3f7',
-    fontWeight: '600',
-  },
+  submitDisabled: { backgroundColor: colors.border },
+  submitButtonText: { fontFamily: font.semiBold, color: colors.background, fontSize: fontSize.md },
+  loadingText: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.sm },
+  changePromptButton: { alignItems: 'center', paddingVertical: spacing.md },
+  changePromptText: { fontFamily: font.semiBold, fontSize: fontSize.sm, color: colors.accent },
 
-  // ── Feedback screen ──
   submittedCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    backgroundColor: colors.surfaceAlt, borderRadius: radius.md, padding: spacing.lg,
+    marginBottom: spacing.lg, borderWidth: 1, borderColor: colors.border,
   },
   submittedLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#aaaaaa',
-    letterSpacing: 1,
-    marginBottom: 8,
+    fontFamily: font.semiBold, fontSize: fontSize.xxs, color: colors.textMuted,
+    letterSpacing: 0.9, textTransform: 'uppercase', marginBottom: spacing.sm,
   },
-  submittedText: {
-    fontSize: 15,
-    color: '#444444',
-    lineHeight: 22,
-  },
+  submittedText: { fontFamily: font.regular, fontSize: fontSize.md, color: colors.textSecondary, lineHeight: 22 },
+
   feedbackCard: {
-    backgroundColor: '#fce4ec',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 28,
-    borderWidth: 1.5,
-    borderColor: '#f48fb1',
+    backgroundColor: colors.background, borderRadius: radius.md, padding: spacing.xl,
+    marginBottom: spacing.xxl, borderWidth: 1, borderColor: colors.border,
   },
   feedbackLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#c2185b',
-    letterSpacing: 1,
-    marginBottom: 10,
+    fontFamily: font.semiBold, fontSize: fontSize.xxs, color: colors.textMuted,
+    letterSpacing: 0.9, textTransform: 'uppercase', marginBottom: spacing.md,
   },
-  feedbackText: {
-    fontSize: 15,
-    color: '#1a1a2e',
-    lineHeight: 24,
-  },
-  primaryButton: {
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  feedbackText: { fontFamily: font.regular, fontSize: fontSize.md, color: colors.textPrimary, lineHeight: 24 },
+
+  primaryButton: { backgroundColor: colors.textPrimary, paddingVertical: spacing.lg, borderRadius: radius.md, alignItems: 'center' },
+  primaryButtonText: { fontFamily: font.semiBold, color: colors.background, fontSize: fontSize.md },
 });

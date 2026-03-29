@@ -18,13 +18,11 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Word } from '../data/vocabulary';
 
-// ─── Gender colours ────────────────────────────────────────────────────────────
-// A classic trick for learning German genders: colour-code them.
-// der = blue (masculine), die = red (feminine), das = green (neuter)
+// Gender accent colours — kept intentionally for learning value
 const GENDER_COLORS: Record<string, string> = {
-  der: '#4fc3f7', // light blue
-  die: '#f48fb1', // pink-red
-  das: '#81c784', // green
+  der: '#2563eb', // blue — masculine
+  die: '#dc2626', // red  — feminine
+  das: '#16a34a', // green — neuter
 };
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
@@ -109,7 +107,6 @@ export default function FlashCard({ word }: Props) {
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // Outer touchable — sets the card dimensions
   wrapper: {
     width: '100%',
     maxWidth: 380,
@@ -117,103 +114,103 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 
-  // Both faces share this base style — they sit on top of each other
+  // Both faces sit on top of each other — only one visible at a time
   card: {
     position: 'absolute',
     width: '100%',
     height: '100%',
-    borderRadius: 16,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
     padding: 28,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 5,
-    // Hide the face when it is rotated away from the viewer
     backfaceVisibility: 'hidden',
   },
 
-  // Front face is white
   front: {
     backgroundColor: '#ffffff',
   },
 
-  // Back face is a very light blue-grey
   back: {
-    backgroundColor: '#f0f4ff',
+    backgroundColor: '#ffffff',
   },
 
   tapHint: {
     position: 'absolute',
     top: 14,
-    fontSize: 11,
+    fontFamily: 'IBMPlexMono_400Regular',
+    fontSize: 10,
     color: '#bbbbbb',
     letterSpacing: 0.5,
   },
 
   genderBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 2,
     marginBottom: 12,
   },
 
   genderText: {
+    fontFamily: 'IBMPlexMono_600SemiBold',
     color: '#ffffff',
-    fontWeight: 'bold',
-    fontSize: 13,
+    fontSize: 11,
+    letterSpacing: 0.5,
   },
 
   germanWord: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
+    fontFamily: 'IBMPlexMono_700Bold',
+    fontSize: 34,
+    color: '#111111',
     textAlign: 'center',
     marginBottom: 8,
   },
 
   partOfSpeech: {
-    fontSize: 13,
+    fontFamily: 'IBMPlexMono_400Regular',
+    fontSize: 11,
     color: '#aaaaaa',
-    fontStyle: 'italic',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 
   englishWord: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
+    fontFamily: 'IBMPlexMono_700Bold',
+    fontSize: 26,
+    color: '#111111',
     textAlign: 'center',
     marginBottom: 16,
   },
 
   divider: {
-    width: 40,
-    height: 2,
-    backgroundColor: '#dde3f0',
-    borderRadius: 2,
-    marginBottom: 16,
+    width: 32,
+    height: 1,
+    backgroundColor: '#e0e0e0',
+    marginBottom: 14,
   },
 
   exampleLabel: {
-    fontSize: 11,
+    fontFamily: 'IBMPlexMono_600SemiBold',
+    fontSize: 9,
     color: '#aaaaaa',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
     marginBottom: 6,
     textTransform: 'uppercase',
   },
 
   exampleDe: {
-    fontSize: 14,
+    fontFamily: 'IBMPlexMono_400Regular',
+    fontSize: 13,
     color: '#333333',
     textAlign: 'center',
-    fontStyle: 'italic',
     marginBottom: 4,
+    lineHeight: 19,
   },
 
   exampleEn: {
-    fontSize: 13,
+    fontFamily: 'IBMPlexMono_400Regular',
+    fontSize: 12,
     color: '#888888',
     textAlign: 'center',
   },

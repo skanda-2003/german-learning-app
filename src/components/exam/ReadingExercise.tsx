@@ -18,6 +18,8 @@ import {
 import { generateReadingPassage, ReadingQuestion } from '../../lib/gemini';
 import useLevelStore from '../../store/useLevelStore';
 import { saveScore } from '../../lib/scoresService';
+import { colors, font, fontSize, spacing, radius } from '../../styles/theme';
+
 
 // A few simple topics rotated on each generation so the passage is never the same
 const TOPICS = [
@@ -199,31 +201,24 @@ export default function ReadingExercise() {
 
           {/* Answer options */}
           <View style={styles.optionsContainer}>
-            {currentQuestion.options.map((option) => {
-              let optionStyle = styles.optionButton;
-              let textStyle = styles.optionText;
-
-              if (isAnswered) {
-                if (option === currentQuestion.answer) {
-                  optionStyle = { ...styles.optionButton, ...styles.optionCorrect };
-                  textStyle = { ...styles.optionText, ...styles.correctText };
-                } else if (option === currentAnswer) {
-                  optionStyle = { ...styles.optionButton, ...styles.optionIncorrect };
-                  textStyle = { ...styles.optionText, ...styles.incorrectText };
-                }
-              }
-
-              return (
-                <TouchableOpacity
-                  key={option}
-                  style={optionStyle}
-                  onPress={() => !isAnswered && handleAnswer(option)}
-                  disabled={isAnswered}
-                >
-                  <Text style={textStyle}>{option}</Text>
-                </TouchableOpacity>
-              );
-            })}
+            {currentQuestion.options.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[
+                  styles.optionButton,
+                  isAnswered && option === currentQuestion.answer && styles.optionCorrect,
+                  isAnswered && option === currentAnswer && option !== currentQuestion.answer && styles.optionIncorrect,
+                ]}
+                onPress={() => !isAnswered && handleAnswer(option)}
+                disabled={isAnswered}
+              >
+                <Text style={[
+                  styles.optionText,
+                  isAnswered && option === currentQuestion.answer && styles.correctText,
+                  isAnswered && option === currentAnswer && option !== currentQuestion.answer && styles.incorrectText,
+                ]}>{option}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           {/* Next button — shown after answering */}
@@ -246,186 +241,186 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    padding: spacing.xxxl,
+    backgroundColor: colors.background,
   },
   container: {
-    padding: 24,
+    padding: spacing.xxl,
     paddingBottom: 40,
+    backgroundColor: colors.background,
   },
 
-  // ── Start screen ──
-  sectionEmoji: { fontSize: 48, marginBottom: 16 },
+  sectionEmoji: { fontSize: 40, marginBottom: spacing.lg },
   sectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-    marginBottom: 10,
+    fontFamily: font.bold,
+    fontSize: fontSize.xl,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
   },
   sectionSubtitle: {
-    fontSize: 14,
-    color: '#888888',
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
-    marginBottom: 28,
+    marginBottom: spacing.xxl,
   },
   errorText: {
-    fontSize: 13,
-    color: '#d32f2f',
-    marginBottom: 16,
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.error,
+    marginBottom: spacing.lg,
     textAlign: 'center',
   },
   generateButton: {
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 12,
+    backgroundColor: colors.textPrimary,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.hero,
+    borderRadius: radius.md,
   },
   generateButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    fontFamily: font.semiBold,
+    color: colors.background,
+    fontSize: fontSize.md,
   },
 
-  // ── Loading ──
   loadingText: {
-    marginTop: 16,
-    fontSize: 14,
-    color: '#888888',
+    fontFamily: font.regular,
+    marginTop: spacing.lg,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
   },
 
-  // ── Passage ──
   passageCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   passageLabel: {
-    fontSize: 11,
-    color: '#4fc3f7',
-    fontWeight: '700',
-    letterSpacing: 1,
-    marginBottom: 10,
+    fontFamily: font.semiBold,
+    fontSize: fontSize.xxs,
+    color: colors.textMuted,
+    letterSpacing: 0.9,
+    textTransform: 'uppercase',
+    marginBottom: spacing.md,
   },
   passageText: {
-    fontSize: 16,
-    color: '#1a1a2e',
+    fontFamily: font.regular,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
     lineHeight: 26,
   },
 
-  // ── Question ──
   questionProgress: {
-    fontSize: 12,
-    color: '#aaaaaa',
-    marginBottom: 10,
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    marginBottom: spacing.sm,
   },
   questionCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.xl,
   },
   questionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a2e',
-    marginBottom: 16,
+    fontFamily: font.semiBold,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
     lineHeight: 24,
   },
-  optionsContainer: {
-    gap: 10,
-  },
+  optionsContainer: { gap: spacing.sm },
   optionButton: {
-    borderWidth: 1.5,
-    borderColor: '#dddddd',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#fafafa',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.background,
   },
   optionCorrect: {
-    borderColor: '#a5d6a7',
-    backgroundColor: '#e8f5e9',
+    borderColor: colors.success,
+    backgroundColor: colors.successLight,
   },
   optionIncorrect: {
-    borderColor: '#ef9a9a',
-    backgroundColor: '#ffebee',
+    borderColor: colors.error,
+    backgroundColor: colors.errorLight,
   },
   optionText: {
-    fontSize: 15,
-    color: '#1a1a2e',
+    fontFamily: font.regular,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
   },
-  correctText: { color: '#388e3c' },
-  incorrectText: { color: '#d32f2f' },
+  correctText: { color: colors.success, fontFamily: font.semiBold },
+  incorrectText: { color: colors.error },
 
   nextButton: {
     alignSelf: 'flex-end',
-    marginTop: 16,
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    marginTop: spacing.lg,
+    backgroundColor: colors.textPrimary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radius.md,
   },
   nextButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
+    fontFamily: font.semiBold,
+    color: colors.background,
+    fontSize: fontSize.sm,
   },
 
-  // ── Done screen ──
+  doneEmoji: { fontSize: 40, marginBottom: spacing.lg },
   doneContainer: {
-    padding: 24,
+    padding: spacing.xxl,
     paddingBottom: 40,
     alignItems: 'center',
+    backgroundColor: colors.background,
   },
-  doneEmoji: { fontSize: 52, marginBottom: 12 },
   doneTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-    marginBottom: 4,
+    fontFamily: font.bold,
+    fontSize: fontSize.xxl,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   doneSubtitle: {
-    fontSize: 15,
-    color: '#888888',
-    marginBottom: 28,
+    fontFamily: font.regular,
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
+    marginBottom: spacing.xxl,
   },
   reviewCard: {
     width: '100%',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1.5,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
+    borderWidth: 1,
   },
   reviewCorrect: {
-    backgroundColor: '#e8f5e9',
-    borderColor: '#a5d6a7',
+    backgroundColor: colors.successLight,
+    borderColor: colors.success,
   },
   reviewIncorrect: {
-    backgroundColor: '#ffebee',
-    borderColor: '#ef9a9a',
+    backgroundColor: colors.errorLight,
+    borderColor: colors.error,
   },
   reviewQuestion: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1a1a2e',
-    marginBottom: 6,
+    fontFamily: font.semiBold,
+    fontSize: fontSize.sm,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   reviewAnswer: {
-    fontSize: 13,
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
   },
   reviewCorrectAnswer: {
-    fontSize: 13,
-    color: '#388e3c',
-    marginTop: 4,
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.success,
+    marginTop: spacing.xs,
   },
 });

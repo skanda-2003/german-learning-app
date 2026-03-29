@@ -2,7 +2,6 @@
 //
 // Shows 4 sub-section cards: Reading, Listening, Writing, Speaking.
 // Tapping a card opens that sub-section.
-// Reading is fully implemented. The others show "coming soon" until built.
 
 import React, { useState } from 'react';
 import {
@@ -16,143 +15,110 @@ import ReadingExercise from '../src/components/exam/ReadingExercise';
 import ListeningExercise from '../src/components/exam/ListeningExercise';
 import WritingExercise from '../src/components/exam/WritingExercise';
 import SpeakingExercise from '../src/components/exam/SpeakingExercise';
+import {
+  colors, font, fontSize, spacing,
+  labelStyle,
+} from '../src/styles/theme';
 
-// ─── Sub-section definitions ──────────────────────────────────────────────────
+// ─── Types ─────────────────────────────────────────────────────────────────────
 
 type SubSection = 'reading' | 'listening' | 'writing' | 'speaking';
 
 type SubSectionCard = {
   id: SubSection;
-  emoji: string;
   title: string;
   description: string;
-  available: boolean; // false = show "coming soon"
 };
 
 const SUB_SECTIONS: SubSectionCard[] = [
   {
     id: 'reading',
-    emoji: '📖',
     title: 'Reading',
     description: 'Read a short German passage and answer comprehension questions.',
-    available: true,
   },
   {
     id: 'listening',
-    emoji: '🎧',
     title: 'Listening',
     description: 'Listen to a German passage read aloud and answer questions.',
-    available: true,
   },
   {
     id: 'writing',
-    emoji: '✍️',
     title: 'Writing',
     description: 'Write a short response to a prompt and get AI feedback.',
-    available: true,
   },
   {
     id: 'speaking',
-    emoji: '🎤',
     title: 'Speaking',
     description: 'Speak or type a response and get AI pronunciation feedback.',
-    available: true,
   },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ExamScreen() {
-  // null = show the selector | a SubSection value = show that sub-section
   const [activeSection, setActiveSection] = useState<SubSection | null>(null);
 
-  // ─── Sub-section views ─────────────────────────────────────────────────────
+  const backButton = (
+    <TouchableOpacity style={styles.backButton} onPress={() => setActiveSection(null)}>
+      <Text style={styles.backText}>← Exam Prep</Text>
+    </TouchableOpacity>
+  );
+
   if (activeSection === 'reading') {
     return (
-      <ScrollView style={styles.subSectionContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setActiveSection(null)}
-        >
-          <Text style={styles.backButtonText}>← Exam Prep</Text>
-        </TouchableOpacity>
+      <ScrollView style={styles.subContainer}>
+        {backButton}
         <ReadingExercise />
       </ScrollView>
     );
   }
-
   if (activeSection === 'listening') {
     return (
-      <View style={styles.subSectionContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setActiveSection(null)}
-        >
-          <Text style={styles.backButtonText}>← Exam Prep</Text>
-        </TouchableOpacity>
+      <View style={styles.subContainer}>
+        {backButton}
         <ListeningExercise />
       </View>
     );
   }
-
   if (activeSection === 'writing') {
     return (
-      <View style={styles.subSectionContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setActiveSection(null)}
-        >
-          <Text style={styles.backButtonText}>← Exam Prep</Text>
-        </TouchableOpacity>
+      <View style={styles.subContainer}>
+        {backButton}
         <WritingExercise />
       </View>
     );
   }
-
   if (activeSection === 'speaking') {
     return (
-      <View style={styles.subSectionContainer}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => setActiveSection(null)}
-        >
-          <Text style={styles.backButtonText}>← Exam Prep</Text>
-        </TouchableOpacity>
+      <View style={styles.subContainer}>
+        {backButton}
         <SpeakingExercise />
       </View>
     );
   }
 
-  // ─── Selector screen ───────────────────────────────────────────────────────
+  // ─── Selector ─────────────────────────────────────────────────────────────
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.screenTitle}>Exam Prep</Text>
-      <Text style={styles.screenSubtitle}>
+      <Text style={styles.pageTitle}>Exam Prep</Text>
+      <Text style={styles.pageSubtitle}>
         Practise the four skills tested in the Goethe Institut A1 exam.
       </Text>
+
+      <Text style={[labelStyle, styles.sectionLabel]}>FOUR SKILLS</Text>
 
       {SUB_SECTIONS.map((section) => (
         <TouchableOpacity
           key={section.id}
-          style={[styles.card, !section.available && styles.cardDisabled]}
-          onPress={() => section.available && setActiveSection(section.id)}
-          disabled={!section.available}
+          style={styles.row}
+          onPress={() => setActiveSection(section.id)}
+          activeOpacity={0.7}
         >
-          <Text style={styles.cardEmoji}>{section.emoji}</Text>
-          <View style={styles.cardContent}>
-            <View style={styles.cardTitleRow}>
-              <Text style={[styles.cardTitle, !section.available && styles.cardTitleDisabled]}>
-                {section.title}
-              </Text>
-              {!section.available && (
-                <View style={styles.comingSoonBadge}>
-                  <Text style={styles.comingSoonText}>Soon</Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.cardDescription}>{section.description}</Text>
+          <View style={styles.rowLeft}>
+            <Text style={styles.rowTitle}>{section.title}</Text>
+            <Text style={styles.rowDescription}>{section.description}</Text>
           </View>
-          {section.available && <Text style={styles.cardArrow}>→</Text>}
+          <Text style={styles.rowArrow}>→</Text>
         </TouchableOpacity>
       ))}
     </ScrollView>
@@ -160,96 +126,75 @@ export default function ExamScreen() {
 }
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  // ── Selector ──
   container: {
-    padding: 24,
-    backgroundColor: '#f5f5f5',
+    padding: spacing.xxl,
+    backgroundColor: colors.background,
   },
-  screenTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-    marginBottom: 6,
+
+  pageTitle: {
+    fontFamily: font.bold,
+    fontSize: fontSize.xl,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
-  screenSubtitle: {
-    fontSize: 14,
-    color: '#888888',
-    marginBottom: 28,
+  pageSubtitle: {
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    marginBottom: spacing.xxl,
     lineHeight: 20,
   },
-  card: {
+
+  sectionLabel: {
+    marginBottom: spacing.sm,
+  },
+
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 14,
-    borderWidth: 1.5,
-    borderColor: '#eeeeee',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-    gap: 14,
+    justifyContent: 'space-between',
+    paddingVertical: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  cardDisabled: {
-    opacity: 0.55,
-  },
-  cardEmoji: {
-    fontSize: 32,
-  },
-  cardContent: {
+  rowLeft: {
     flex: 1,
+    marginRight: spacing.md,
   },
-  cardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
+  rowTitle: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    marginBottom: 3,
   },
-  cardTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#1a1a2e',
-  },
-  cardTitleDisabled: {
-    color: '#aaaaaa',
-  },
-  cardDescription: {
-    fontSize: 13,
-    color: '#888888',
+  rowDescription: {
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
     lineHeight: 18,
   },
-  cardArrow: {
-    fontSize: 18,
-    color: '#aaaaaa',
-  },
-  comingSoonBadge: {
-    backgroundColor: '#eeeeee',
-    borderRadius: 6,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-  },
-  comingSoonText: {
-    fontSize: 10,
-    color: '#aaaaaa',
-    fontWeight: '600',
+  rowArrow: {
+    fontFamily: font.regular,
+    fontSize: fontSize.md,
+    color: colors.textMuted,
   },
 
   // ── Sub-section wrapper ──
-  subSectionContainer: {
+  subContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   backButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  backButtonText: {
-    fontSize: 14,
-    color: '#4fc3f7',
-    fontWeight: '600',
+  backText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.sm,
+    color: colors.accent,
   },
 });

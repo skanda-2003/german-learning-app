@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { Word } from '../../data/vocabulary';
 import { saveCompletion } from '../../lib/scoresService';
+import { colors, font, fontSize, spacing, radius } from '../../styles/theme';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -215,139 +216,44 @@ export default function WordMatchGame({ words, onExit }: Props) {
 // ─── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 24,
-    backgroundColor: '#f5f5f5',
-  },
+  container: { flexGrow: 1, padding: spacing.xxl, backgroundColor: colors.background },
 
-  // ── Header ──
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  backText: {
-    fontSize: 14,
-    color: '#4fc3f7',
-    fontWeight: '600',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-  },
-  headerProgress: {
-    fontSize: 14,
-    color: '#888',
-    fontWeight: '600',
-  },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
+  backText: { fontFamily: font.semiBold, fontSize: fontSize.sm, color: colors.accent },
+  headerTitle: { fontFamily: font.bold, fontSize: fontSize.lg, color: colors.textPrimary },
+  headerProgress: { fontFamily: font.semiBold, fontSize: fontSize.sm, color: colors.textMuted },
 
-  instruction: {
-    fontSize: 13,
-    color: '#888',
-    textAlign: 'center',
-    marginBottom: 24,
-  },
+  instruction: { fontFamily: font.regular, fontSize: fontSize.xs, color: colors.textMuted, textAlign: 'center', marginBottom: spacing.xxl },
 
-  // ── Two columns ──
-  columns: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  column: {
-    flex: 1,
-    gap: 10,
-  },
+  columns: { flexDirection: 'row', gap: spacing.md },
+  column: { flex: 1, gap: spacing.sm },
   columnLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#aaa',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-    textAlign: 'center',
+    fontFamily: font.semiBold, fontSize: fontSize.xxs, color: colors.textMuted,
+    textTransform: 'uppercase', letterSpacing: 0.9, marginBottom: spacing.xs, textAlign: 'center',
   },
 
-  // ── Word buttons ──
   wordButton: {
-    borderWidth: 1.5,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
-    minHeight: 52,
-    justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
+    paddingVertical: spacing.md, paddingHorizontal: spacing.sm,
+    backgroundColor: colors.background, minHeight: 48, justifyContent: 'center',
   },
-  wordSelected: {
-    borderColor: '#4fc3f7',
-    backgroundColor: '#e1f5fe',
-  },
-  wordMatched: {
-    borderColor: '#a5d6a7',
-    backgroundColor: '#e8f5e9',
-  },
-  wordWrong: {
-    borderColor: '#ef9a9a',
-    backgroundColor: '#ffebee',
-  },
-  wordText: {
-    fontSize: 14,
-    color: '#1a1a2e',
-    textAlign: 'center',
-  },
-  wordTextSelected: {
-    color: '#0277bd',
-    fontWeight: '600',
-  },
-  wordTextMatched: {
-    color: '#388e3c',
-    fontWeight: '600',
-  },
-  wordTextWrong: {
-    color: '#d32f2f',
-  },
+  wordSelected: { borderColor: colors.accent, backgroundColor: colors.accentLight },
+  wordMatched: { borderColor: colors.success, backgroundColor: colors.successLight },
+  wordWrong: { borderColor: colors.error, backgroundColor: colors.errorLight },
+  wordText: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.textPrimary, textAlign: 'center' },
+  wordTextSelected: { fontFamily: font.semiBold, color: colors.accent },
+  wordTextMatched: { fontFamily: font.semiBold, color: colors.success },
+  wordTextWrong: { color: colors.error },
 
-  // ── Done screen ──
-  doneContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    backgroundColor: '#f5f5f5',
-  },
-  doneEmoji: { fontSize: 56, marginBottom: 12 },
-  doneTitle: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1a1a2e',
-    marginBottom: 6,
-  },
-  doneSubtitle: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 32,
-  },
+  doneContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xxxl, backgroundColor: colors.background },
+  doneEmoji: { fontSize: 48, marginBottom: spacing.md },
+  doneTitle: { fontFamily: font.bold, fontSize: fontSize.xl, color: colors.textPrimary, marginBottom: spacing.xs },
+  doneSubtitle: { fontFamily: font.regular, fontSize: fontSize.sm, color: colors.textSecondary, marginBottom: spacing.xxxl },
   primaryButton: {
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 14,
-    paddingHorizontal: 48,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: colors.textPrimary, paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.hero, borderRadius: radius.md, marginBottom: spacing.md,
   },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    paddingVertical: 10,
-  },
-  secondaryButtonText: {
-    color: '#4fc3f7',
-    fontSize: 15,
-    fontWeight: '600',
-  },
+  primaryButtonText: { fontFamily: font.semiBold, color: colors.background, fontSize: fontSize.md },
+  secondaryButton: { paddingVertical: spacing.sm },
+  secondaryButtonText: { fontFamily: font.semiBold, fontSize: fontSize.md, color: colors.accent },
 });

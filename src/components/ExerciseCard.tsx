@@ -19,6 +19,7 @@ import {
   Platform,
 } from 'react-native';
 import { GrammarExercise } from '../data/grammar';
+import { colors, font, fontSize, spacing, radius } from '../styles/theme';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 type Props = {
@@ -165,23 +166,15 @@ export default function ExerciseCard({ exercise, onNext }: Props) {
       {/* Option buttons */}
       <View style={styles.optionsContainer}>
         {exercise.options?.map((option, index) => {
-          // Determine button style based on state
-          let optionStyle = styles.optionButton;
-          if (isAnswered) {
-            if (option === exercise.answer) {
-              optionStyle = { ...styles.optionButton, ...styles.optionCorrect };
-            } else if (option === selectedOption && option !== exercise.answer) {
-              optionStyle = { ...styles.optionButton, ...styles.optionIncorrect };
-            }
-          } else if (index === focusedIndex) {
-            // Keyboard highlight — blue outline when this option is focused
-            optionStyle = { ...styles.optionButton, ...styles.optionFocused };
-          }
-
           return (
             <TouchableOpacity
               key={option}
-              style={optionStyle}
+              style={[
+                styles.optionButton,
+                isAnswered && option === exercise.answer && styles.optionCorrect,
+                isAnswered && option === selectedOption && option !== exercise.answer && styles.optionIncorrect,
+                !isAnswered && index === focusedIndex && styles.optionFocused,
+              ]}
               onPress={() => !isAnswered && checkAnswer(option)}
               disabled={isAnswered}
             >
@@ -244,25 +237,22 @@ function ResultBlock({ correct, correctAnswer, explanation, onNext }: ResultBloc
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.xxl,
     width: '100%',
     maxWidth: 480,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    elevation: 4,
   },
 
   topicLabel: {
-    fontSize: 11,
-    color: '#4fc3f7',
-    fontWeight: '600',
+    fontFamily: font.semiBold,
+    fontSize: fontSize.xxs,
+    color: colors.textMuted,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 16,
+    letterSpacing: 0.9,
+    marginBottom: spacing.lg,
   },
 
   // ── Fill-blank ──
@@ -270,127 +260,135 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.xl,
     gap: 4,
   },
   sentenceText: {
-    fontSize: 18,
-    color: '#1a1a2e',
+    fontFamily: font.regular,
+    fontSize: fontSize.lg,
+    color: colors.textPrimary,
   },
   blankInput: {
-    borderBottomWidth: 2,
-    borderBottomColor: '#4fc3f7',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.accent,
     minWidth: 80,
-    fontSize: 18,
-    color: '#1a1a2e',
+    fontFamily: font.regular,
+    fontSize: fontSize.lg,
+    color: colors.textPrimary,
     paddingHorizontal: 4,
     paddingBottom: 2,
     textAlign: 'center',
   },
   blankAnswer: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: font.bold,
+    fontSize: fontSize.lg,
     paddingHorizontal: 4,
   },
 
   // ── Submit button ──
   submitButton: {
-    backgroundColor: '#1a1a2e',
-    paddingVertical: 12,
-    borderRadius: 10,
+    backgroundColor: colors.textPrimary,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
     alignItems: 'center',
     marginBottom: 4,
   },
   submitDisabled: {
-    backgroundColor: '#cccccc',
+    backgroundColor: colors.border,
   },
   submitButtonText: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '600',
+    fontFamily: font.semiBold,
+    color: colors.background,
+    fontSize: fontSize.md,
   },
 
   // ── Multiple choice ──
   questionText: {
-    fontSize: 18,
-    color: '#1a1a2e',
-    marginBottom: 20,
+    fontFamily: font.regular,
+    fontSize: fontSize.lg,
+    color: colors.textPrimary,
+    marginBottom: spacing.xl,
     lineHeight: 26,
   },
   optionsContainer: {
-    gap: 10,
+    gap: spacing.sm,
     marginBottom: 4,
   },
   optionButton: {
-    borderWidth: 1.5,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: '#fafafa',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.background,
   },
   optionFocused: {
-    borderColor: '#4fc3f7',
-    backgroundColor: '#e1f5fe',
+    borderColor: colors.accent,
+    backgroundColor: colors.accentLight,
   },
   optionCorrect: {
-    borderColor: '#a5d6a7',
-    backgroundColor: '#e8f5e9',
+    borderColor: colors.success,
+    backgroundColor: colors.successLight,
   },
   optionIncorrect: {
-    borderColor: '#ef9a9a',
-    backgroundColor: '#ffebee',
+    borderColor: colors.error,
+    backgroundColor: colors.errorLight,
   },
   optionText: {
-    fontSize: 15,
-    color: '#1a1a2e',
+    fontFamily: font.regular,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
   },
   focusedText: {
-    color: '#0277bd',
-    fontWeight: '600',
+    fontFamily: font.semiBold,
+    color: colors.accent,
   },
 
   // ── Result block ──
   resultBlock: {
-    marginTop: 16,
-    padding: 16,
-    borderRadius: 12,
-    gap: 8,
+    marginTop: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    gap: spacing.sm,
   },
   resultCorrect: {
-    backgroundColor: '#e8f5e9',
+    backgroundColor: colors.successLight,
+    borderColor: colors.success,
   },
   resultIncorrect: {
-    backgroundColor: '#ffebee',
+    backgroundColor: colors.errorLight,
+    borderColor: colors.error,
   },
   resultVerdict: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontFamily: font.bold,
+    fontSize: fontSize.md,
   },
   explanationText: {
-    fontSize: 13,
-    color: '#555555',
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
     lineHeight: 19,
   },
   nextButton: {
     alignSelf: 'flex-end',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: '#1a1a2e',
-    borderRadius: 8,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.textPrimary,
+    borderRadius: radius.md,
     marginTop: 4,
   },
   nextButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
+    fontFamily: font.semiBold,
+    color: colors.background,
+    fontSize: fontSize.sm,
   },
 
   // ── Shared ──
   correctText: {
-    color: '#388e3c',
+    color: colors.success,
   },
   incorrectText: {
-    color: '#d32f2f',
+    color: colors.error,
   },
 });
