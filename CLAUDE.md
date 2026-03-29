@@ -253,6 +253,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 10a — UI Redesign (Complete)
 ### ✅ Phase 10b — UI Fixes Round 2 (Complete)
 ### ✅ Phase 10c — Flashcard Enhancements (Complete)
+### ✅ Phase 14 — Insights / Analytics (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -386,6 +387,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-29] Phase 10a complete — Full UI redesign. IBM Plex Mono, theme.ts, all screens restyled.
 - [2026-03-29] Phase 10b complete — Sidebar Feather icons, #fafafa backgrounds, card grid selectors, home page redesign.
 - [2026-03-29] Phase 10c complete — Shaky state, 3-button rating, Study Weak, search bar, session summary.
+- [2026-03-29] Phase 14 complete — Insights screen with weak vocabulary, mistake log, weak grammar topics, activity calendar.
 
 ---
 *This file is the single source of truth for the project.
