@@ -18,6 +18,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: AsyncStorage,         // persist sessions using device storage
     autoRefreshToken: true,        // automatically refresh the auth token before it expires
     persistSession: true,          // keep the user logged in after closing the app
-    detectSessionInUrl: false,     // not needed for mobile apps (used for web OAuth flows)
+    detectSessionInUrl: true,      // required on web — picks up the session token from the URL after email confirmation
   },
 });

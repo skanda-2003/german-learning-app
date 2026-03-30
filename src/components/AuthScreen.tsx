@@ -13,7 +13,7 @@
 //   they can log in. For personal use, disable this in the Supabase dashboard:
 //   Authentication → Providers → Email → uncheck "Confirm email".
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -41,10 +41,15 @@ export default function AuthScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading]                 = useState(false);
 
-  // error is red; if it starts with the success prefix it renders green
+  // error is red; success (isError: false) renders green
   const [message, setMessage] = useState<{ text: string; isError: boolean } | null>(null);
 
-  // Switch mode and clear state
+  // Refs for moving focus between fields with the Enter/Next key
+  const passwordRef        = useRef<TextInput>(null);
+  const confirmPasswordRef = useRef<TextInput>(null);
+
+  // Switch mode and clear state — does NOT clear the message so success
+  // notices after signup remain visible when we flip to login mode.
   function switchMode(next: Mode) {
     setMode(next);
     setMessage(null);
@@ -82,15 +87,18 @@ export default function AuthScreen() {
       if (error) {
         setMessage({ text: error.message, isError: true });
       } else if (!data.session) {
-        // Email confirmation is enabled — user must click the link first
+        // Email confirmation is enabled — switch to login and show the notice.
+        // We set mode and message separately (not via switchMode) so the message
+        // is not immediately cleared by switchMode's setMessage(null) call.
+        setMode('login');
+        setConfirmPassword('');
         setMessage({
-          text: 'Account created. Check your email to confirm, then log in.',
+          text: 'Account created! Check your email for a confirmation link, then log in here.',
           isError: false,
         });
-        switchMode('login');
       }
       // If data.session exists, email confirmation is disabled and the user is
-      // already logged in — onAuthStateChange handles the rest.
+      // already logged in — onAuthStateChange in _layout.tsx handles the rest.
     }
 
     setLoading(false);
@@ -155,11 +163,15 @@ export default function AuthScreen() {
               keyboardType="email-address"
               autoCorrect={false}
               autoComplete="email"
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => passwordRef.current?.focus()}
             />
 
             {/* Password */}
             <Text style={styles.fieldLabel}>PASSWORD</Text>
             <TextInput
+              ref={passwordRef}
               style={styles.input}
               value={password}
               onChangeText={setPassword}
@@ -167,6 +179,13 @@ export default function AuthScreen() {
               placeholderTextColor={colors.textMuted}
               secureTextEntry
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              returnKeyType={mode === 'login' ? 'done' : 'next'}
+              blurOnSubmit={mode === 'login'}
+              onSubmitEditing={
+                mode === 'login'
+                  ? handleSubmit
+                  : () => confirmPasswordRef.current?.focus()
+              }
             />
 
             {/* Confirm password — only shown for sign up */}
@@ -174,6 +193,7 @@ export default function AuthScreen() {
               <>
                 <Text style={styles.fieldLabel}>CONFIRM PASSWORD</Text>
                 <TextInput
+                  ref={confirmPasswordRef}
                   style={styles.input}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -181,6 +201,8 @@ export default function AuthScreen() {
                   placeholderTextColor={colors.textMuted}
                   secureTextEntry
                   autoComplete="new-password"
+                  returnKeyType="done"
+                  onSubmitEditing={handleSubmit}
                 />
               </>
             )}
