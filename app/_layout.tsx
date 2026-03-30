@@ -1,10 +1,12 @@
 // _layout.tsx — Root layout for the entire app
 //
-// Sets up the sidebar (drawer) navigation with:
-//   - Custom drawer content: Feather line icons + blue left-border active state
-//   - IBM Plex Mono for all content/headers
-//   - Inter for sidebar nav labels (cleaner at small sizes in nav context)
+// Phase 15 additions:
+//   - Auth gate: if no Supabase session, renders AuthScreen instead of the Drawer
+//   - Subscribes to onAuthStateChange so login/logout updates instantly everywhere
+//   - Loads saved level from Supabase after login and sets it in useLevelStore
+//   - Sign Out button pinned at the bottom of the sidebar
 
+import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Drawer } from 'expo-router/drawer';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
@@ -12,8 +14,6 @@ import type { DrawerContentComponentProps } from '@react-navigation/drawer';
 import { usePathname, useRouter } from 'expo-router';
 import { Platform, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import LevelToggle from '../src/components/LevelToggle';
-import TipsBar from '../src/components/TipsBar';
 import {
   useFonts,
   IBMPlexMono_400Regular,
@@ -26,74 +26,103 @@ import {
   Inter_500Medium,
   Inter_600SemiBold,
 } from '@expo-google-fonts/inter';
+import LevelToggle from '../src/components/LevelToggle';
+import TipsBar from '../src/components/TipsBar';
+import AuthScreen from '../src/components/AuthScreen';
+import useAuthStore from '../src/store/useAuthStore';
+import useLevelStore from '../src/store/useLevelStore';
+import { supabase } from '../src/lib/supabase';
+import { signOut } from '../src/lib/authService';
+import { loadLevel } from '../src/lib/levelService';
 
 // ─── Nav items ─────────────────────────────────────────────────────────────────
-// Each entry maps to a file in app/ — route matches the Drawer.Screen name
 
 type NavItem = {
-  route: string;  // filename without extension
-  label: string;  // text shown in sidebar
-  icon: string;   // Feather icon name
+  route: string;
+  label: string;
+  icon: string;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { route: 'index',         label: 'Home',           icon: 'home'        },
-  { route: 'flashcards',    label: 'Flashcards',     icon: 'layers'      },
-  { route: 'games',         label: 'Mini Games',     icon: 'zap'         },
-  { route: 'grammar',       label: 'Grammar',        icon: 'edit-3'      },
-  { route: 'daily',         label: 'Daily Challenge',icon: 'calendar'    },
-  { route: 'reading',       label: 'Reading Mode',   icon: 'book'        },
-  { route: 'pronunciation', label: 'Pronunciation',  icon: 'volume-2'    },
-  { route: 'exam',          label: 'Exam Prep',      icon: 'book-open'   },
-  { route: 'progress',      label: 'Progress',       icon: 'bar-chart-2' },
-  { route: 'insights',      label: 'Insights',       icon: 'trending-up' },
+  { route: 'index',         label: 'Home',            icon: 'home'        },
+  { route: 'flashcards',    label: 'Flashcards',      icon: 'layers'      },
+  { route: 'games',         label: 'Mini Games',      icon: 'zap'         },
+  { route: 'grammar',       label: 'Grammar',         icon: 'edit-3'      },
+  { route: 'daily',         label: 'Daily Challenge', icon: 'calendar'    },
+  { route: 'reading',       label: 'Reading Mode',    icon: 'book'        },
+  { route: 'pronunciation', label: 'Pronunciation',   icon: 'volume-2'    },
+  { route: 'exam',          label: 'Exam Prep',       icon: 'book-open'   },
+  { route: 'progress',      label: 'Progress',        icon: 'bar-chart-2' },
+  { route: 'insights',      label: 'Insights',        icon: 'trending-up' },
 ];
 
 // ─── Custom drawer content ────────────────────────────────────────────────────
-// Renders nav items manually so we can apply the 2px left-border active
-// indicator and use our own fonts instead of the default drawer styles.
 
 function CustomDrawerContent(props: DrawerContentComponentProps) {
   const pathname = usePathname();
-  const router = useRouter();
+  const router   = useRouter();
+  const { setSession } = useAuthStore();
+
+  // Sign out: clears the Supabase session, which triggers onAuthStateChange
+  // in RootLayout → setSession(null) → AuthScreen renders instead of Drawer.
+  async function handleSignOut() {
+    await signOut();
+    setSession(null);
+  }
 
   return (
-    <DrawerContentScrollView
-      {...props}
-      scrollEnabled={false}
-      contentContainerStyle={drawerStyles.scrollContent}
-    >
-      {/* App wordmark at top of sidebar */}
-      <View style={drawerStyles.wordmark}>
-        <Text style={drawerStyles.wordmarkText}>LERNE DEUTSCH</Text>
+    // Wrap in a View so we can pin Sign Out at the bottom outside the ScrollView
+    <View style={{ flex: 1, backgroundColor: '#1a1a2e' }}>
+
+      <DrawerContentScrollView
+        {...props}
+        scrollEnabled={false}
+        contentContainerStyle={drawerStyles.scrollContent}
+      >
+        {/* App wordmark */}
+        <View style={drawerStyles.wordmark}>
+          <Text style={drawerStyles.wordmarkText}>LERNE DEUTSCH</Text>
+        </View>
+
+        {/* Nav items */}
+        {NAV_ITEMS.map((item) => {
+          const href     = item.route === 'index' ? '/' : `/${item.route}`;
+          const isActive = pathname === href;
+
+          return (
+            <TouchableOpacity
+              key={item.route}
+              style={[drawerStyles.item, isActive && drawerStyles.itemActive]}
+              onPress={() => router.push(href as any)}
+              activeOpacity={0.7}
+            >
+              <Feather
+                name={item.icon as any}
+                size={16}
+                color={isActive ? '#ffffff' : '#666666'}
+                style={drawerStyles.icon}
+              />
+              <Text style={[drawerStyles.label, isActive && drawerStyles.labelActive]}>
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </DrawerContentScrollView>
+
+      {/* Sign Out — pinned at bottom of sidebar */}
+      <View style={drawerStyles.signOutSection}>
+        <TouchableOpacity
+          style={drawerStyles.item}
+          onPress={handleSignOut}
+          activeOpacity={0.7}
+        >
+          <Feather name="log-out" size={16} color="#666666" style={drawerStyles.icon} />
+          <Text style={drawerStyles.label}>Sign Out</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Nav items */}
-      {NAV_ITEMS.map((item) => {
-        // expo-router resolves "index" → "/" and all others → "/routeName"
-        const href = item.route === 'index' ? '/' : `/${item.route}`;
-        const isActive = pathname === href;
-
-        return (
-          <TouchableOpacity
-            key={item.route}
-            style={[drawerStyles.item, isActive && drawerStyles.itemActive]}
-            onPress={() => router.push(href as any)}
-            activeOpacity={0.7}
-          >
-            <Feather
-              name={item.icon as any}
-              size={16}
-              color={isActive ? '#ffffff' : '#666666'}
-              style={drawerStyles.icon}
-            />
-            <Text style={[drawerStyles.label, isActive && drawerStyles.labelActive]}>
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </DrawerContentScrollView>
+    </View>
   );
 }
 
@@ -102,118 +131,160 @@ function CustomDrawerContent(props: DrawerContentComponentProps) {
 const drawerStyles = StyleSheet.create({
   scrollContent: {
     paddingTop: 16,
-    paddingBottom: 24,
+    paddingBottom: 8,
   },
 
-  // App wordmark — ALL CAPS, very subtle, sits above the nav list
   wordmark: {
     paddingHorizontal: 20,
-    paddingVertical: 14,
-    marginBottom: 8,
+    paddingVertical:   14,
+    marginBottom:      8,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.07)',
   },
   wordmarkText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.35)',
+    fontFamily:    'Inter_600SemiBold',
+    fontSize:      10,
+    color:         'rgba(255,255,255,0.35)',
     letterSpacing: 1.8,
   },
 
-  // Each nav row
   item: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection:   'row',
+    alignItems:      'center',
     paddingVertical: 11,
-    paddingRight: 16,
-    marginBottom: 1,
-    // The 2px left border acts as the active indicator.
-    // Set transparent by default so layout doesn't shift between states.
+    paddingRight:    16,
+    marginBottom:    1,
     borderLeftWidth: 2,
     borderLeftColor: 'transparent',
   },
-  // Active item: blue left border, slightly lighter background
   itemActive: {
-    borderLeftColor: '#2563eb',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderLeftColor:  '#2563eb',
+    backgroundColor:  'rgba(255,255,255,0.05)',
   },
 
   icon: {
-    marginLeft: 16,
+    marginLeft:  16,
     marginRight: 12,
   },
   label: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-    color: '#666666',
-    flex: 1,           // allows long labels like "Daily Challenge" to wrap if needed
+    fontSize:   13,
+    color:      '#666666',
+    flex:       1,
     lineHeight: 18,
   },
   labelActive: {
-    color: '#ffffff',
+    color:      '#ffffff',
     fontFamily: 'Inter_600SemiBold',
+  },
+
+  // Sign out section — separator + button
+  signOutSection: {
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.07)',
+    paddingBottom:  16,
+    paddingTop:     4,
   },
 });
 
 // ─── Root layout ──────────────────────────────────────────────────────────────
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    // Content font — IBM Plex Mono, used throughout all screens
+  const [fontsLoaded]     = useFonts({
     IBMPlexMono_400Regular,
     IBMPlexMono_500Medium,
     IBMPlexMono_600SemiBold,
     IBMPlexMono_700Bold,
-    // Navigation font — Inter, used in sidebar labels and wordmark
     Inter_400Regular,
     Inter_500Medium,
     Inter_600SemiBold,
   });
 
-  // Don't render until fonts are ready — avoids a flash of the wrong font
-  if (!fontsLoaded) {
+  // True while we're waiting for Supabase to return the initial session.
+  // We show a spinner during this time so the auth screen doesn't flash
+  // briefly before the session is confirmed.
+  const [sessionLoading, setSessionLoading] = useState(true);
+
+  const { session, setSession } = useAuthStore();
+  const setLevel = useLevelStore((state) => state.setLevel);
+
+  useEffect(() => {
+    // 1. Load the existing session from storage on startup
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setSessionLoading(false);
+    });
+
+    // 2. Subscribe to auth changes (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // After the user logs in, load their saved level from Supabase and apply it.
+  useEffect(() => {
+    if (session?.user?.id) {
+      loadLevel().then((savedLevel) => {
+        if (savedLevel) setLevel(savedLevel);
+      });
+    }
+  }, [session?.user?.id]);
+
+  // ── Loading: fonts + initial session check ──
+  if (!fontsLoaded || sessionLoading) {
     return <ActivityIndicator style={{ flex: 1 }} />;
   }
 
+  // ── Not logged in: show auth screen ──
+  if (!session) {
+    return (
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <AuthScreen />
+      </GestureHandlerRootView>
+    );
+  }
+
+  // ── Logged in: show main app ──
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1 }}>
         <Drawer
           drawerContent={(props) => <CustomDrawerContent {...props} />}
           screenOptions={{
-            drawerType: Platform.OS === 'web' ? 'permanent' : 'front',
+            drawerType:  Platform.OS === 'web' ? 'permanent' : 'front',
             drawerStyle: {
               backgroundColor: '#1a1a2e',
-              width: 240,          // increased from 220 — fits "Daily Challenge" without cutoff
+              width:           240,
               borderRightWidth: 0,
             },
             headerStyle: {
               backgroundColor: '#1a1a2e',
               borderBottomWidth: 0,
-              elevation: 0,
+              elevation:    0,
               shadowOpacity: 0,
             },
             headerTitleStyle: {
-              fontFamily: 'IBMPlexMono_600SemiBold',
-              fontSize: 14,
-              color: '#ffffff',
+              fontFamily:    'IBMPlexMono_600SemiBold',
+              fontSize:      14,
+              color:         '#ffffff',
               letterSpacing: 0.5,
             },
             headerTintColor: '#ffffff',
             headerRight: () => <LevelToggle />,
           }}
         >
-          {/* Drawer.Screen registers each route — icons/labels handled by CustomDrawerContent */}
-          <Drawer.Screen name="index"      options={{ title: 'Home' }} />
-          <Drawer.Screen name="flashcards" options={{ title: 'Flashcards' }} />
-          <Drawer.Screen name="games"      options={{ title: 'Mini Games' }} />
-          <Drawer.Screen name="grammar"    options={{ title: 'Grammar' }} />
-          <Drawer.Screen name="daily"      options={{ title: 'Daily Challenge' }} />
-          <Drawer.Screen name="exam"       options={{ title: 'Exam Prep' }} />
-          <Drawer.Screen name="progress"   options={{ title: 'Progress' }} />
-          <Drawer.Screen name="insights"   options={{ title: 'Insights' }} />
-          <Drawer.Screen name="reading"       options={{ title: 'Reading Mode' }} />
-          <Drawer.Screen name="pronunciation" options={{ title: 'Pronunciation' }} />
+          <Drawer.Screen name="index"         options={{ title: 'Home' }}             />
+          <Drawer.Screen name="flashcards"    options={{ title: 'Flashcards' }}       />
+          <Drawer.Screen name="games"         options={{ title: 'Mini Games' }}       />
+          <Drawer.Screen name="grammar"       options={{ title: 'Grammar' }}          />
+          <Drawer.Screen name="daily"         options={{ title: 'Daily Challenge' }}  />
+          <Drawer.Screen name="exam"          options={{ title: 'Exam Prep' }}        />
+          <Drawer.Screen name="progress"      options={{ title: 'Progress' }}         />
+          <Drawer.Screen name="insights"      options={{ title: 'Insights' }}         />
+          <Drawer.Screen name="reading"       options={{ title: 'Reading Mode' }}     />
+          <Drawer.Screen name="pronunciation" options={{ title: 'Pronunciation' }}    />
         </Drawer>
 
         {/* TipsBar sits below the Drawer — appears on every screen */}

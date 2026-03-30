@@ -1,8 +1,11 @@
 // useLevelStore.ts — Global state for the selected CEFR level
-// Uses Zustand to store the current level so all screens can read it.
-// When the level changes here, every screen that uses this store updates automatically.
+//
+// Phase 15 addition: setLevel and nextLevel now also save the level to Supabase
+// (via levelService) so it persists across sign-out/sign-in.
+// The in-memory Zustand state still updates instantly for the UI.
 
 import { create } from 'zustand';
+import { saveLevel } from '../lib/levelService';
 
 // The 4 possible levels
 export type Level = 'A1' | 'A2' | 'B1' | 'B2';
@@ -12,22 +15,24 @@ const LEVELS: Level[] = ['A1', 'A2', 'B1', 'B2'];
 
 // Shape of our store — what data it holds and what actions it exposes
 type LevelStore = {
-  level: Level;           // the currently selected level
-  setLevel: (level: Level) => void;  // set a specific level
-  nextLevel: () => void;  // advance to the next level (cycles A1→A2→B1→B2→A1)
+  level: Level;                        // currently selected level
+  setLevel: (level: Level) => void;    // set a specific level + persist to Supabase
+  nextLevel: () => void;               // advance to next level (cycles A1→A2→B1→B2→A1)
 };
 
-// create() builds the store
 const useLevelStore = create<LevelStore>((set, get) => ({
-  level: 'A1', // default level when app first opens
+  level: 'A1', // default — overwritten by loadLevel() in _layout.tsx after login
 
-  setLevel: (level) => set({ level }),
+  setLevel: (level) => {
+    set({ level });
+    saveLevel(level); // fire-and-forget — persist to Supabase
+  },
 
   nextLevel: () => {
     const current = get().level;
-    const currentIndex = LEVELS.indexOf(current);
-    const nextIndex = (currentIndex + 1) % LEVELS.length; // % wraps back to 0 after B2
-    set({ level: LEVELS[nextIndex] });
+    const next = LEVELS[(LEVELS.indexOf(current) + 1) % LEVELS.length];
+    set({ level: next });
+    saveLevel(next); // fire-and-forget — persist to Supabase
   },
 }));
 

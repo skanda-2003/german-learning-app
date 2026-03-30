@@ -1,37 +1,18 @@
-// userId.ts — Generates and persists a local user ID.
+// userId.ts — Returns the authenticated Supabase user's ID (Phase 15)
 //
-// Since we don't have auth yet, we create a random UUID on first launch
-// and save it to AsyncStorage. Every time the app opens, we read the same ID back.
-// This means Supabase can identify "this device" across sessions.
+// Before Phase 15 this generated a random device UUID.
+// Now we use the real Supabase auth user ID so all data is tied to the account.
 //
-// When real auth is added in Phase 11, this gets replaced by the Supabase auth user ID.
+// Every service (scoresService, masteryService, etc.) calls getUserId() and
+// nothing else needs to change — they all just get the auth ID now instead of
+// the device UUID.
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from './supabase';
 
-const USER_ID_KEY = 'lerne_deutsch_user_id';
-
-// Generates a simple UUID (version 4 — random)
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = Math.floor(Math.random() * 16);
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-// Returns the existing user ID from storage, or creates a new one if this is the first launch.
+// Returns the current user's Supabase auth ID.
+// Falls back to 'fallback-user' if called before login (should not happen
+// since all screens are behind the auth gate in _layout.tsx).
 export async function getUserId(): Promise<string> {
-  try {
-    const existing = await AsyncStorage.getItem(USER_ID_KEY);
-    if (existing) return existing;
-
-    // First launch — generate a new ID and save it
-    const newId = generateUUID();
-    await AsyncStorage.setItem(USER_ID_KEY, newId);
-    return newId;
-  } catch (error) {
-    // If storage fails for any reason, return a fallback ID for this session only
-    console.error('Failed to get/set user ID:', error);
-    return 'fallback-user';
-  }
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id ?? 'fallback-user';
 }

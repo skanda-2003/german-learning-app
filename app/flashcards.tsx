@@ -252,20 +252,28 @@ export default function FlashcardsScreen() {
   // All words in the selected category (used for pill counts + Study Again)
   const allCategoryWords = filterByCategory(words, selectedCategory);
 
-  // Words that aren't already marked 'known' — shaky/unknown/new all go in the deck
-  const unstudiedWords = allCategoryWords.filter(
-    (w) => masteryMap.get(w.id) !== 'known'
-  );
+  // Words due for review today — excludes words whose next_review_date is in the future.
+  // If a word has never been studied (not in masteryMap), it is always due.
+  // If no words are due (all reviewed recently), fall back to the full category so
+  // the user is never stuck with an empty deck.
+  const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+  const dueWords = allCategoryWords.filter((w) => {
+    const data = masteryMap.get(w.id);
+    if (!data) return true; // never studied — always include
+    if (data.nextReviewDate && data.nextReviewDate > today) return false; // not due yet
+    return true; // due today or overdue
+  });
+  const wordsForSession = dueWords.length > 0 ? dueWords : allCategoryWords;
 
   // Apply search filter on top (searches German word and English translation)
   const trimmedQuery = searchQuery.trim().toLowerCase();
   const studyWords = trimmedQuery
-    ? unstudiedWords.filter(
+    ? wordsForSession.filter(
         (w) =>
           w.german.toLowerCase().includes(trimmedQuery) ||
           w.english.toLowerCase().includes(trimmedQuery)
       )
-    : unstudiedWords;
+    : wordsForSession;
 
   // Key for the deck — remounts when category or search query changes
   const deckKey = `${selectedCategory}:${trimmedQuery}`;
