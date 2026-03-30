@@ -18,7 +18,7 @@ A German language learning web app for CEFR levels A1 through B2, built with Exp
 - **Insights** — weak vocabulary, mistake log, activity calendar
 - **Reading Mode** — short German texts with tap-to-translate word lookup
 - **Pronunciation Guide** — 28 phonetic entries with Web Speech API playback
-- **AI Feedback** — writing and speaking feedback via Google Gemini
+- **AI Feedback** — writing and speaking feedback via Google Gemini (`gemini-2.5-flash`), also used for generating grammar exercises and reading passages
 
 ---
 
@@ -30,7 +30,7 @@ A German language learning web app for CEFR levels A1 through B2, built with Exp
 | TypeScript | Language |
 | Zustand | Global state (level, auth session) |
 | Supabase | Auth (email + password) + database |
-| Google Gemini API | AI feedback and exercise generation |
+| Google Gemini API (`gemini-2.5-flash`) | AI feedback and exercise generation |
 | Vercel | Deployment — auto-deploys on push to main |
 
 ---
@@ -77,7 +77,7 @@ Sign up and log in with email and password via Supabase Auth. All progress (voca
 
 ## Cost
 
-Entirely free to run — Supabase free tier, Gemini free tier, Vercel Hobby plan, Expo local builds only.
+Entirely free to run — Supabase free tier, Gemini free tier (`gemini-2.5-flash`), Vercel Hobby plan, Expo local builds only.
 
 ---
 
