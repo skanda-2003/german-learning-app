@@ -173,29 +173,6 @@ export default function FlashCard({ word }: Props) {
         <Text style={styles.exampleDe}>{word.exampleDe}</Text>
         <Text style={styles.exampleEn}>{word.exampleEn}</Text>
 
-        {/* Extra info: plural form for nouns */}
-        {hasPlural && (
-          <View style={styles.extraInfo}>
-            <Text style={styles.extraLabel}>Plural</Text>
-            <Text style={styles.extraValue}>{word.plural}</Text>
-          </View>
-        )}
-
-        {/* Extra info: conjugation table for verbs */}
-        {hasConjugations && (
-          <View style={styles.extraInfo}>
-            <Text style={styles.extraLabel}>Conjugation</Text>
-            <ConjugationTable conj={word.conjugations!} />
-          </View>
-        )}
-
-        {/* Extra info: comparative for adjectives */}
-        {hasComparative && (
-          <View style={styles.extraInfo}>
-            <Text style={styles.extraLabel}>Comparative</Text>
-            <Text style={styles.extraValue}>{word.comparative}</Text>
-          </View>
-        )}
 
       </Animated.View>
     </TouchableOpacity>

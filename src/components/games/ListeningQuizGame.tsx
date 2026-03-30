@@ -208,6 +208,10 @@ export default function ListeningQuizGame({ words, onExit }: Props) {
       {isAnswered && currentWord && (
         <View style={styles.revealBox}>
           <Text style={styles.revealedWord}>{currentWord.german}</Text>
+          {/* Plural shown below for nouns */}
+          {currentWord.plural && (
+            <Text style={styles.pluralInfo}>pl. {currentWord.plural}</Text>
+          )}
           {/* Conjugations shown below for verbs */}
           {currentWord.conjugations && (
             <View style={styles.conjGrid}>
@@ -420,6 +424,11 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.textMuted,
     width: 72,
+  },
+  pluralInfo: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
   },
   conjForm: {
     fontFamily: font.semiBold,
