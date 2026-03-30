@@ -286,12 +286,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Test back button from each sub-section
 - [ ] Test Grammar "Generate More Exercises" button
 
-### ⏳ Bug — Favicon + Supabase 406 · Effort: Low
-
-- [ ] Favicon not updating in browser tab — SVG declared in app.json, `public/favicon.ico` added, but browser still shows old icon. Likely a hard cache issue; may need `npx expo export` + Vercel deploy to confirm it works in prod.
-- [ ] `GET .../user_progress?... 406 (Not Acceptable)` — streakService `.single()` changed to `.maybeSingle()` (fix applied) but needs verification. 406 means Supabase got a request it couldn't satisfy — confirm it's gone after the fix.
-
-
 
 ---
 ## LATER
@@ -355,6 +349,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-30] Bug fix — Supabase navigator.locks contention on web ("lock stolen" errors on mastery/mistake loads). Fixed by passing storage: undefined on web so Supabase uses native browser localStorage without the navigator.locks layer. AsyncStorage still used on native for future mobile support.
 - [2026-03-30] Custom favicon — Created assets/favicon.svg (32x32 "LD" monogram, #1a1a2e bg) and assets/icon.svg (192x192). Converted to PNG with sharp-cli. app.json web.favicon set to ./assets/favicon.svg. public/favicon.ico added for browser fallback. Favicon display not fully confirmed in dev — needs verification on Vercel deploy.
 - [2026-03-30] Bug partial fix — streakService .single() changed to .maybeSingle() to stop 406 errors when user_progress row doesn't exist yet. Needs verification.
+- [2026-03-30] Bug fix complete — Favicon: root cause found (assets/favicon.png was old default Expo logo, sharp-cli conversion never replaced it). Regenerated correct "LD" monogram PNG from scratch in pure Node.js. Added app/+html.tsx (Expo Router HTML shell) with explicit SVG + PNG favicon link tags. Copied favicon.svg to public/ so it serves from web root. Confirmed working on Vercel. Supabase 406: scoresService .single() → .maybeSingle() in saveScore and saveCompletion — all services now consistent.
 
 ---
 *This file is the single source of truth for the project.
