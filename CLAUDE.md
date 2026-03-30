@@ -155,8 +155,11 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Database goes read-only after grace period — no surprise charges ever
 - Free projects pause after 7 days of inactivity — resumes instantly on access
 - Auth is live — email + password via Supabase Auth (email confirmation enabled)
+- Auth flow type set to **Implicit (legacy)** — required for the Expo web SPA to handle confirmation redirects
 - Email confirmation template is customised to match the app (Lerne Deutsch branding)
 - Supabase redirect URL is set to the production Vercel domain
+- Users are stored in Supabase's built-in `auth.users` table (Authentication → Users in dashboard) — not a custom table
+- RLS (Row Level Security) is enabled on all 5 custom tables with `user_id = auth.uid()::text` policies
 
 ---
 
@@ -342,6 +345,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-30] Phase 18 complete — Sentence Builder mini game, 80 A1 sentences, tap-to-place tile UI, grammar notes, Supabase score saving, Progress tab entry.
 - [2026-03-30] Phase 13 complete — 318/330 nouns have plurals (12 uncountable skipped), 151/151 verbs have conjugations, 53/71 adjectives have comparatives (18 absolute states skipped). Always-visible info panel in flashcards. Gender Battle shows plural, Listening Quiz reveals word + conjugations after answering. Scripts in scripts/ are reusable for A2/B1/B2 — just uncomment the paths in extract-plurals.js, extract-conjugations.js, and apply-comparatives.js.
 - [2026-03-30] Phase 15 complete — Supabase Auth live (email + password, confirmation enabled). Login/signup screen built to match app design system. All screens gated behind auth. Device UUID replaced with real auth user ID. Level persists to Supabase on change and loads on login. Spaced repetition dates added to vocabulary_mastery (Known→7d, Shaky→2d, Unknown→1d). Sign Out button in sidebar. App deployed to Vercel at https://german-learning-app-neon.vercel.app — auto-deploys on push to main.
+- [2026-03-30] Phase 15 post-fixes — Enter key navigation across all auth form fields. Fixed signup success message being wiped by mode switch. Fixed email confirmation black page: detectSessionInUrl set to true, Supabase switched to Implicit auth flow. RLS enabled on all 5 Supabase tables (user_id = auth.uid()::text policies). Custom branded confirmation email live in Supabase.
 
 ---
 *This file is the single source of truth for the project.
