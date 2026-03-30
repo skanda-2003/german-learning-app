@@ -290,10 +290,8 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [x] Test back button from each sub-section
 - [x] Test Grammar "Generate More Exercises" button
 
-**Known gaps discovered during testing (not fixed yet):**
-- Exam Writing and Speaking do not save any score to Supabase — the Progress page shows no data for these two sections
-- Mistakes from AI-generated grammar exercises are not logged to the mistake_log table (only pre-written exercise mistakes are logged)
 - Gemini responses were using markdown formatting (asterisks, bold, bullet points) — fixed in this phase by adding plain-text formatting instructions to all feedback prompts
+- Suspected logging gaps for Writing/Speaking scores and AI grammar mistakes were investigated in Phase 25 and confirmed to already be handled correctly
 
 
 ---
@@ -326,12 +324,14 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Example: user keeps getting der/die/das wrong → tip about noun genders appears
 - [ ] Requires Phase 15 (Insights/mistake log) to be complete first
 
-### Phase 25 — Score & Mistake Logging Gaps · Effort: Low
-Gaps discovered during Phase 11 testing:
-- [ ] Exam Writing: save score to Supabase after Gemini feedback is received (saveScore('exam_writing', 1, 1) on completion)
-- [ ] Exam Speaking: save score to Supabase after Gemini feedback is received (saveScore('exam_speaking', 1, 1) on completion)
-- [ ] AI-generated grammar exercises: log wrong answers to mistake_log table (same as pre-written exercises do)
-- [ ] Verify Progress page shows Writing and Speaking entries after fix
+### ✅ Phase 25 — Score & Mistake Logging Gaps · Effort: Low (Complete — no code needed)
+Gaps were investigated and found to already be correctly handled:
+- [x] Exam Writing: `saveCompletion('exam_writing')` already called in WritingExercise.tsx:73 — Progress shows sessions count via `sess()`, which is correct (no numeric score exists for writing)
+- [x] Exam Speaking: `saveCompletion('exam_speaking')` already called in SpeakingExercise.tsx:150 — same pattern as writing
+- [x] AI-generated grammar exercises: `saveMistake()` is called in grammar.tsx `handleNext()` for every wrong answer regardless of whether the exercise is pre-written or AI-generated — they use the same code path
+- [x] Progress page already shows Writing and Speaking as session counts — confirmed working
+
+Note: the original "gaps" were identified by grepping only for `saveScore` and missing `saveCompletion`. Writing and Speaking correctly use `saveCompletion` (no numeric score — it's subjective AI feedback). Progress displays them with the `sess()` formatter showing "Nx".
 
 ---
 
@@ -366,7 +366,8 @@ Gaps discovered during Phase 11 testing:
 - [2026-03-30] Bug partial fix — streakService .single() changed to .maybeSingle() to stop 406 errors when user_progress row doesn't exist yet. Needs verification.
 - [2026-03-30] Bug fix complete — Favicon: root cause found (assets/favicon.png was old default Expo logo, sharp-cli conversion never replaced it). Regenerated correct "LD" monogram PNG from scratch in pure Node.js. Added app/+html.tsx (Expo Router HTML shell) with explicit SVG + PNG favicon link tags. Copied favicon.svg to public/ so it serves from web root. Confirmed working on Vercel. Supabase 406: scoresService .single() → .maybeSingle() in saveScore and saveCompletion — all services now consistent.
 - [2026-03-30] Gemini model updated — gemini-2.0-flash deprecated and shut down, replaced with gemini-2.5-flash in src/lib/gemini.ts.
-- [2026-03-30] Phase 11 complete — All Exam Prep sections tested and working. Fixed Gemini markdown formatting in Writing and Speaking feedback (responses now output plain text paragraphs, no asterisks or bullet points). Identified two gaps: Exam Writing/Speaking scores not saved to Supabase; AI-generated grammar exercise mistakes not logged to mistake_log.
+- [2026-03-30] Phase 11 complete — All Exam Prep sections tested and working. Fixed Gemini markdown formatting in Writing and Speaking feedback (responses now output plain text paragraphs, no asterisks or bullet points).
+- [2026-03-30] Phase 25 complete (investigation only, no code changes) — Suspected logging gaps confirmed to already be handled: WritingExercise and SpeakingExercise both call saveCompletion(); grammar handleNext() calls saveMistake() for all wrong answers including AI-generated exercises. Original analysis was incorrect (grep missed saveCompletion).
 
 ---
 *This file is the single source of truth for the project.
