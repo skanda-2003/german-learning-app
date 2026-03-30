@@ -3,7 +3,7 @@
 // All AI features (Fill in the Blank, Writing feedback, Speaking feedback, Reading passages,
 // Grammar exercise generation) import their functions from here.
 //
-// Model: gemini-1.5-flash (free tier — 15 requests/min, 1500 requests/day)
+// Model: gemini-2.5-flash (free tier — 10 requests/min, 250 requests/day on free tier)
 // SDK: @google/generative-ai
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -117,6 +117,12 @@ Your task:
 
 ${tone}
 Keep your response concise — no more than 150 words.
+
+IMPORTANT FORMATTING RULES:
+- Plain text only. No markdown.
+- No asterisks, no bold, no bullet points, no dashes, no numbered lists.
+- Write in flowing paragraphs, like a teacher talking to a student.
+- Do not use symbols like *, **, -, or # anywhere.
   `.trim();
 
   return callGemini(prompt);
@@ -149,6 +155,12 @@ Your task:
 
 ${tone}
 Keep your response concise — no more than 150 words.
+
+IMPORTANT FORMATTING RULES:
+- Plain text only. No markdown.
+- No asterisks, no bold, no bullet points, no dashes, no numbered lists.
+- Write in flowing paragraphs, like a teacher talking to a student.
+- Do not use symbols like *, **, -, or # anywhere.
   `.trim();
 
   return callGemini(prompt);

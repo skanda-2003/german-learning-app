@@ -166,11 +166,15 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 ---
 
 ## AI Usage (Google Gemini API — Free Tier)
+- **Model:** `gemini-2.5-flash` (updated from gemini-2.0-flash which was deprecated 2026-03-31)
+- **Single integration point:** `src/lib/gemini.ts` — all AI calls go through this file
 - Feedback on Writing exercises — grammar, vocabulary, suggestions
 - Feedback on Speaking exercises — accuracy, pronunciation notes
 - Dynamic sentence generation for Fill in the Blank
+- Dynamic generation of grammar exercises ("Generate More" button)
 - Fresh reading passages on demand
-- Feedback tone adjusts by level
+- Feedback tone adjusts by level (A1 = very simple + encouraging, B2 = detailed + precise)
+- All feedback responses use plain text only — no markdown, no asterisks, no bullet points
 - Use Gemini free tier — do not exceed free tier limits
 
 ---
@@ -276,15 +280,20 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ---
 ## ACTIVE PIPELINE
 
-### ⏳ Phase 11 — Test Exam Prep · Effort: Low
+### ✅ Phase 11 — Test Exam Prep · Effort: Low (Complete)
 
-- [ ] Test Reading: generate passage → answer questions → verify score and review screen
-- [ ] Test Listening: generate passage → play audio → answer questions → verify passage revealed
-- [ ] Test Writing: type a German response → submit → verify Gemini feedback appears
-- [ ] Test Speaking (mic): record → verify transcript → submit → verify feedback
-- [ ] Test Speaking (type): type response → submit → verify feedback
-- [ ] Test back button from each sub-section
-- [ ] Test Grammar "Generate More Exercises" button
+- [x] Test Reading: generate passage → answer questions → verify score and review screen
+- [x] Test Listening: generate passage → play audio → answer questions → verify passage revealed
+- [x] Test Writing: type a German response → submit → verify Gemini feedback appears
+- [x] Test Speaking (mic): record → verify transcript → submit → verify feedback
+- [x] Test Speaking (type): type response → submit → verify feedback
+- [x] Test back button from each sub-section
+- [x] Test Grammar "Generate More Exercises" button
+
+**Known gaps discovered during testing (not fixed yet):**
+- Exam Writing and Speaking do not save any score to Supabase — the Progress page shows no data for these two sections
+- Mistakes from AI-generated grammar exercises are not logged to the mistake_log table (only pre-written exercise mistakes are logged)
+- Gemini responses were using markdown formatting (asterisks, bold, bullet points) — fixed in this phase by adding plain-text formatting instructions to all feedback prompts
 
 
 ---
@@ -316,6 +325,14 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Replace auto-shuffle with targeted tips after completing exercises
 - [ ] Example: user keeps getting der/die/das wrong → tip about noun genders appears
 - [ ] Requires Phase 15 (Insights/mistake log) to be complete first
+
+### Phase 25 — Score & Mistake Logging Gaps · Effort: Low
+Gaps discovered during Phase 11 testing:
+- [ ] Exam Writing: save score to Supabase after Gemini feedback is received (saveScore('exam_writing', 1, 1) on completion)
+- [ ] Exam Speaking: save score to Supabase after Gemini feedback is received (saveScore('exam_speaking', 1, 1) on completion)
+- [ ] AI-generated grammar exercises: log wrong answers to mistake_log table (same as pre-written exercises do)
+- [ ] Verify Progress page shows Writing and Speaking entries after fix
+
 ---
 
 ## Progress Log
@@ -348,6 +365,8 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-30] Custom favicon — Created assets/favicon.svg (32x32 "LD" monogram, #1a1a2e bg) and assets/icon.svg (192x192). Converted to PNG with sharp-cli. app.json web.favicon set to ./assets/favicon.svg. public/favicon.ico added for browser fallback. Favicon display not fully confirmed in dev — needs verification on Vercel deploy.
 - [2026-03-30] Bug partial fix — streakService .single() changed to .maybeSingle() to stop 406 errors when user_progress row doesn't exist yet. Needs verification.
 - [2026-03-30] Bug fix complete — Favicon: root cause found (assets/favicon.png was old default Expo logo, sharp-cli conversion never replaced it). Regenerated correct "LD" monogram PNG from scratch in pure Node.js. Added app/+html.tsx (Expo Router HTML shell) with explicit SVG + PNG favicon link tags. Copied favicon.svg to public/ so it serves from web root. Confirmed working on Vercel. Supabase 406: scoresService .single() → .maybeSingle() in saveScore and saveCompletion — all services now consistent.
+- [2026-03-30] Gemini model updated — gemini-2.0-flash deprecated and shut down, replaced with gemini-2.5-flash in src/lib/gemini.ts.
+- [2026-03-30] Phase 11 complete — All Exam Prep sections tested and working. Fixed Gemini markdown formatting in Writing and Speaking feedback (responses now output plain text paragraphs, no asterisks or bullet points). Identified two gaps: Exam Writing/Speaking scores not saved to Supabase; AI-generated grammar exercise mistakes not logged to mistake_log.
 
 ---
 *This file is the single source of truth for the project.
