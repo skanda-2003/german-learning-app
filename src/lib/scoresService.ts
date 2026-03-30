@@ -62,7 +62,7 @@ export async function saveScore(
       .select('best_score, best_total, sessions_completed')
       .eq('user_id', userId)
       .eq('section', section)
-      .single();
+      .maybeSingle(); // returns null (not an error) when no row exists yet
 
     const currentBestPct = data && data.best_total > 0
       ? data.best_score / data.best_total
@@ -107,7 +107,7 @@ export async function saveCompletion(section: SectionKey): Promise<void> {
       .select('sessions_completed')
       .eq('user_id', userId)
       .eq('section', section)
-      .single();
+      .maybeSingle(); // returns null (not an error) when no row exists yet
 
     const updatedSessions = (data?.sessions_completed ?? 0) + 1;
 
