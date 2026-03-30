@@ -286,6 +286,11 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Test back button from each sub-section
 - [ ] Test Grammar "Generate More Exercises" button
 
+### ⏳ Bug — Favicon + Supabase 406 · Effort: Low
+
+- [ ] Favicon not updating in browser tab — SVG declared in app.json, `public/favicon.ico` added, but browser still shows old icon. Likely a hard cache issue; may need `npx expo export` + Vercel deploy to confirm it works in prod.
+- [ ] `GET .../user_progress?... 406 (Not Acceptable)` — streakService `.single()` changed to `.maybeSingle()` (fix applied) but needs verification. 406 means Supabase got a request it couldn't satisfy — confirm it's gone after the fix.
+
 
 
 ---
@@ -348,6 +353,8 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-30] Phase 15 post-fixes — Enter key navigation across all auth form fields. Fixed signup success message being wiped by mode switch. Fixed email confirmation black page: detectSessionInUrl set to true, Supabase switched to Implicit auth flow. RLS enabled on all 5 Supabase tables (user_id = auth.uid()::text policies). Custom branded confirmation email live in Supabase.
 - [2026-03-30] Phase 22 complete — New grammar_topic_scores Supabase table (with RLS). grammar.tsx saves per-topic score on session end (specific topic only, not All Topics). Progress page Grammar Topics card upgraded: score bars coloured by performance, weakest topics surface first, unattempted show —. Insights Weak Grammar Topics now uses real scores sorted lowest-first with green/amber/red bars instead of mistake counts. Fixed MasteryMap type references in progress.tsx and insights.tsx (.state accessor).
 - [2026-03-30] Bug fix — Supabase navigator.locks contention on web ("lock stolen" errors on mastery/mistake loads). Fixed by passing storage: undefined on web so Supabase uses native browser localStorage without the navigator.locks layer. AsyncStorage still used on native for future mobile support.
+- [2026-03-30] Custom favicon — Created assets/favicon.svg (32x32 "LD" monogram, #1a1a2e bg) and assets/icon.svg (192x192). Converted to PNG with sharp-cli. app.json web.favicon set to ./assets/favicon.svg. public/favicon.ico added for browser fallback. Favicon display not fully confirmed in dev — needs verification on Vercel deploy.
+- [2026-03-30] Bug partial fix — streakService .single() changed to .maybeSingle() to stop 406 errors when user_progress row doesn't exist yet. Needs verification.
 
 ---
 *This file is the single source of truth for the project.

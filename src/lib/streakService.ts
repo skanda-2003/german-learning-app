@@ -50,7 +50,7 @@ export async function loadProgress(): Promise<UserProgress> {
       .from('user_progress')
       .select('streak_count, last_active_date, daily_challenge_completed_date')
       .eq('user_id', userId)
-      .single(); // we expect at most one row per user
+      .maybeSingle(); // returns null (not an error) when no row exists yet
 
     if (error || !data) {
       // No row yet — this is the first time. Return zeroed defaults.
