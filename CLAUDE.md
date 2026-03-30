@@ -258,6 +258,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 19 — Keyboard Shortcuts (Complete)
 ### ✅ Phase 14 — Insights / Analytics (Complete)
 ### ✅ Phase 16 — Reading Mode (Complete)
+### ✅ Phase 18 — Sentence Builder (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -299,15 +300,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
   - On session start: show only words where next_review_date <= today
 - Note: prerequisite for Insights, proper spaced repetition, and eventual multi-user expansion
 
-### ⏳ Phase 18 — Sentence Builder · Effort: Medium
-- [ ] Add Sentence Builder to Mini Games selector
-- [ ] 80 pre-written A1 sentences stored in a data file (src/data/sentenceBuilder.ts)
-- [ ] Each entry: scrambled words array, correct order, English translation, grammar note
-- [ ] 10 rounds per session — randomly selected from pool of 80, no repeats within a session
-- [ ] Drag-and-drop word tiles UI — click/tap to place words in order
-- [ ] Green/red feedback on submit, correct sentence shown after each round
-- [ ] Score tracked per session (X/10), saved to Supabase section_scores
-- [ ] Score feeds into Progress and Insights screens
 
 ---
 ## LATER
@@ -365,6 +357,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-29] Phase 16 complete — Reading Mode with 15 shuffled A1 passages, per-word vocabulary lookup popup.
 - [2026-03-29] Phase 17 complete — Pronunciation Guide with 28 entries across 4 groups, Web Speech API play buttons.
 - [2026-03-29] Phase 19 complete — Space key to flip flashcard.
+- [2026-03-30] Phase 18 complete — Sentence Builder mini game, 80 A1 sentences, tap-to-place tile UI, grammar notes, Supabase score saving, Progress tab entry.
 
 ---
 *This file is the single source of truth for the project.
