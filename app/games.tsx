@@ -24,11 +24,12 @@ import { loadAllScores } from '../src/lib/scoresService';
 import WordMatchGame from '../src/components/games/WordMatchGame';
 import GenderBattleGame from '../src/components/games/GenderBattleGame';
 import ListeningQuizGame from '../src/components/games/ListeningQuizGame';
+import SentenceBuilderGame from '../src/components/games/SentenceBuilderGame';
 import { colors, font, fontSize, spacing, radius, labelStyle } from '../src/styles/theme';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
-type GameId = 'word-match' | 'gender-battle' | 'listening-quiz';
+type GameId = 'word-match' | 'gender-battle' | 'listening-quiz' | 'sentence-builder';
 
 type GameDef = {
   id: GameId | null;
@@ -58,6 +59,13 @@ const GAMES: GameDef[] = [
     scoreKey: 'game_listening_quiz',
     title: 'Listening Quiz',
     description: 'Hear a German word, pick the correct meaning. 10 rounds.',
+    available: true,
+  },
+  {
+    id: 'sentence-builder',
+    scoreKey: 'game_sentence_builder',
+    title: 'Sentence Builder',
+    description: 'Arrange German word tiles into the correct sentence. 10 rounds.',
     available: true,
   },
   {
@@ -96,6 +104,9 @@ export default function GamesScreen() {
   }
   if (activeGame === 'listening-quiz') {
     return <ListeningQuizGame words={words} onExit={() => setActiveGame(null)} />;
+  }
+  if (activeGame === 'sentence-builder') {
+    return <SentenceBuilderGame words={words} onExit={() => setActiveGame(null)} />;
   }
 
   // ── Selector screen ──
