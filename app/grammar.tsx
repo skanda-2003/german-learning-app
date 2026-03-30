@@ -22,6 +22,7 @@ import ExerciseCard from '../src/components/ExerciseCard';
 import { generateGrammarExercises } from '../src/lib/gemini';
 import { saveScore } from '../src/lib/scoresService';
 import { saveMistake } from '../src/lib/mistakeService';
+import { saveTopicScore } from '../src/lib/grammarTopicService';
 import type { MistakeData } from '../src/components/ExerciseCard';
 import {
   colors, font, fontSize, spacing, radius,
@@ -118,6 +119,10 @@ export default function GrammarScreen() {
     const nextIndex = currentIndex + 1;
     if (nextIndex >= totalExercises) {
       saveScore('grammar', newCorrectCount, totalExercises);
+      // Save per-topic score only when a specific topic was drilled (not "All Topics")
+      if (selectedTopic !== null) {
+        saveTopicScore(selectedTopic, level, newCorrectCount, totalExercises);
+      }
       setScreen('done');
     } else {
       setCurrentIndex(nextIndex);

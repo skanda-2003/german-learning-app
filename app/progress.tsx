@@ -19,9 +19,10 @@ import { useFocusEffect } from 'expo-router';
 import useLevelStore from '../src/store/useLevelStore';
 import { VOCABULARY } from '../src/data/vocabulary';
 import { GRAMMAR } from '../src/data/grammar';
-import { loadMastery } from '../src/lib/masteryService';
+import { loadMastery, MasteryMap } from '../src/lib/masteryService';
 import { loadProgress, getTodayString, UserProgress } from '../src/lib/streakService';
 import { loadAllScores, SectionScore } from '../src/lib/scoresService';
+import { loadTopicScores, TopicScoreMap, TopicScore } from '../src/lib/grammarTopicService';
 import {
   colors, font, fontSize, spacing, radius, labelStyle,
 } from '../src/styles/theme';
@@ -227,31 +228,85 @@ const catBar = StyleSheet.create({
 });
 
 // ─── TopicRow ────────────────────────────────────────────────────────────────
-// A compact row inside the Grammar Topics card: topic name + exercise count.
+// A compact row inside the Grammar Topics card: topic name + best score bar + percentage.
+// Shows "—" for topics that have never been attempted.
 
 type TopicRowProps = {
   topic: string;
-  count: number;
+  score: TopicScore | undefined; // undefined = never attempted
   isLast?: boolean;
 };
 
-function TopicRow({ topic, count, isLast }: TopicRowProps) {
+function TopicRow({ topic, score, isLast }: TopicRowProps) {
+  const pct = score && score.bestTotal > 0
+    ? Math.round((score.bestScore / score.bestTotal) * 100)
+    : null;
+
+  // Bar color: green ≥ 80%, amber 50–79%, red < 50%
+  const barColor = pct === null
+    ? colors.border
+    : pct >= 80 ? colors.success
+    : pct >= 50 ? colors.amber
+    : colors.error;
+
   return (
-    <View style={[miniRow.row, isLast ? { borderBottomWidth: 0 } : null]}>
-      <Text style={[miniRow.label, { fontSize: fontSize.xxs }]} numberOfLines={1}>{topic}</Text>
-      <Text style={[miniRow.value, { fontSize: fontSize.xxs, color: colors.textMuted }]}>{count} ex</Text>
+    <View style={[topicRow.row, isLast ? { borderBottomWidth: 0 } : null]}>
+      <Text style={topicRow.label} numberOfLines={1}>{topic}</Text>
+      {/* Mini score bar */}
+      <View style={topicRow.track}>
+        {pct !== null && (
+          <View style={[topicRow.fill, { width: `${pct}%` as any, backgroundColor: barColor }]} />
+        )}
+      </View>
+      <Text style={topicRow.pct}>{pct !== null ? `${pct}%` : '—'}</Text>
     </View>
   );
 }
+
+const topicRow = StyleSheet.create({
+  row: {
+    flexDirection:    'row',
+    alignItems:       'center',
+    paddingVertical:  5,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    gap: spacing.sm,
+  },
+  label: {
+    fontFamily: font.regular,
+    fontSize:   fontSize.xxs,
+    color:      colors.textPrimary,
+    width:      90,
+  },
+  track: {
+    flex:            1,
+    height:          4,
+    backgroundColor: colors.border,
+    borderRadius:    2,
+    overflow:        'hidden',
+  },
+  fill: {
+    height:       '100%',
+    borderRadius: 2,
+  },
+  pct: {
+    fontFamily: font.semiBold,
+    fontSize:   fontSize.xxs,
+    color:      colors.textMuted,
+    width:      26,
+    textAlign:  'right',
+  },
+});
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ProgressScreen() {
   const level = useLevelStore((state) => state.level);
 
-  const [loading, setLoading] = useState(true);
-  const [masteryMap, setMasteryMap] = useState<Map<string, string>>(new Map());
-  const [streak, setStreak] = useState(0);
+  const [loading, setLoading]               = useState(true);
+  const [masteryMap, setMasteryMap]         = useState<MasteryMap>(new Map());
+  const [topicScores, setTopicScores]       = useState<TopicScoreMap>(new Map());
+  const [streak, setStreak]                 = useState(0);
   const [lastActiveDate, setLastActiveDate] = useState('');
   const [challengeDoneToday, setChallengeDoneToday] = useState(false);
   const [scores, setScores] = useState<Awaited<ReturnType<typeof loadAllScores>> | null>(null);
@@ -264,14 +319,16 @@ export default function ProgressScreen() {
       async function load() {
         setLoading(true);
 
-        const [mastery, progress, allScores] = await Promise.all([
+        const [mastery, progress, allScores, topicScoreMap] = await Promise.all([
           loadMastery(),
           loadProgress(),
           loadAllScores(),
+          loadTopicScores(level),
         ]);
 
         if (!cancelled) {
           setMasteryMap(mastery);
+          setTopicScores(topicScoreMap);
           setStreak(progress.streakCount);
           setLastActiveDate(progress.lastActiveDate);
           setChallengeDoneToday(progress.dailyChallengeCompletedDate === getTodayString());
@@ -297,12 +354,11 @@ export default function ProgressScreen() {
 
   const vocab = VOCABULARY[level];
   const totalCount = vocab.length;
-  const knownCount = vocab.filter(w => masteryMap.get(w.id) === 'known').length;
+  // Use .state now that MasteryMap stores MasteryData objects
+  const knownCount = vocab.filter(w => masteryMap.get(w.id)?.state === 'known').length;
   const masteryPct = totalCount > 0 ? Math.round((knownCount / totalCount) * 100) : 0;
 
   // ── Vocabulary by category ────────────────────────────────────────────────
-  // Group words into 4 buckets: Nouns / Verbs / Adjectives / Other.
-  // For each bucket count how many are known vs shaky.
 
   const vocabCats = [
     { key: 'noun',      label: 'Nouns' },
@@ -313,24 +369,35 @@ export default function ProgressScreen() {
     const words = key === 'other'
       ? vocab.filter(w => !['noun', 'verb', 'adjective'].includes(w.partOfSpeech))
       : vocab.filter(w => w.partOfSpeech === key);
-    const known = words.filter(w => masteryMap.get(w.id) === 'known').length;
-    const shaky = words.filter(w => masteryMap.get(w.id) === 'shaky').length;
+    const known = words.filter(w => masteryMap.get(w.id)?.state === 'known').length;
+    const shaky = words.filter(w => masteryMap.get(w.id)?.state === 'shaky').length;
     return { label, total: words.length, known, shaky };
   });
 
-  // ── Grammar topic counts ──────────────────────────────────────────────────
-  // Count how many exercises exist per topic. No per-topic scores yet
-  // (those come in Phase 16 — for now we show exercise counts as a reference).
+  // ── Grammar topics — sorted by score (lowest first so weak topics surface) ──
+  // Topics are sorted: attempted (by score asc) then unattempted (by exercise count desc).
 
   const grammarExercises = GRAMMAR[level];
-  const topicMap = new Map<string, number>();
+  const exerciseCountMap = new Map<string, number>();
   for (const ex of grammarExercises) {
-    topicMap.set(ex.topic, (topicMap.get(ex.topic) ?? 0) + 1);
+    exerciseCountMap.set(ex.topic, (exerciseCountMap.get(ex.topic) ?? 0) + 1);
   }
-  // Sorted by exercise count descending, cap at 10 rows to stay compact
-  const topics = Array.from(topicMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
+
+  const allTopics = Array.from(exerciseCountMap.keys());
+  const attempted   = allTopics
+    .filter(t => topicScores.has(t))
+    .sort((a, b) => {
+      const sa = topicScores.get(a)!;
+      const sb = topicScores.get(b)!;
+      const pctA = sa.bestTotal > 0 ? sa.bestScore / sa.bestTotal : 0;
+      const pctB = sb.bestTotal > 0 ? sb.bestScore / sb.bestTotal : 0;
+      return pctA - pctB; // lowest score first
+    });
+  const unattempted = allTopics
+    .filter(t => !topicScores.has(t))
+    .sort((a, b) => (exerciseCountMap.get(b) ?? 0) - (exerciseCountMap.get(a) ?? 0));
+
+  const topics = [...attempted, ...unattempted].slice(0, 10);
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -431,14 +498,14 @@ export default function ProgressScreen() {
           </View>
         </View>
 
-        {/* Card 3: Grammar topics with exercise counts */}
+        {/* Card 3: Grammar topics with best score bars */}
         <View style={[styles.card, styles.chartCard]}>
           <Text style={[labelStyle, styles.cardLabel]}>GRAMMAR TOPICS</Text>
-          {topics.map(([topic, count], i) => (
+          {topics.map((topic, i) => (
             <TopicRow
               key={topic}
               topic={topic}
-              count={count}
+              score={topicScores.get(topic)}
               isLast={i === topics.length - 1}
             />
           ))}
