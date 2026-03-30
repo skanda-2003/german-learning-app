@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192" shape-rendering="crispEdges">
+
+  <!-- Dark navy background — full square, no rounding -->
+  <rect width="192" height="192" fill="#1a1a2e"/>
+
+  <!-- "LD" monogram — scaled up from the 32x32 favicon (×6) -->
+  <text
+    x="96"
+    y="96"
+    text-anchor="middle"
+    dominant-baseline="central"
+    font-family="'IBM Plex Mono', 'Courier New', monospace"
+    font-size="84"
+    font-weight="700"
+    letter-spacing="-3"
+    fill="#ffffff"
+  >LD</text>
+
+</svg>
