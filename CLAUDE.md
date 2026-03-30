@@ -10,10 +10,11 @@ The app is called **Lerne Deutsch** (means "Learn German" in German).
 ## Tech Stack
 - **Expo** — cross platform framework (web now, mobile later if needed)
 - **TypeScript** — language used throughout the project
-- **Zustand** — global state management (e.g. selected level)
-- **Supabase** — backend database (free tier, minimal storage)
+- **Zustand** — global state management (e.g. selected level, auth session)
+- **Supabase** — backend database + authentication (free tier, minimal storage)
 - **Google Gemini API** — AI feedback on writing/speaking + dynamic exercise generation (free tier)
 - **Pre-written content** — CEFR / Goethe Institut / Deutsche Welle word lists as foundation
+- **Vercel** — deployment (free Hobby plan, auto-deploys on push to main)
 
 ---
 
@@ -22,6 +23,7 @@ The app is called **Lerne Deutsch** (means "Learn German" in German).
 - **Local folder:** german-learning-app
 - **App display name:** Lerne Deutsch
 - **Expo config:** name = "Lerne Deutsch", slug = "german-learning-app"
+- **Production URL:** https://german-learning-app-neon.vercel.app
 
 ---
 
@@ -152,6 +154,9 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - If limit is exceeded, Supabase sends an email warning first
 - Database goes read-only after grace period — no surprise charges ever
 - Free projects pause after 7 days of inactivity — resumes instantly on access
+- Auth is live — email + password via Supabase Auth (email confirmation enabled)
+- Email confirmation template is customised to match the app (Lerne Deutsch branding)
+- Supabase redirect URL is set to the production Vercel domain
 
 ---
 
@@ -260,11 +265,13 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 16 — Reading Mode (Complete)
 ### ✅ Phase 18 — Sentence Builder (Complete)
 ### ✅ Phase 13 — Vocabulary Extra Info (Complete)
+### ✅ Phase 15 — Supabase Authentication (Complete)
 
 ---
 ## ACTIVE PIPELINE
 
 ### ⏳ Phase 11 — Test Exam Prep · Effort: Low
+
 - [ ] Test Reading: generate passage → answer questions → verify score and review screen
 - [ ] Test Listening: generate passage → play audio → answer questions → verify passage revealed
 - [ ] Test Writing: type a German response → submit → verify Gemini feedback appears
@@ -273,20 +280,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Test back button from each sub-section
 - [ ] Test Grammar "Generate More Exercises" button
 
-### ⏳ Phase 15 — Supabase Authentication · Effort: Medium
-- [ ] Add sign up and login screens (email + password via Supabase Auth)
-- [ ] Protect all screens behind auth — redirect to login if not signed in
-- [ ] Migrate all existing Supabase tables to use auth user_id instead of device ID
-  - user_progress, section_scores, vocabulary_mastery
-- [ ] Persist level selection to user account (currently stored locally in Zustand only)
-- [ ] Add sign out option in sidebar
-- [ ] Add next_review_date column to vocabulary_mastery table
-- [ ] Update flashcard spaced repetition logic:
-  - Known → next_review_date = today + 7 days
-  - Shaky → next_review_date = today + 2 days
-  - Unknown → next_review_date = today + 1 day
-  - On session start: show only words where next_review_date <= today
-- Note: prerequisite for Insights, proper spaced repetition, and eventual multi-user expansion
 
 
 ---
@@ -348,6 +341,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-29] Phase 19 complete — Space key to flip flashcard.
 - [2026-03-30] Phase 18 complete — Sentence Builder mini game, 80 A1 sentences, tap-to-place tile UI, grammar notes, Supabase score saving, Progress tab entry.
 - [2026-03-30] Phase 13 complete — 318/330 nouns have plurals (12 uncountable skipped), 151/151 verbs have conjugations, 53/71 adjectives have comparatives (18 absolute states skipped). Always-visible info panel in flashcards. Gender Battle shows plural, Listening Quiz reveals word + conjugations after answering. Scripts in scripts/ are reusable for A2/B1/B2 — just uncomment the paths in extract-plurals.js, extract-conjugations.js, and apply-comparatives.js.
+- [2026-03-30] Phase 15 complete — Supabase Auth live (email + password, confirmation enabled). Login/signup screen built to match app design system. All screens gated behind auth. Device UUID replaced with real auth user ID. Level persists to Supabase on change and loads on login. Spaced repetition dates added to vocabulary_mastery (Known→7d, Shaky→2d, Unknown→1d). Sign Out button in sidebar. App deployed to Vercel at https://german-learning-app-neon.vercel.app — auto-deploys on push to main.
 
 ---
 *This file is the single source of truth for the project.
