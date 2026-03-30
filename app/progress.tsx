@@ -394,7 +394,8 @@ export default function ProgressScreen() {
               <MiniScoreRow label="Speaking"      value={sess(scores.exam_speaking)} />
               <MiniScoreRow label="Gender Battle" value={pct(scores.game_gender_battle)} />
               <MiniScoreRow label="L. Quiz"       value={pct(scores.game_listening_quiz)} />
-              <MiniScoreRow label="Word Match"    value={sess(scores.game_word_match)} isLast />
+              <MiniScoreRow label="Word Match"    value={sess(scores.game_word_match)} />
+              <MiniScoreRow label="Sentences"     value={pct(scores.game_sentence_builder)} isLast />
             </View>
 
           </View>
