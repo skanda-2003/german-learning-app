@@ -160,6 +160,53 @@ function FlashcardDeck({ studyWords, allCategoryWords }: DeckProps) {
         {currentWord && <FlashCard key={currentWord.id} word={currentWord} />}
       </View>
 
+      {/* Always-visible info panel — shows plural / conjugations / comparative */}
+      {currentWord && (currentWord.plural || currentWord.conjugations || currentWord.comparative) && (
+        <View style={styles.infoPanel}>
+
+          {/* Noun: plural form */}
+          {currentWord.plural && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoPanelLabel}>PLURAL</Text>
+              <Text style={styles.infoPanelValue}>{currentWord.plural}</Text>
+            </View>
+          )}
+
+          {/* Adjective: comparative form */}
+          {currentWord.comparative && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoPanelLabel}>COMPARATIVE</Text>
+              <Text style={styles.infoPanelValue}>{currentWord.comparative}</Text>
+            </View>
+          )}
+
+          {/* Verb: conjugation table in a compact 2-column grid */}
+          {currentWord.conjugations && (
+            <>
+              <Text style={styles.infoPanelLabel}>CONJUGATION</Text>
+              <View style={styles.conjGrid}>
+                {(
+                  [
+                    ['ich', currentWord.conjugations.ich],
+                    ['du',  currentWord.conjugations.du],
+                    ['er/sie/es', currentWord.conjugations.er],
+                    ['wir', currentWord.conjugations.wir],
+                    ['ihr', currentWord.conjugations.ihr],
+                    ['sie/Sie', currentWord.conjugations.sie],
+                  ] as [string, string][]
+                ).map(([pronoun, form]) => (
+                  <View key={pronoun} style={styles.conjRow}>
+                    <Text style={styles.conjPronoun}>{pronoun}</Text>
+                    <Text style={styles.conjForm}>{form}</Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
+
+        </View>
+      )}
+
       {/* Three action buttons: Unknown / Shaky / Known */}
       <View style={styles.buttonRow}>
         <TouchableOpacity style={[styles.actionButton, styles.unknownButton]} onPress={handleUnknown}>
@@ -414,7 +461,58 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 380,
     height: 260,
-    marginBottom: spacing.xxxl,
+    marginBottom: spacing.lg,
+  },
+
+  // ── Always-visible info panel (below card) ──
+  infoPanel: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  infoPanelLabel: {
+    fontFamily: font.semiBold,
+    fontSize: 10,
+    letterSpacing: 0.08 * 10,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  infoPanelValue: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+  },
+  conjGrid: {
+    width: '100%',
+    marginTop: spacing.xs,
+  },
+  conjRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+  },
+  conjPronoun: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    width: 72,
+  },
+  conjForm: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.xs,
+    color: colors.textPrimary,
+    flex: 1,
+    textAlign: 'right',
   },
 
   // ── Three action buttons ──

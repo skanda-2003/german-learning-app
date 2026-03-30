@@ -204,6 +204,37 @@ export default function ListeningQuizGame({ words, onExit }: Props) {
         ))}
       </View>
 
+      {/* Word reveal + extra info — shown after answering */}
+      {isAnswered && currentWord && (
+        <View style={styles.revealBox}>
+          <Text style={styles.revealedWord}>{currentWord.german}</Text>
+          {/* Plural shown below for nouns */}
+          {currentWord.plural && (
+            <Text style={styles.pluralInfo}>pl. {currentWord.plural}</Text>
+          )}
+          {/* Conjugations shown below for verbs */}
+          {currentWord.conjugations && (
+            <View style={styles.conjGrid}>
+              {(
+                [
+                  ['ich', currentWord.conjugations.ich],
+                  ['du',  currentWord.conjugations.du],
+                  ['er/sie/es', currentWord.conjugations.er],
+                  ['wir', currentWord.conjugations.wir],
+                  ['ihr', currentWord.conjugations.ihr],
+                  ['sie/Sie', currentWord.conjugations.sie],
+                ] as [string, string][]
+              ).map(([pronoun, form]) => (
+                <View key={pronoun} style={styles.conjRow}>
+                  <Text style={styles.conjPronoun}>{pronoun}</Text>
+                  <Text style={styles.conjForm}>{form}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
       {/* Next button — only shown after answering */}
       {isAnswered && (
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
@@ -359,6 +390,52 @@ const styles = StyleSheet.create({
     fontFamily: font.semiBold,
     color: colors.background,
     fontSize: fontSize.sm,
+  },
+
+  // ── Word reveal box (shown after answering) ──
+  revealBox: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
+    alignItems: 'center',
+  },
+  revealedWord: {
+    fontFamily: font.bold,
+    fontSize: fontSize.xl,
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+  },
+  conjGrid: {
+    width: '100%',
+    marginTop: spacing.xs,
+  },
+  conjRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+  },
+  conjPronoun: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    width: 72,
+  },
+  pluralInfo: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+  },
+  conjForm: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.xs,
+    color: colors.textPrimary,
+    flex: 1,
+    textAlign: 'right',
   },
 
   // ── Done screen ──

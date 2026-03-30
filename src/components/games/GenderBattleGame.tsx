@@ -181,6 +181,10 @@ export default function GenderBattleGame({ words, onExit }: Props) {
       <View style={styles.nounCard}>
         <Text style={styles.nounText}>{stripArticle(currentNoun.german)}</Text>
         <Text style={styles.nounEnglish}>{currentNoun.english}</Text>
+        {/* Plural form shown below in grey — always visible as extra vocab info */}
+        {currentNoun.plural && (
+          <Text style={styles.pluralHint}>pl. {currentNoun.plural}</Text>
+        )}
       </View>
 
       {/* Result feedback */}
@@ -295,6 +299,13 @@ const styles = StyleSheet.create({
     fontFamily: font.regular,
     fontSize: fontSize.md,
     color: colors.textSecondary,
+  },
+  pluralHint: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    marginTop: spacing.sm,
+    letterSpacing: 0.3,
   },
 
   // ── Result feedback ──
