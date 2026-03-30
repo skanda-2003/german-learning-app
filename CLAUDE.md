@@ -305,8 +305,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Test level switching (A1 works, others show "coming soon" until content added)
 - [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for each new level (uncomment paths at top of each script)
 
-### ✅ Phase 22 — Deep Progress Insights (Complete)
-
 ### Phase 23 — Multi-user · Effort: High
 - [ ] Auth already handled in Phase 14 — this phase adds multi-user features on top
 - [ ] Leaderboard for streaks
