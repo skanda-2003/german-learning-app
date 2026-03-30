@@ -272,10 +272,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Test back button from each sub-section
 - [ ] Test Grammar "Generate More Exercises" button
 
-### ⏳ Phase 12 — Progress Page Fixes · Effort: Low
-- [ ] Add last active date below streak number (e.g. "Last active: today" or "2 days ago")
-- [ ] Add percentage label on right end of vocabulary category bars (e.g. "5%")
-
 ### ⏳ Phase 13 — Vocabulary Extra Info · Effort: High
 - [ ] Populate `plural` for all ~200 A1 nouns (e.g. "die Bücher")
 - [ ] Populate `conjugations` for all ~150 A1 verbs (ich/du/er/wir/ihr/sie present tense)
