@@ -259,6 +259,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 14 — Insights / Analytics (Complete)
 ### ✅ Phase 16 — Reading Mode (Complete)
 ### ✅ Phase 18 — Sentence Builder (Complete)
+### ✅ Phase 13 — Vocabulary Extra Info (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -271,15 +272,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Test Speaking (type): type response → submit → verify feedback
 - [ ] Test back button from each sub-section
 - [ ] Test Grammar "Generate More Exercises" button
-
-### ⏳ Phase 13 — Vocabulary Extra Info · Effort: High
-- [ ] Populate `plural` for all ~200 A1 nouns (e.g. "die Bücher")
-- [ ] Populate `conjugations` for all ~150 A1 verbs (ich/du/er/wir/ihr/sie present tense)
-- [ ] Populate `comparative` for all ~80 A1 adjectives (e.g. "älter")
-- [ ] Right-side info panel in Flashcards — always-visible panel showing extra info for current word
-- [ ] Show conjugations/plurals in Mini Games below the word in small grey text
-  - Gender Battle: plural below noun
-  - Listening Quiz: conjugations below verb
 
 ### ⏳ Phase 15 — Supabase Authentication · Effort: Medium
 - [ ] Add sign up and login screens (email + password via Supabase Auth)
@@ -313,6 +305,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Add A2 / B1 / B2 grammar exercise templates
 - [ ] Write 20-30 tips for A2, B1, B2
 - [ ] Test level switching (A1 works, others show "coming soon" until content added)
+- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for each new level (uncomment paths at top of each script)
 
 ### Phase 22 — Deep Progress Insights · Effort: Medium
 - [ ] Per-topic grammar score breakdown in Progress and Insights screens
@@ -354,6 +347,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-29] Phase 17 complete — Pronunciation Guide with 28 entries across 4 groups, Web Speech API play buttons.
 - [2026-03-29] Phase 19 complete — Space key to flip flashcard.
 - [2026-03-30] Phase 18 complete — Sentence Builder mini game, 80 A1 sentences, tap-to-place tile UI, grammar notes, Supabase score saving, Progress tab entry.
+- [2026-03-30] Phase 13 complete — 318/330 nouns have plurals (12 uncountable skipped), 151/151 verbs have conjugations, 53/71 adjectives have comparatives (18 absolute states skipped). Always-visible info panel in flashcards. Gender Battle shows plural, Listening Quiz reveals word + conjugations after answering. Scripts in scripts/ are reusable for A2/B1/B2 — just uncomment the paths in extract-plurals.js, extract-conjugations.js, and apply-comparatives.js.
 
 ---
 *This file is the single source of truth for the project.
