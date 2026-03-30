@@ -20,6 +20,7 @@ import { VOCABULARY } from '../src/data/vocabulary';
 import { loadMastery } from '../src/lib/masteryService';
 import { loadMistakes, MistakeEntry } from '../src/lib/mistakeService';
 import { loadActivityDates } from '../src/lib/activityService';
+import { loadTopicScores } from '../src/lib/grammarTopicService';
 import type { Word } from '../src/data/vocabulary';
 import type { MasteryState } from '../src/lib/masteryService';
 import {
@@ -29,6 +30,7 @@ import {
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
 type WeakWord = { word: Word; state: MasteryState };
+type WeakTopic = { topic: string; pct: number; sessions: number };
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -91,12 +93,12 @@ function weekMonthLabel(week: DaySlot[]): string | null {
 export default function InsightsScreen() {
   const level = useLevelStore((state) => state.level);
 
-  const [isLoading,    setIsLoading]    = useState(true);
-  const [weakWords,    setWeakWords]    = useState<WeakWord[]>([]);
-  const [mistakes,     setMistakes]     = useState<MistakeEntry[]>([]);
-  const [topicCounts,  setTopicCounts]  = useState<[string, number][]>([]);
-  const [calWeeks,     setCalWeeks]     = useState<DaySlot[][]>([]);
-  const [activeCount,  setActiveCount]  = useState(0);
+  const [isLoading,   setIsLoading]   = useState(true);
+  const [weakWords,   setWeakWords]   = useState<WeakWord[]>([]);
+  const [mistakes,    setMistakes]    = useState<MistakeEntry[]>([]);
+  const [weakTopics,  setWeakTopics]  = useState<WeakTopic[]>([]);
+  const [calWeeks,    setCalWeeks]    = useState<DaySlot[][]>([]);
+  const [activeCount, setActiveCount] = useState(0);
 
   // ── Load all data when the screen comes into focus ──
   useFocusEffect(
@@ -108,20 +110,21 @@ export default function InsightsScreen() {
   async function loadAll() {
     setIsLoading(true);
 
-    const [masteryMap, mistakeList, activityDateList] = await Promise.all([
+    const [masteryMap, mistakeList, activityDateList, topicScoreMap] = await Promise.all([
       loadMastery(),
       loadMistakes(),
       loadActivityDates(),
+      loadTopicScores(level),
     ]);
 
     // ── 1. Weak vocabulary ──
     const vocabForLevel = VOCABULARY[level];
-    const weak: WeakWord[] = vocabForLevel
+    const weakVocab: WeakWord[] = vocabForLevel
       .filter((w) => {
-        const state = masteryMap.get(w.id);
+        const state = masteryMap.get(w.id)?.state; // .state because MasteryMap now stores MasteryData
         return state === 'unknown' || state === 'shaky';
       })
-      .map((w) => ({ word: w, state: masteryMap.get(w.id) as MasteryState }))
+      .map((w) => ({ word: w, state: masteryMap.get(w.id)!.state as MasteryState }))
       // Sort: unknown first (higher priority to review), then shaky
       .sort((a, b) => {
         if (a.state === b.state) return 0;
@@ -129,23 +132,25 @@ export default function InsightsScreen() {
       })
       .slice(0, MAX_WEAK_WORDS);
 
-    // ── 2. Weak grammar topics — aggregate mistake counts per topic ──
-    const counts: Record<string, number> = {};
-    for (const m of mistakeList) {
-      if (m.section.startsWith('grammar:')) {
-        const topic = m.section.slice('grammar:'.length);
-        counts[topic] = (counts[topic] ?? 0) + 1;
-      }
-    }
-    const topicsSorted = Object.entries(counts).sort(([, a], [, b]) => b - a);
+    // ── 2. Weak grammar topics — sorted by lowest best score ──
+    // Only shows topics that have been attempted at least once.
+    const weakTopicList: WeakTopic[] = Array.from(topicScoreMap.entries())
+      .filter(([, s]) => s.bestTotal > 0)
+      .map(([topic, s]) => ({
+        topic,
+        pct:      Math.round((s.bestScore / s.bestTotal) * 100),
+        sessions: s.sessionsCompleted,
+      }))
+      .sort((a, b) => a.pct - b.pct) // lowest score first = weakest topic first
+      .slice(0, 10);
 
     // ── 3. Activity calendar ──
     const activeDatesSet = new Set(activityDateList);
     const weeks = buildCalendarWeeks(activeDatesSet);
 
-    setWeakWords(weak);
+    setWeakWords(weakVocab);
     setMistakes(mistakeList.slice(0, MAX_MISTAKES));
-    setTopicCounts(topicsSorted);
+    setWeakTopics(weakTopicList);
     setCalWeeks(weeks);
     setActiveCount(activeDatesSet.size);
     setIsLoading(false);
@@ -161,8 +166,12 @@ export default function InsightsScreen() {
     );
   }
 
-  // ─── Max bar width for topic chart ────────────────────────────────────────────
-  const maxTopicCount = topicCounts[0]?.[1] ?? 1;
+  // Bar color for a topic score: green ≥ 80%, amber 50–79%, red < 50%
+  function topicBarColor(pct: number): string {
+    if (pct >= 80) return colors.success;
+    if (pct >= 50) return colors.amber;
+    return colors.error;
+  }
 
   // ─── Main render ──────────────────────────────────────────────────────────────
 
@@ -232,23 +241,23 @@ export default function InsightsScreen() {
       {/* ── Section 3: Weak Grammar Topics ─────────────────────────── */}
       <Text style={[labelStyle, styles.sectionLabel]}>WEAK GRAMMAR TOPICS</Text>
       <View style={styles.card}>
-        {topicCounts.length === 0 ? (
+        {weakTopics.length === 0 ? (
           <Text style={styles.emptyText}>
-            No topic data yet — complete some grammar exercises.
+            No topic data yet — complete grammar exercises by topic to see scores here.
           </Text>
         ) : (
-          topicCounts.map(([topic, count]) => {
-            const barWidth = `${Math.round((count / maxTopicCount) * 100)}%` as any;
-            return (
-              <View key={topic} style={styles.topicRow}>
-                <Text style={styles.topicName} numberOfLines={1}>{topic}</Text>
-                <View style={styles.topicBarTrack}>
-                  <View style={[styles.topicBarFill, { width: barWidth }]} />
-                </View>
-                <Text style={styles.topicCount}>{count}</Text>
+          weakTopics.map(({ topic, pct }) => (
+            <View key={topic} style={styles.topicRow}>
+              <Text style={styles.topicName} numberOfLines={1}>{topic}</Text>
+              <View style={styles.topicBarTrack}>
+                <View style={[
+                  styles.topicBarFill,
+                  { width: `${pct}%` as any, backgroundColor: topicBarColor(pct) },
+                ]} />
               </View>
-            );
-          })
+              <Text style={styles.topicCount}>{pct}%</Text>
+            </View>
+          ))
         )}
       </View>
 

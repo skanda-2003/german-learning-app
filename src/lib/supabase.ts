@@ -4,20 +4,24 @@
 
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-// These values come from the .env.local file.
-// EXPO_PUBLIC_ prefix makes them available in the app bundle (Expo requirement).
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const supabaseUrl    = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
-// createClient sets up the connection to your Supabase project.
-// We pass AsyncStorage so that login sessions are saved on the device
-// and the user stays logged in between app restarts.
+// On web we let Supabase use its built-in browser storage (localStorage).
+// On native we use AsyncStorage so sessions persist between app restarts.
+//
+// Why: passing AsyncStorage on web causes Supabase to layer navigator.locks
+// on top of the localStorage polyfill, which leads to "lock stolen" errors
+// when multiple requests try to refresh the auth token simultaneously.
+const storage = Platform.OS === 'web' ? undefined : AsyncStorage;
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: AsyncStorage,         // persist sessions using device storage
-    autoRefreshToken: true,        // automatically refresh the auth token before it expires
-    persistSession: true,          // keep the user logged in after closing the app
-    detectSessionInUrl: true,      // required on web — picks up the session token from the URL after email confirmation
+    storage,
+    autoRefreshToken:  true,   // refresh token before it expires
+    persistSession:    true,   // keep the user logged in after closing the app
+    detectSessionInUrl: true,  // picks up the session token from the URL after email confirmation
   },
 });

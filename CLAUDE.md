@@ -148,6 +148,7 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Daily challenge completion status (resets daily)
 - section_scores table (user_id, section, best_score, best_total, sessions_completed)
 - mistake_log table (user_id, section, question, user_answer, correct_answer, timestamp)
+- grammar_topic_scores table (user_id, level, topic, best_score, best_total, sessions_completed)
 
 ### Important Supabase Notes
 - Free tier limit is 500MB — more than enough for a single user
@@ -159,7 +160,8 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Email confirmation template is customised to match the app (Lerne Deutsch branding)
 - Supabase redirect URL is set to the production Vercel domain
 - Users are stored in Supabase's built-in `auth.users` table (Authentication → Users in dashboard) — not a custom table
-- RLS (Row Level Security) is enabled on all 5 custom tables with `user_id = auth.uid()::text` policies
+- RLS (Row Level Security) is enabled on all 6 custom tables with `user_id = auth.uid()::text` policies
+- Supabase client uses `storage: undefined` on web (native browser localStorage, no navigator.locks) and AsyncStorage on native — avoids "lock stolen" errors from lock contention
 
 ---
 
@@ -269,6 +271,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 18 — Sentence Builder (Complete)
 ### ✅ Phase 13 — Vocabulary Extra Info (Complete)
 ### ✅ Phase 15 — Supabase Authentication (Complete)
+### ✅ Phase 22 — Deep Progress Insights (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -303,10 +306,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Test level switching (A1 works, others show "coming soon" until content added)
 - [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for each new level (uncomment paths at top of each script)
 
-### Phase 22 — Deep Progress Insights · Effort: Medium
-- [ ] Per-topic grammar score breakdown in Progress and Insights screens
-- [ ] New Supabase table: grammar_topic_scores (user_id, level, topic, best_score, sessions)
-- [ ] Update grammar.tsx to save per-topic results
+### ✅ Phase 22 — Deep Progress Insights (Complete)
 
 ### Phase 23 — Multi-user · Effort: High
 - [ ] Auth already handled in Phase 14 — this phase adds multi-user features on top
@@ -346,6 +346,8 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-30] Phase 13 complete — 318/330 nouns have plurals (12 uncountable skipped), 151/151 verbs have conjugations, 53/71 adjectives have comparatives (18 absolute states skipped). Always-visible info panel in flashcards. Gender Battle shows plural, Listening Quiz reveals word + conjugations after answering. Scripts in scripts/ are reusable for A2/B1/B2 — just uncomment the paths in extract-plurals.js, extract-conjugations.js, and apply-comparatives.js.
 - [2026-03-30] Phase 15 complete — Supabase Auth live (email + password, confirmation enabled). Login/signup screen built to match app design system. All screens gated behind auth. Device UUID replaced with real auth user ID. Level persists to Supabase on change and loads on login. Spaced repetition dates added to vocabulary_mastery (Known→7d, Shaky→2d, Unknown→1d). Sign Out button in sidebar. App deployed to Vercel at https://german-learning-app-neon.vercel.app — auto-deploys on push to main.
 - [2026-03-30] Phase 15 post-fixes — Enter key navigation across all auth form fields. Fixed signup success message being wiped by mode switch. Fixed email confirmation black page: detectSessionInUrl set to true, Supabase switched to Implicit auth flow. RLS enabled on all 5 Supabase tables (user_id = auth.uid()::text policies). Custom branded confirmation email live in Supabase.
+- [2026-03-30] Phase 22 complete — New grammar_topic_scores Supabase table (with RLS). grammar.tsx saves per-topic score on session end (specific topic only, not All Topics). Progress page Grammar Topics card upgraded: score bars coloured by performance, weakest topics surface first, unattempted show —. Insights Weak Grammar Topics now uses real scores sorted lowest-first with green/amber/red bars instead of mistake counts. Fixed MasteryMap type references in progress.tsx and insights.tsx (.state accessor).
+- [2026-03-30] Bug fix — Supabase navigator.locks contention on web ("lock stolen" errors on mastery/mistake loads). Fixed by passing storage: undefined on web so Supabase uses native browser localStorage without the navigator.locks layer. AsyncStorage still used on native for future mobile support.
 
 ---
 *This file is the single source of truth for the project.
