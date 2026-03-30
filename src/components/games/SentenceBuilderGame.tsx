@@ -61,7 +61,7 @@ function makeBankTiles(entry: SentenceEntry): WordTile[] {
 
 export default function SentenceBuilderGame({ onExit }: Props) {
   // ── Session state (stays for the whole game) ──────────────────────────────
-  const [entries] = useState<SentenceEntry[]>(() => pickEntries());
+  const [entries, setEntries] = useState<SentenceEntry[]>(() => pickEntries());
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [isDone, setIsDone] = useState(false);
@@ -139,13 +139,12 @@ export default function SentenceBuilderGame({ onExit }: Props) {
   // Simplest: accept that entries don't change on Play Again (shuffle is random anyway).
   // For a proper shuffle, the parent could unmount/remount us — for now we just reset state.
   function handlePlayAgain() {
-    const newEntries = shuffle([...SENTENCE_BUILDER_DATA]).slice(0, TOTAL_ROUNDS);
-    // We can't change `entries` since it was declared with plain useState (no setter).
-    // So on Play Again we accept the same 10 entries re-shuffled. That's fine for now.
+    const newEntries = pickEntries();
+    setEntries(newEntries);
     setCurrentIndex(0);
     setCorrectCount(0);
     setIsDone(false);
-    setBankTiles(makeBankTiles(entries[0]));
+    setBankTiles(makeBankTiles(newEntries[0]));
     setAnswerTiles([]);
     setSubmitted(false);
     setIsCorrect(false);
