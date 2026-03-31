@@ -203,6 +203,7 @@ This project must remain completely free to run.
 - Prefer simple and readable code over clever compact code
 - Ask before making large changes or refactors
 - Commit friendly — keep changes small and logical so each commit is meaningful
+- Remind me to clear the chat context or start a new chat after every feature 
 
 ---
 
@@ -276,6 +277,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 13 — Vocabulary Extra Info (Complete)
 ### ✅ Phase 15 — Supabase Authentication (Complete)
 ### ✅ Phase 22 — Deep Progress Insights (Complete)
+### ✅ Phase 24 — Smart Interruption Tips (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -318,11 +320,12 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] User profiles
 - [ ] Shared progress comparisons
 
-### Phase 24 — Smart Interruption Tips · Effort: Medium
-- [ ] Wire tips to mistake log data — show contextual tips based on recent wrong answers
-- [ ] Replace auto-shuffle with targeted tips after completing exercises
-- [ ] Example: user keeps getting der/die/das wrong → tip about noun genders appears
-- [ ] Requires Phase 15 (Insights/mistake log) to be complete first
+### ✅ Phase 24 — Smart Interruption Tips · Effort: Medium (Complete)
+- [x] Wire tips to mistake log data — show contextual tips based on recent wrong answers
+- [x] After completing a grammar or daily challenge session, loads recent mistakes, finds most-repeated weak topic, sets a "Focus Tip" in TipsBar
+- [x] TipsBar shows "FOCUS TIP" label (blue) for contextual tips vs "TIP" label (grey) for regular tips
+- [x] Right arrow dismisses the focus tip and moves to normal tip browsing; left arrow from tip 0 brings it back
+- [x] New files: useTipStore.ts (Zustand), topicTipMap.ts (20 A1 topic→tip entries), contextualTipService.ts (analysis logic)
 
 ### ✅ Phase 25 — Score & Mistake Logging Gaps · Effort: Low (Complete — no code needed)
 Gaps were investigated and found to already be correctly handled:
@@ -368,6 +371,7 @@ Note: the original "gaps" were identified by grepping only for `saveScore` and m
 - [2026-03-30] Gemini model updated — gemini-2.0-flash deprecated and shut down, replaced with gemini-2.5-flash in src/lib/gemini.ts.
 - [2026-03-30] Phase 11 complete — All Exam Prep sections tested and working. Fixed Gemini markdown formatting in Writing and Speaking feedback (responses now output plain text paragraphs, no asterisks or bullet points).
 - [2026-03-30] Phase 25 complete (investigation only, no code changes) — Suspected logging gaps confirmed to already be handled: WritingExercise and SpeakingExercise both call saveCompletion(); grammar handleNext() calls saveMistake() for all wrong answers including AI-generated exercises. Original analysis was incorrect (grep missed saveCompletion).
+- [2026-03-31] Phase 24 complete — Smart Interruption Tips. After completing grammar or daily challenge sessions, app loads recent mistakes, identifies most-repeated weak topic, and surfaces a targeted tip in TipsBar with a blue "FOCUS TIP" label. New: useTipStore.ts, topicTipMap.ts (20 A1 entries), contextualTipService.ts. TipsBar updated to show/dismiss focus tips via arrow navigation.
 
 ---
 *This file is the single source of truth for the project.

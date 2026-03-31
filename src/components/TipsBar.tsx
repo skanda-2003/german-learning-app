@@ -1,53 +1,97 @@
 // TipsBar.tsx — A persistent hint bar shown at the bottom of every screen.
-// Displays one tip at a time for the currently selected level.
+//
+// Normal mode: displays one tip at a time for the current level.
+// Focus Tip mode: when the user completes a grammar or daily challenge session,
+//   the bar shows a targeted tip for their weakest topic (labelled "FOCUS TIP").
+//   Pressing the right arrow dismisses it and returns to normal browsing.
+//
 // Left/right arrows let the user browse through the tips.
-// When the level changes, the bar automatically resets to the first tip for that level.
+// When the level changes, the bar resets to tip 0 and clears any focus tip.
 
 import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import useLevelStore from '../store/useLevelStore';
+import useTipStore from '../store/useTipStore';
 import { TIPS } from '../data/tips';
 
 export default function TipsBar() {
-  // Get the current level from the global Zustand store
+  // Current level — determines which tip list to use
   const level = useLevelStore((state) => state.level);
 
-  // tipIndex tracks which tip we're currently showing (0 = first tip)
+  // The contextual tip set after exercise completion (null = no focus tip)
+  const contextualTip    = useTipStore((state) => state.contextualTip);
+  const clearContextualTip = useTipStore((state) => state.clearContextualTip);
+
+  // tipIndex tracks position in the regular tips array
   const [tipIndex, setTipIndex] = useState(0);
 
-  // When the level changes, jump back to the first tip for the new level.
-  // useEffect runs the function inside whenever `level` changes.
+  // showContextual: true when we're displaying the focus tip instead of a regular tip
+  const [showContextual, setShowContextual] = useState(false);
+
+  // When a new contextual tip arrives, snap to it immediately
+  useEffect(() => {
+    if (contextualTip) {
+      setShowContextual(true);
+    }
+  }, [contextualTip]);
+
+  // When the level changes, reset everything — new level = fresh tip set
   useEffect(() => {
     setTipIndex(0);
+    setShowContextual(false);
+    clearContextualTip();
   }, [level]);
 
-  // The tips array for the current level
   const tips = TIPS[level];
 
-  // Go to the previous tip. If we're at the first tip, wrap to the last one.
-  const goBack = () => {
-    setTipIndex((prev) => (prev === 0 ? tips.length - 1 : prev - 1));
-  };
+  // The tip text currently on screen
+  const displayTip = showContextual && contextualTip
+    ? contextualTip
+    : tips[tipIndex];
 
-  // Go to the next tip. If we're at the last tip, wrap back to the first one.
-  const goForward = () => {
-    setTipIndex((prev) => (prev === tips.length - 1 ? 0 : prev + 1));
-  };
+  // True when we're showing the focus tip (affects label colour)
+  const isFocusTip = showContextual && !!contextualTip;
+
+  function goBack() {
+    if (showContextual) {
+      // Already at the focus tip — wrap around to the last regular tip
+      setShowContextual(false);
+      setTipIndex(tips.length - 1);
+    } else if (tipIndex === 0 && contextualTip) {
+      // Step back from first regular tip → show the focus tip again
+      setShowContextual(true);
+    } else {
+      setTipIndex((prev) => (prev === 0 ? tips.length - 1 : prev - 1));
+    }
+  }
+
+  function goForward() {
+    if (showContextual) {
+      // Dismiss the focus tip and move to regular tip 0
+      setShowContextual(false);
+      clearContextualTip();
+      setTipIndex(0);
+    } else {
+      setTipIndex((prev) => (prev === tips.length - 1 ? 0 : prev + 1));
+    }
+  }
 
   return (
     <View style={styles.container}>
-      {/* Left arrow button */}
+      {/* Left arrow */}
       <TouchableOpacity onPress={goBack} style={styles.arrowButton}>
         <Text style={styles.arrow}>‹</Text>
       </TouchableOpacity>
 
-      {/* Tip text in the middle */}
+      {/* Tip text */}
       <View style={styles.textContainer}>
-        <Text style={styles.label}>💡 Tip</Text>
-        <Text style={styles.tipText}>{tips[tipIndex]}</Text>
+        <Text style={[styles.label, isFocusTip && styles.labelFocus]}>
+          {isFocusTip ? 'Focus Tip' : 'Tip'}
+        </Text>
+        <Text style={styles.tipText}>{displayTip}</Text>
       </View>
 
-      {/* Right arrow button */}
+      {/* Right arrow */}
       <TouchableOpacity onPress={goForward} style={styles.arrowButton}>
         <Text style={styles.arrow}>›</Text>
       </TouchableOpacity>
@@ -87,6 +131,10 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     textTransform: 'uppercase',
     letterSpacing: 1.2,
+  },
+  // Blue label when showing a focus/contextual tip
+  labelFocus: {
+    color: '#2563eb',
   },
   tipText: {
     fontFamily: 'IBMPlexMono_400Regular',

@@ -21,8 +21,10 @@ import { GRAMMAR, GrammarExercise } from '../src/data/grammar';
 import ExerciseCard from '../src/components/ExerciseCard';
 import { generateGrammarExercises } from '../src/lib/gemini';
 import { saveScore } from '../src/lib/scoresService';
-import { saveMistake } from '../src/lib/mistakeService';
+import { saveMistake, loadMistakes } from '../src/lib/mistakeService';
 import { saveTopicScore } from '../src/lib/grammarTopicService';
+import { getContextualTip } from '../src/lib/contextualTipService';
+import useTipStore from '../src/store/useTipStore';
 import type { MistakeData } from '../src/components/ExerciseCard';
 import {
   colors, font, fontSize, spacing, radius,
@@ -38,6 +40,7 @@ type Screen = 'topic-select' | 'exercise' | 'done';
 export default function GrammarScreen() {
   const level = useLevelStore((state) => state.level);
   const allExercises = GRAMMAR[level];
+  const setContextualTip = useTipStore((state) => state.setContextualTip);
 
   const [screen, setScreen] = useState<Screen>('topic-select');
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
@@ -123,6 +126,11 @@ export default function GrammarScreen() {
       if (selectedTopic !== null) {
         saveTopicScore(selectedTopic, level, newCorrectCount, totalExercises);
       }
+      // After the session ends, surface a targeted tip based on recent mistakes
+      loadMistakes().then((mistakes) => {
+        const tip = getContextualTip(mistakes, level);
+        if (tip) setContextualTip(tip);
+      });
       setScreen('done');
     } else {
       setCurrentIndex(nextIndex);
