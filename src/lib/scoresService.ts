@@ -35,7 +35,8 @@ export type SectionKey =
   | 'game_gender_battle'
   | 'game_listening_quiz'
   | 'game_word_match'
-  | 'game_sentence_builder';
+  | 'game_sentence_builder'
+  | 'game_fill_in_blank';
 
 // Default value for a section that has never been attempted
 const DEFAULT_SCORE: SectionScore = {
@@ -148,6 +149,7 @@ export async function loadAllScores(): Promise<Record<SectionKey, SectionScore>>
     game_listening_quiz:   { ...DEFAULT_SCORE },
     game_word_match:       { ...DEFAULT_SCORE },
     game_sentence_builder: { ...DEFAULT_SCORE },
+    game_fill_in_blank:    { ...DEFAULT_SCORE },
   };
 
   try {

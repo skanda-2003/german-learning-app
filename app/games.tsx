@@ -2,12 +2,13 @@
 //
 // Shows a 2-column card grid of available games.
 // Each card shows the game name, description, and best score if played.
-// Fill in the Blank is marked "SOON" (requires Gemini — deferred to Phase 10b).
 //
 // Active games:
-//   Word Match     — match 6 German words to their English meanings
-//   Gender Battle  — pick der / die / das for a noun, 10 rounds
-//   Listening Quiz — hear a German word, pick the correct meaning, 10 rounds
+//   Word Match       — match 6 German words to their English meanings
+//   Gender Battle    — pick der / die / das for a noun, 10 rounds
+//   Listening Quiz   — hear a German word, pick the correct meaning, 10 rounds
+//   Sentence Builder — arrange word tiles into the correct German sentence, 10 rounds
+//   Fill in the Blank — Gemini generates a sentence with a blank; type the missing word, 10 rounds
 
 import React, { useState, useCallback } from 'react';
 import {
@@ -25,11 +26,12 @@ import WordMatchGame from '../src/components/games/WordMatchGame';
 import GenderBattleGame from '../src/components/games/GenderBattleGame';
 import ListeningQuizGame from '../src/components/games/ListeningQuizGame';
 import SentenceBuilderGame from '../src/components/games/SentenceBuilderGame';
+import FillInBlankGame from '../src/components/games/FillInBlankGame';
 import { colors, font, fontSize, spacing, radius, labelStyle } from '../src/styles/theme';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
-type GameId = 'word-match' | 'gender-battle' | 'listening-quiz' | 'sentence-builder';
+type GameId = 'word-match' | 'gender-battle' | 'listening-quiz' | 'sentence-builder' | 'fill-in-blank';
 
 type GameDef = {
   id: GameId | null;
@@ -69,11 +71,11 @@ const GAMES: GameDef[] = [
     available: true,
   },
   {
-    id: null,
-    scoreKey: null,
+    id: 'fill-in-blank',
+    scoreKey: 'game_fill_in_blank',
     title: 'Fill in the Blank',
-    description: 'Complete sentences with the correct German word.',
-    available: false,
+    description: 'Complete Gemini-generated sentences with the correct German word.',
+    available: true,
   },
 ];
 
@@ -107,6 +109,9 @@ export default function GamesScreen() {
   }
   if (activeGame === 'sentence-builder') {
     return <SentenceBuilderGame words={words} onExit={() => setActiveGame(null)} />;
+  }
+  if (activeGame === 'fill-in-blank') {
+    return <FillInBlankGame words={words} level={level} onExit={() => setActiveGame(null)} />;
   }
 
   // ── Selector screen ──

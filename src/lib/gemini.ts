@@ -55,8 +55,15 @@ async function callGemini(prompt: string): Promise<string> {
     const text = result.response.text();
     return text.trim();
   } catch (error) {
-    // Log the error for debugging but return a safe message to the user
+    // Log the full error for debugging
     console.error('Gemini API error:', error);
+
+    // Give a more specific message when the free-tier quota is hit (HTTP 429)
+    const errorStr = String(error);
+    if (errorStr.includes('429') || errorStr.toLowerCase().includes('quota') || errorStr.toLowerCase().includes('rate limit')) {
+      return 'Sorry, the daily AI quota has been reached. Try again tomorrow or later today.';
+    }
+
     return 'Sorry, the AI feature is unavailable right now. Please try again.';
   }
 }

@@ -279,6 +279,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 15 — Supabase Authentication (Complete)
 ### ✅ Phase 22 — Deep Progress Insights (Complete)
 ### ✅ Phase 24 — Smart Interruption Tips (Complete)
+### ✅ Phase 20 — AI / Gemini Features (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -288,13 +289,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ---
 ## LATER
 *Planned but not immediate.*
-
-### Phase 20 — AI / Gemini Features · Effort: Medium
-- [ ] Test and verify "Generate More Exercises" in Grammar fully works
-- [ ] Build Fill in the Blank mini game (Gemini generated sentences)
-- [ ] Performance check — loading states for all Gemini API calls
-- [ ] Error handling — friendly messages when Gemini quota is hit
-- [ ] Gemini feedback tone polish across Writing and Speaking
 
 ### Phase 21 — Expand to A2, B1, B2 · Effort: High
 - [ ] Add A2 / B1 / B2 vocabulary lists
@@ -345,6 +339,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-30] Phase 11 complete — All Exam Prep sections tested and working. Fixed Gemini markdown formatting in Writing and Speaking feedback (responses now output plain text paragraphs, no asterisks or bullet points).
 - [2026-03-30] Phase 25 complete (investigation only, no code changes) — Suspected logging gaps confirmed to already be handled: WritingExercise and SpeakingExercise both call saveCompletion(); grammar handleNext() calls saveMistake() for all wrong answers including AI-generated exercises. Original analysis was incorrect (grep missed saveCompletion).
 - [2026-03-31] Phase 24 complete — Smart Interruption Tips. After completing grammar or daily challenge sessions, app loads recent mistakes, identifies most-repeated weak topic, and surfaces a targeted tip in TipsBar with a blue "FOCUS TIP" label. New: useTipStore.ts, topicTipMap.ts (20 A1 entries), contextualTipService.ts. TipsBar updated to show/dismiss focus tips via arrow navigation.
+- [2026-03-31] Phase 20 complete — Fill in the Blank mini game built (FillInBlankGame.tsx). Gemini generates a sentence per round with the target word blanked out; user types the missing word. Article stripped from nouns so blank is just the noun. 10 rounds, score saved to Supabase (game_fill_in_blank). Error + retry/skip UI if Gemini fails. Quota error message improved in callGemini() to detect 429/quota errors. All existing Gemini loading states and feedback tone were already solid — confirmed and left as-is.
 
 ---
 *This file is the single source of truth for the project.
