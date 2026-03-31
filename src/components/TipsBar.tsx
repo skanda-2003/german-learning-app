@@ -1,48 +1,65 @@
 // TipsBar.tsx — A persistent hint bar shown at the bottom of every screen.
 //
-// Normal mode: displays one tip at a time for the current level.
+// Normal mode: shows a random tip each time the user navigates to a new screen.
 // Focus Tip mode: when the user completes a grammar or daily challenge session,
 //   the bar shows a targeted tip for their weakest topic (labelled "FOCUS TIP").
 //   Pressing the right arrow dismisses it and returns to normal browsing.
 //
-// Left/right arrows let the user browse through the tips.
-// When the level changes, the bar resets to tip 0 and clears any focus tip.
+// Left/right arrows let the user browse through the full tip list at any time.
+// When the level changes, the bar picks a fresh random tip and clears any focus tip.
 
 import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { usePathname } from 'expo-router';
 import useLevelStore from '../store/useLevelStore';
 import useTipStore from '../store/useTipStore';
 import { TIPS } from '../data/tips';
+
+// Returns a random index into an array of a given length
+function randomIndex(length: number): number {
+  return Math.floor(Math.random() * length);
+}
 
 export default function TipsBar() {
   // Current level — determines which tip list to use
   const level = useLevelStore((state) => state.level);
 
+  // pathname changes every time the user navigates to a different screen
+  const pathname = usePathname();
+
   // The contextual tip set after exercise completion (null = no focus tip)
-  const contextualTip    = useTipStore((state) => state.contextualTip);
+  const contextualTip      = useTipStore((state) => state.contextualTip);
   const clearContextualTip = useTipStore((state) => state.clearContextualTip);
 
-  // tipIndex tracks position in the regular tips array
-  const [tipIndex, setTipIndex] = useState(0);
+  const tips = TIPS[level];
+
+  // tipIndex tracks position in the regular tips array — starts at a random tip
+  const [tipIndex, setTipIndex] = useState(() => randomIndex(TIPS['A1'].length));
 
   // showContextual: true when we're displaying the focus tip instead of a regular tip
   const [showContextual, setShowContextual] = useState(false);
 
-  // When a new contextual tip arrives, snap to it immediately
+  // Each time the user navigates to a new screen, show a different random tip.
+  // Skip this if a focus tip is active — we don't want to hide it on navigation.
+  useEffect(() => {
+    if (!showContextual) {
+      setTipIndex(randomIndex(tips.length));
+    }
+  }, [pathname]);
+
+  // When a new focus tip arrives, snap to it immediately
   useEffect(() => {
     if (contextualTip) {
       setShowContextual(true);
     }
   }, [contextualTip]);
 
-  // When the level changes, reset everything — new level = fresh tip set
+  // When the level changes, pick a fresh random tip and clear any focus tip
   useEffect(() => {
-    setTipIndex(0);
+    setTipIndex(randomIndex(TIPS[level].length));
     setShowContextual(false);
     clearContextualTip();
   }, [level]);
-
-  const tips = TIPS[level];
 
   // The tip text currently on screen
   const displayTip = showContextual && contextualTip

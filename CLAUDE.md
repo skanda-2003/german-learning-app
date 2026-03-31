@@ -93,7 +93,7 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Word Match — 6 random pairs per round, click-to-match
 - Gender Battle — 10 rounds, der/die/das; show plural below noun in grey
 - Listening Quiz — 10 rounds, Web Speech API; show conjugations below verbs in grey
-- Fill in the Blank — Gemini generated (Phase 17 — Later)
+- Fill in the Blank — Gemini generated (planned — Phase 20)
 
 ### 📝 Grammar Exercises
 **Selector screen: 2-column card grid with 1px borders**
@@ -133,9 +133,10 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 
 ### 💡 Tips / Hints Bar
 - Always visible at the bottom of every screen
-- Left and right arrows to browse
+- Left and right arrows to browse the full tip list
 - 25 tips for A1 across 8 categories, level-aware
-- Auto-shuffle on navigation — tip rotates every time user navigates to a new screen
+- Shuffles on every screen navigation — a different random tip is shown each time
+- **Focus Tip mode** — after completing a grammar or daily challenge session, the bar surfaces a targeted tip for the user's weakest grammar topic, labelled "FOCUS TIP" in blue. Right arrow dismisses it; left arrow from tip 0 restores it.
 
 ---
 
@@ -282,23 +283,11 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ---
 ## ACTIVE PIPELINE
 
-### ✅ Phase 11 — Test Exam Prep · Effort: Low (Complete)
-
-- [x] Test Reading: generate passage → answer questions → verify score and review screen
-- [x] Test Listening: generate passage → play audio → answer questions → verify passage revealed
-- [x] Test Writing: type a German response → submit → verify Gemini feedback appears
-- [x] Test Speaking (mic): record → verify transcript → submit → verify feedback
-- [x] Test Speaking (type): type response → submit → verify feedback
-- [x] Test back button from each sub-section
-- [x] Test Grammar "Generate More Exercises" button
-
-- Gemini responses were using markdown formatting (asterisks, bold, bullet points) — fixed in this phase by adding plain-text formatting instructions to all feedback prompts
-- Suspected logging gaps for Writing/Speaking scores and AI grammar mistakes were investigated in Phase 25 and confirmed to already be handled correctly
-
+*Nothing active right now. Pick the next phase from LATER below.*
 
 ---
 ## LATER
-*Planned but not immediate — picked up after active pipeline is complete.*
+*Planned but not immediate.*
 
 ### Phase 20 — AI / Gemini Features · Effort: Medium
 - [ ] Test and verify "Generate More Exercises" in Grammar fully works
@@ -310,31 +299,15 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### Phase 21 — Expand to A2, B1, B2 · Effort: High
 - [ ] Add A2 / B1 / B2 vocabulary lists
 - [ ] Add A2 / B1 / B2 grammar exercise templates
-- [ ] Write 20-30 tips for A2, B1, B2
+- [ ] Write 20-30 tips for A2, B1, B2 (also add topic→tip mappings in topicTipMap.ts)
 - [ ] Test level switching (A1 works, others show "coming soon" until content added)
 - [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for each new level (uncomment paths at top of each script)
 
 ### Phase 23 — Multi-user · Effort: High
-- [ ] Auth already handled in Phase 14 — this phase adds multi-user features on top
+- [ ] Auth already handled — this phase adds multi-user features on top
 - [ ] Leaderboard for streaks
 - [ ] User profiles
 - [ ] Shared progress comparisons
-
-### ✅ Phase 24 — Smart Interruption Tips · Effort: Medium (Complete)
-- [x] Wire tips to mistake log data — show contextual tips based on recent wrong answers
-- [x] After completing a grammar or daily challenge session, loads recent mistakes, finds most-repeated weak topic, sets a "Focus Tip" in TipsBar
-- [x] TipsBar shows "FOCUS TIP" label (blue) for contextual tips vs "TIP" label (grey) for regular tips
-- [x] Right arrow dismisses the focus tip and moves to normal tip browsing; left arrow from tip 0 brings it back
-- [x] New files: useTipStore.ts (Zustand), topicTipMap.ts (20 A1 topic→tip entries), contextualTipService.ts (analysis logic)
-
-### ✅ Phase 25 — Score & Mistake Logging Gaps · Effort: Low (Complete — no code needed)
-Gaps were investigated and found to already be correctly handled:
-- [x] Exam Writing: `saveCompletion('exam_writing')` already called in WritingExercise.tsx:73 — Progress shows sessions count via `sess()`, which is correct (no numeric score exists for writing)
-- [x] Exam Speaking: `saveCompletion('exam_speaking')` already called in SpeakingExercise.tsx:150 — same pattern as writing
-- [x] AI-generated grammar exercises: `saveMistake()` is called in grammar.tsx `handleNext()` for every wrong answer regardless of whether the exercise is pre-written or AI-generated — they use the same code path
-- [x] Progress page already shows Writing and Speaking as session counts — confirmed working
-
-Note: the original "gaps" were identified by grepping only for `saveScore` and missing `saveCompletion`. Writing and Speaking correctly use `saveCompletion` (no numeric score — it's subjective AI feedback). Progress displays them with the `sess()` formatter showing "Nx".
 
 ---
 
