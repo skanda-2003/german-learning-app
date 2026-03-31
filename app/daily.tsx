@@ -26,6 +26,9 @@ import {
   UserProgress,
 } from '../src/lib/streakService';
 import { logActivity } from '../src/lib/activityService';
+import { loadMistakes } from '../src/lib/mistakeService';
+import { getContextualTip } from '../src/lib/contextualTipService';
+import useTipStore from '../src/store/useTipStore';
 import {
   colors, font, fontSize, spacing, radius,
   cardStyle, progressTrackStyle,
@@ -75,6 +78,7 @@ type Screen = 'loading' | 'intro' | 'challenge' | 'done' | 'already-done';
 export default function DailyScreen() {
   const level = useLevelStore(state => state.level);
   const allExercises = GRAMMAR[level];
+  const setContextualTip = useTipStore((state) => state.setContextualTip);
 
   const [screen, setScreen] = useState<Screen>('loading');
   const [progress, setProgress] = useState<UserProgress>({
@@ -110,6 +114,11 @@ export default function DailyScreen() {
         logActivity(),
       ]);
       setProgress(updated);
+      // Surface a targeted tip based on the user's recent grammar mistakes
+      loadMistakes().then((mistakes) => {
+        const tip = getContextualTip(mistakes, level);
+        if (tip) setContextualTip(tip);
+      });
       setScreen('done');
     } else {
       setCurrentIndex(nextIndex);
