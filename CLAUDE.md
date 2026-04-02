@@ -284,7 +284,45 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ---
 ## ACTIVE PIPELINE
 
-*Nothing active right now. Pick the next phase from LATER below.*
+### ⏳ Phase 25 — Quick Fixes & Small Improvements · Effort: Low
+- [ ] Tips shuffle fix — randomise entire tip list order at session start so every session feels different, smart tip appears somewhere in rotation not always first
+- [ ] Home page heading — remove "LERNE DEUTSCH" large heading, replace with personalised time-of-day greeting + streak line (e.g. "Good morning. 3 day streak — keep it going.")
+- [ ] Audio speaker on flashcards — add small speaker icon to flashcard front and back, tapping reads the German word aloud using Web Speech API (de-DE voice), same API already used in Listening Quiz
+
+### ⏳ Phase 26 — Grammar Exercises Expansion · Effort: Medium
+- [ ] Expand hard grammar topics from ~7 exercises to 15-20 each
+- [ ] Priority topics to expand: Akkusativ, prepositions (in/auf/mit/zu/bei/nach/aus/von/für), separable verbs, modal verbs, word order
+- [ ] Keep same format as existing exercises (fill-blank and multiple-choice mix)
+- [ ] Write in chunks of 1 topic at a time to avoid cutoff issues
+
+### ⏳ Phase 27 — Flashcard Verb Sub-categories · Effort: Medium
+- [ ] Add verb type sub-categories under the Verbs pill in flashcard category filter
+- [ ] Sub-categories: Regular Verbs, Irregular Verbs, Modal Verbs (können/müssen/wollen/möchten/dürfen/sollen), Separable Verbs
+- [ ] Each sub-category shows count e.g. "Modal Verbs 6"
+- [ ] Requires tagging each verb in a1.ts with its verb type (verbType field)
+- [ ] UI: tapping Verbs pill expands to show sub-category pills below
+
+### ⏳ Phase 28 — Reading Mode Improvements · Effort: Low
+- [ ] Increase passage length from ~4 sentences to 8-10 sentences
+- [ ] Ensure passages use only A1 vocabulary from the word list
+- [ ] Add option to generate a new passage without reloading the screen
+
+### ⏳ Phase 29 — Real A1 Exam Simulation · Effort: High
+- [ ] Research and replicate actual Goethe-Zertifikat A1 exam format and difficulty
+- [ ] Reading section: real-world text formats — signs, notices, short messages, form-filling tasks (not just passage + questions)
+- [ ] Listening section: real dialogue between two people (not single sentences), multiple choice on what was discussed
+- [ ] Writing section: short formal message or form completion (e.g. fill in a registration form, write a short reply to an email)
+- [ ] Speaking section: introduce yourself prompt, respond to questions about daily life
+- [ ] Difficulty calibrated to actual A1 exam — currently too easy
+- [ ] Add a separate "Exam Simulation" mode distinct from practice mode
+- [ ] Score and feedback aligned with real exam marking criteria
+
+### ⏳ Phase 30 — Newspaper / Comprehension Exercise · Effort: Medium
+- [ ] Add new sub-section to Exam Prep called "Comprehension"
+- [ ] Show a real-format German text — newspaper excerpt, advertisement, or notice
+- [ ] User reads and writes a summary or answers open questions in German
+- [ ] Gemini evaluates the response and gives structured feedback
+- [ ] Texts sourced from Deutsche Welle (openly licensed) or Gemini generated at correct level
 
 ---
 ## LATER
@@ -295,13 +333,31 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Add A2 / B1 / B2 grammar exercise templates
 - [ ] Write 20-30 tips for A2, B1, B2 (also add topic→tip mappings in topicTipMap.ts)
 - [ ] Test level switching (A1 works, others show "coming soon" until content added)
-- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for each new level (uncomment paths at top of each script)
+- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for each new level
 
 ### Phase 23 — Multi-user · Effort: High
 - [ ] Auth already handled — this phase adds multi-user features on top
 - [ ] Leaderboard for streaks
 - [ ] User profiles
 - [ ] Shared progress comparisons
+
+### Phase 31 — Lessons · Effort: High
+- [ ] Lesson screen per grammar topic — explanation in plain English, examples, "Practice this now" button
+- [ ] Curriculum sourced from Goethe Institut A1 syllabus
+- [ ] Each lesson links directly to the relevant grammar exercise topic
+- [ ] Lessons section added to sidebar
+
+### Phase 32 — Progress & Analytics Enhancements · Effort: Medium
+- [ ] Consistency score — "studied X out of last 7 days" (not just streak)
+- [ ] Accuracy trend — grammar score going up or down week over week
+- [ ] Words seen vs words mastered (currently only mastered shown)
+- [ ] Error pattern detection — "You've gotten feminine noun genders wrong 15 times this week"
+- [ ] Spaced repetition for grammar — topics you got wrong surface more in Daily Challenge
+
+### Phase 33 — Spaced Repetition for Grammar · Effort: Medium
+- [ ] Track which grammar topics are answered wrong
+- [ ] Weight Daily Challenge to show more questions from weak topics
+- [ ] Persist weakness data to Supabase per user
 
 ---
 
