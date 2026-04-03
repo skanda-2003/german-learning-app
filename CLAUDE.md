@@ -288,12 +288,21 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Tips shuffle fix — randomise entire tip list order at session start so every session feels different, smart tip appears somewhere in rotation not always first
 - [ ] Home page heading — remove "LERNE DEUTSCH" large heading, replace with personalised time-of-day greeting + streak line (e.g. "Good morning. 3 day streak — keep it going.")
 - [ ] Audio speaker on flashcards — add small speaker icon to flashcard front and back, tapping reads the German word aloud using Web Speech API (de-DE voice), same API already used in Listening Quiz
+- [ ] Review Due count on Home screen — calculate how many words have next_review_date ≤ today using the mastery data already loaded in index.tsx; display as "X due for review" in the Flashcards quick-launch card (makes spaced repetition visible and actionable)
+- [ ] 1/2/3 keyboard shortcuts for flashcard rating — extend the existing Space-to-flip keydown listener: after card is flipped, 1 = Unknown, 2 = Shaky, 3 = Known; file: app/flashcards.tsx
+- [ ] Log activity for all sessions — call activityService.logActivity() at session end in app/grammar.tsx, app/flashcards.tsx, and app/games.tsx so the Insights heatmap reflects all study activity, not just daily challenge completions
+- [ ] Streak grace period — if user misses exactly one day then completes the challenge, continue their streak instead of resetting; add a small indicator ("grace day used") when this happens; file: src/lib/streakService.ts
 
 ### ⏳ Phase 26 — Grammar Exercises Expansion · Effort: Medium
 - [ ] Expand hard grammar topics from ~7 exercises to 15-20 each
 - [ ] Priority topics to expand: Akkusativ, prepositions (in/auf/mit/zu/bei/nach/aus/von/für), separable verbs, modal verbs, word order
 - [ ] Keep same format as existing exercises (fill-blank and multiple-choice mix)
 - [ ] Write in chunks of 1 topic at a time to avoid cutoff issues
+- [ ] Add missing A1 grammar topics currently at zero coverage:
+  - Time expressions — um X Uhr, halb, Viertel (appear in every real A1 exam)
+  - Reflexive verbs — sich vorstellen, sich fühlen (extremely common at A1)
+  - Days/months/seasons in grammar context (vocabulary cards exist, grammar drills don't)
+- [ ] Undertested topics to expand to 15+ exercises: word order: verb in 2nd position (3 → 15+), indefinite articles ein/eine (3 → 15+), negation nicht/kein (5 → 15+)
 
 ### ⏳ Phase 27 — Flashcard Verb Sub-categories · Effort: Medium
 - [ ] Add verb type sub-categories under the Verbs pill in flashcard category filter
@@ -302,10 +311,12 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Requires tagging each verb in a1.ts with its verb type (verbType field)
 - [ ] UI: tapping Verbs pill expands to show sub-category pills below
 
-### ⏳ Phase 28 — Reading Mode Improvements · Effort: Low
+### ⏳ Phase 28 — Reading Mode Improvements · Effort: Low–Medium
 - [ ] Increase passage length from ~4 sentences to 8-10 sentences
 - [ ] Ensure passages use only A1 vocabulary from the word list
 - [ ] Add option to generate a new passage without reloading the screen
+- [ ] Fix conjugated verb lookup — tapping "fährt" currently finds nothing because lookup only matches base forms; strip common verb endings (-t, -st, -en, -e, -et) to find root, then look up; show "Word not found — search in Flashcards" for truly unrecognised forms; file: app/reading.tsx
+- [ ] Add non-narrative passage formats — all 15 current passages are first-person narratives; add 5 passages in real A1 exam formats: signs, short notices, SMS messages, short emails, and advertisements (needed before Phase 29 exam simulation is realistic)
 
 ### ⏳ Phase 29 — Real A1 Exam Simulation · Effort: High
 - [ ] Research and replicate actual Goethe-Zertifikat A1 exam format and difficulty
@@ -334,6 +345,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Write 20-30 tips for A2, B1, B2 (also add topic→tip mappings in topicTipMap.ts)
 - [ ] Test level switching (A1 works, others show "coming soon" until content added)
 - [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for each new level
+- [ ] Match A1 tip format: one specific rule per tip with a concrete example sentence (e.g. "Sein (to be): ich bin, du bist...") — A2/B1/B2 currently have 5 generic placeholder tips each, not the detailed rule+example format A1 uses
 
 ### Phase 23 — Multi-user · Effort: High
 - [ ] Auth already handled — this phase adds multi-user features on top
@@ -353,11 +365,25 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Words seen vs words mastered (currently only mastered shown)
 - [ ] Error pattern detection — "You've gotten feminine noun genders wrong 15 times this week"
 - [ ] Spaced repetition for grammar — topics you got wrong surface more in Daily Challenge
+- [ ] Grammar score history per topic — only best_score is stored today; add a session history (last 10 scores per topic) so users can see if they are improving or stagnating; requires new column or table in Supabase + service update + sparkline display in Progress or Insights
 
 ### Phase 33 — Spaced Repetition for Grammar · Effort: Medium
 - [ ] Track which grammar topics are answered wrong
 - [ ] Weight Daily Challenge to show more questions from weak topics
 - [ ] Persist weakness data to Supabase per user
+
+### Phase 34 — Bug Fixes & Code Quality · Effort: Low
+*These are silent correctness bugs — the app works but behaves subtly wrong in edge cases.*
+- [ ] Fix topicTipMap.ts topic key mismatches — grammar exercises in a1.ts use e.g. 'Accusative case' but topicTipMap.ts has 'Akkusativ case'; audit all 21 topic keys against a1.ts exact strings and fix every mismatch; Focus Tip is fully built but silently returns null for A1's most common mistakes; files: src/data/grammar/a1.ts, src/data/topicTipMap.ts
+- [ ] Fix DST streak bug — getYesterdayString() in streakService.ts subtracts 86,400,000ms (can give wrong date on DST spring-forward night in Germany); replace with: yesterday.setDate(yesterday.getDate() - 1); file: src/lib/streakService.ts
+- [ ] Add LIMIT to mistake log fetch — loadMistakes() fetches ALL rows with no limit; add .limit(100) to the Supabase query; Insights only shows 10, contextual tip only needs 20; file: src/lib/mistakeService.ts
+- [ ] Make getUserId() synchronous — masteryService, scoresService, streakService each call await supabase.auth.getUser() independently on every write (3 round-trips on grammar session end); store session.user.id in useAuthStore when onAuthStateChange fires in _layout.tsx, then read it synchronously from the store; files: src/lib/userId.ts, src/store/useAuthStore.ts, app/_layout.tsx
+- [ ] User-specific daily challenge seed — current seed is date-only, so all users get identical exercises; XOR date integer with a hash of the user ID so each user gets a different set; file: app/daily.tsx
+- [ ] Shared date utilities — daily.tsx, streakService.ts, and insights.tsx each define their own formatDate/getTodayString helpers with slightly different formats; extract to src/lib/dateUtils.ts and import everywhere to prevent subtle streak/heatmap mismatches
+
+### Phase 35 — Sentence Builder Improvements · Effort: Low
+- [ ] Add difficulty tagging to sentence templates — 80 sentences in src/data/sentenceBuilder.ts currently have no difficulty level; sessions randomly mix complex subordinate-clause sentences with simple SVO ones; tag each template as simple / medium / complex
+- [ ] Use difficulty tags to graduate sessions — start with simple sentences, progress to complex as score improves; or let user choose difficulty level before session starts
 
 ---
 
