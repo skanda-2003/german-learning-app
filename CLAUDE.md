@@ -346,7 +346,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ## LATER
 *Planned but not immediate.*
 
-### ⏳ Phase 21 — Expand to A2, B1, B2 · Effort: High
+### ⏳ Phase 21 — Expand to A2, B1, B2 · Effort: Very High
 - [x] Add A2 vocabulary list — 585 words (src/data/vocabulary/a2.ts), wired into index.ts
 - [x] Add B1 vocabulary list — 319 new words (src/data/vocabulary/b1.ts), wired into index.ts
 - [ ] Add B2 vocabulary list — **IN PROGRESS: 300/921 words done (b2_001–b2_300); resume from line 301 of src/data/vocabulary/b2_wordlist.txt (chunks 4–10 remaining), then wire B2_WORDS into index.ts**
