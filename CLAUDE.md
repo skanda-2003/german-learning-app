@@ -346,8 +346,10 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ## LATER
 *Planned but not immediate.*
 
-### Phase 21 — Expand to A2, B1, B2 · Effort: High
-- [ ] Add A2 / B1 / B2 vocabulary lists
+### ⏳ Phase 21 — Expand to A2, B1, B2 · Effort: High
+- [x] Add A2 vocabulary list — 585 words (src/data/vocabulary/a2.ts), wired into index.ts
+- [x] Add B1 vocabulary list — 319 new words (src/data/vocabulary/b1.ts), wired into index.ts
+- [ ] Add B2 vocabulary list — **IN PROGRESS: 300/921 words done (b2_001–b2_300); resume from line 301 of src/data/vocabulary/b2_wordlist.txt (chunks 4–10 remaining), then wire B2_WORDS into index.ts**
 - [ ] Add A2 / B1 / B2 grammar exercise templates
 - [ ] Write 20-30 tips for A2, B1, B2 (also add topic→tip mappings in topicTipMap.ts)
 - [ ] Test level switching (A1 works, others show "coming soon" until content added)
@@ -429,6 +431,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-30] Phase 25 complete (investigation only, no code changes) — Suspected logging gaps confirmed to already be handled: WritingExercise and SpeakingExercise both call saveCompletion(); grammar handleNext() calls saveMistake() for all wrong answers including AI-generated exercises. Original analysis was incorrect (grep missed saveCompletion).
 - [2026-03-31] Phase 24 complete — Smart Interruption Tips. After completing grammar or daily challenge sessions, app loads recent mistakes, identifies most-repeated weak topic, and surfaces a targeted tip in TipsBar with a blue "FOCUS TIP" label. New: useTipStore.ts, topicTipMap.ts (20 A1 entries), contextualTipService.ts. TipsBar updated to show/dismiss focus tips via arrow navigation.
 - [2026-03-31] Phase 20 complete — Fill in the Blank mini game built (FillInBlankGame.tsx). Gemini generates a sentence per round with the target word blanked out; user types the missing word. Article stripped from nouns so blank is just the noun. 10 rounds, score saved to Supabase (game_fill_in_blank). Error + retry/skip UI if Gemini fails. Quota error message improved in callGemini() to detect 429/quota errors. All existing Gemini loading states and feedback tone were already solid — confirmed and left as-is.
+- [2026-04-03] Phase 21 paused — A2 (585 words) and B1 (319 words) complete and wired into index.ts. B2 vocabulary in progress: 300/921 words written to src/data/vocabulary/b2.ts (chunks 1–3 complete, b2_001–b2_300). To resume: read src/data/vocabulary/b2_wordlist.txt (921 lines, pre-deduplicated) and continue from line 301 (chunk 4). Source PDF at "B2 Wordlist.pdf" in project root if wordlist needs regenerating. Remaining when resuming: chunks 4–10 (words 301–921), wire B2_WORDS into index.ts, grammar exercise templates for A2/B1/B2, tips for A2/B1/B2.
 
 ---
 *This file is the single source of truth for the project.

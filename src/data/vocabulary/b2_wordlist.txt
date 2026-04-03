@@ -1,0 +1,922 @@
+abbiegen
+abhängen
+abheben
+ablehnen
+abmachen
+abnehmen
+abonnieren
+abstimmen
+abwaschen
+achten
+anerkennen
+anhaben
+aufschreiben
+außen
+behindern
+beleidigen
+benötigen
+beobachten
+berechnen
+beruhigen
+beschäftigen
+beschränken
+besorgen
+besprechen
+bestrafen
+betreuen
+betrügen
+betrunken
+beweisen
+bieten
+blühen
+bluten
+brechen
+brennen
+dagegen
+das Abitur
+das Abonnement
+das Alphabet
+das Altenheim
+das Altersheim
+das Amt
+das Benzin
+das Blut
+das Bonbon
+das Boot
+das Bürgerbüro
+das Café
+das Ehepaar
+das Einkommen
+das Einschreiben
+das Eisen
+das Ereignis
+das Ersatzteil
+das Festnetz
+das Feuerzeug
+das Fundbüro
+das Gas
+das Geheimnis
+das Geschlecht
+das Gewissen
+das Gewürz
+das Gift
+das Girokonto
+das Gold
+das Gras
+das Grundstück
+das Hackfleisch
+das Haustier
+das Heim
+das Heimweh
+das Herkunftsland
+das Holz
+das Hühnchen
+das Industriegebiet
+das Institut
+das Internetcafé
+das Jugendamt
+das Kapitel
+das Kennzeichen
+das Kissen
+das Klima
+das Knie
+das Konsulat
+das Kostüm
+das Kraftfahrzeug
+das Kreuz
+das Labor
+das Laufwerk
+das Leder
+das Loch
+das Märchen
+das Material
+das Mehl
+das Metall
+das Mitglied
+das Modell
+das Motorrad
+das Obergeschoss
+das Opfer
+das Orchester
+das Original
+das Päckchen
+das Parkhaus
+das Personal
+das Pflaster
+das Picknick
+das Plastik
+das Postfach
+das Publikum
+das Quartal
+das Rad
+das Regal
+das Schmerzmittel
+das Schnitzel
+das Semester
+das Sonderangebot
+das Souvenir
+das Sozialamt
+das Spielzeug
+das Stadion
+das Steak
+das Stockwerk
+das Streichholz
+das Studio
+das Symbol
+das System
+das Tal
+das Tempo
+das Top
+das Tor
+das Unglück
+das Verfallsdatum
+das Verhalten
+das Verkehrsmittel
+das Verkehrszeichen
+das Verständnis
+das Visum
+das Vitamin
+das Waschmittel
+das WC
+das Werk
+das Wohngeld
+das Wohnungsamt
+das Wohnzimmer
+das Wunder
+das Zeug
+das Zuhause
+der Abfall
+der Abschluss
+der Alarm
+der Alkohol
+der Alltag
+der Angehörige
+der Arbeitgeber
+der Arbeitnehmer
+der Ausbildungsplatz
+der Auszubildende
+der Bart
+der Bauer
+der Bauernhof
+der Beginn
+der Beitrag
+der Beleg
+der Bereich
+der Betrag
+der Betriebsrat
+der Beweis
+der Bewohner
+der Biergarten
+der Bildschirm
+der Blitz
+der Boden
+der Briefkasten
+der Briefträger
+der Briefumschlag
+der Bürger
+der Bürgersteig
+der Dieb
+der Dienst
+der Diesel
+der Direktor
+der Druck
+der Ehegatte
+der Einbrecher
+der Einbruch
+der Eindruck
+der Einfall
+der Einfluss
+der Einkauf
+der Elternabend
+der Elternbeirat
+der Empfang
+der Enkel
+der Ersatz
+der Essig
+der Experte
+der Export
+der Fachmann
+der Fall
+der Feierabend
+der Feiertag
+der Finger
+der Fleck
+der Flur
+der Friseur
+der Fußgänger
+der Gang
+der Gegenstand
+der Geschmack
+der Gewinn
+der Gott
+der Grill
+der Hafen
+der Halt
+der Hammer
+der Handel
+der Händler
+der Handwerker
+der Hauptbahnhof
+der Hausmeister
+der Hersteller
+der Hit
+der Hof
+der Honig
+der Hut
+der ICE
+der Import
+der Ingenieur
+der Inhalt
+der Integrationskurs
+der Intensivkurs
+der Internetanschluss
+der Jazz
+der Kanal
+der Kasten
+der Katalog
+der Kauf
+der Käufer
+der Kellner
+der Kinderwagen
+der Klick
+der Kloß
+der Knochen
+der Knopf
+der Koch
+der Kofferraum
+der Kompromiss
+der König
+der Krankenpfleger
+der Krankenwagen
+der Kreis
+der Kuli
+der Künstler
+der Kunststoff
+der Kursleiter
+der Kuss
+der Lärm
+der Laster
+der Lautsprecher
+der Lehrling
+der Lift
+der Lohn
+der Mädchenname
+der Makler
+der Mechaniker
+der Meister
+der Mieter
+der Migrant
+der Migrationshintergrund
+der Mond
+der Monitor
+der Mülleimer
+der Musiker
+der Muskel
+der Mut
+der Nachtisch
+der Nagel
+der Nebel
+der Neffe
+der Nerv
+der Nichtraucher
+der Norden
+der Notausgang
+der Notfall
+der Notruf
+der Ofen
+der Onkel
+der Ordner
+der Osten
+der Papa
+der Parkplatz
+der Passagier
+der Patient
+der Pfeffer
+der Pfleger
+der Pilz
+der PKW
+der Politiker
+der Polizist
+der Praktikant
+der Professor
+der Profi
+der Prozess
+der Punkt
+der Quark
+der Quatsch
+der Rabatt
+der Rand
+der Rat
+der Raucher
+der Rechner
+der Rechtsanwalt
+der Rekord
+der Rhythmus
+der Richter
+der Roman
+der Rundfunk
+der Saal
+der Sack
+der Salon
+der Sand
+der Sänger
+der Schaden
+der Schatten
+der Schauspieler
+der Schein
+der Schlaf
+der Schmuck
+der Schnupfen
+der Schreck
+der Schreibtisch
+der Schritt
+der Sender
+der Sessel
+der Sieg
+der Sieger
+der Sinn
+der Sitz
+der Sozialarbeiter
+der Speisewagen
+der Sperrmüll
+der Spezialist
+der Spiegel
+der Spieler
+der Spielplatz
+der Sportler
+der Standpunkt
+der Stau
+der Staub
+der Stecker
+der Stein
+der Stempel
+der Stern
+der Strafzettel
+der Streik
+der Streit
+der Strumpf
+der Sturm
+der Süden
+der Tagesablauf
+der Tanz
+der Tarif
+der Täter
+der Teilnehmer
+der Tierpark
+der Tod
+der Tote
+der Tourismus
+der Trainer
+der Treffpunkt
+der Tropfen
+der Turm
+der Typ
+der Übersetzer
+der Verband
+der Verbraucher
+der Verbrecher
+der Verdacht
+der Verlust
+der Vertreter
+der Vorort
+der Wagen
+der Wecker
+der Weg
+der Weltmeister
+der Wert
+der Westen
+der Wetterbericht
+der Wirt
+der Wohnort
+der Zeitpunkt
+der Zettel
+der Zeuge
+der Zucker
+der Zufall
+der Zuhörer
+der Zuschauer
+der Zustand
+der Zuwanderer
+deswegen
+die Abbildung
+die Absicht
+die Abteilung
+die Agentur
+die Aktion
+die Aktivität
+die Änderung
+die Angabe
+die Anlage
+die Ausnahme
+die Aussicht
+die Badewanne
+die Bankleitzahl
+die Batterie
+die Bedienungsanleitung
+die Bedingung
+die Behörde
+die Beratung
+die Bescheinigung
+die Beschreibung
+die Besprechung
+die Besserung
+die Bestätigung
+die Bevölkerung
+die Breite
+die Bremse
+die Broschüre
+die Brust
+die Bücherei
+die Buchhandlung
+die Bürste
+die CD-ROM
+die Chance
+die Chemie
+die Cola
+die Couch
+die Decke
+die Demokratie
+die Diät
+die Disko
+die Diskothek
+die Dose
+die Drogerie
+die DVD
+die Ehe
+die Ehegattin
+die Ehre
+die Einbahnstraße
+die Einfahrt
+die Einführung
+die Einrichtung
+die Einzelheit
+die Eisenbahn
+die Energie
+die Entfernung
+die Enttäuschung
+die Erde
+die Erfindung
+die Erhöhung
+die Ernährung
+die Eröffnung
+die Fabrik
+die Fachleute
+die Fahrbahn
+die Fähre
+die Fahrschule
+die Fernbedienung
+die Festplatte
+die Feuerwehr
+die Figur
+die Fitness
+die Fläche
+die Flüssigkeit
+die Forderung
+die Form
+die Fortbildung
+die Fortsetzung
+die Fotografie
+die Fremdsprache
+die Frist
+die Frucht
+die Fußgängerzone
+die Garantie
+die Garderobe
+die Gaststätte
+die Gebrauchsanweisung
+die Gebühr
+die Geburt
+die Gefahr
+die Gegend
+die Gelegenheit
+die Genehmigung
+die Gerichtsverhandlung
+die Geschäftsleute
+die Geschwindigkeit
+die Geschwindigkeitsbegrenzung
+die Getränke
+die Gewerkschaft
+die Großstadt
+die Hälfte
+die Haut
+die Herkunft
+die Hitze
+die Hoffnung
+die Höhe
+die Industrie
+die Infektion
+die Innenstadt
+die Integration
+die Intelligenz
+die Jahreskarte
+die Jugend
+die Kabine
+die Kälte
+die Kanne
+die Kantine
+die Katastrophe
+die Kerze
+die Kindheit
+die Kita
+die Klassenarbeit
+die Klimaanlage
+die Klingel
+die Klinik
+die Kneipe
+die Konkurrenz
+die Kontrolle
+die Kopie
+die Krankenschwester
+die Kreditkarte
+die Kuh
+die Kündigung
+die Kurve
+die Küste
+die Lage
+die Landung
+die Landwirtschaft
+die Länge
+die Laune
+die Lebensgefahr
+die Lehre
+die Leiter
+die Leitung
+die Liebe
+die Lieferung
+die Limonade
+die Linie
+die Lippe
+die Liste
+die Luft
+die Mahlzeit
+die Mahnung
+die Mama
+die Margarine
+die Marke
+die Marmelade
+die Maßnahme
+die Mathematik
+die Mauer
+die Maus
+die Medizin
+die Mehrheit
+die Mehrwertsteuer
+die Meldung
+die Metzgerei
+die Migration
+die Minderheit
+die Mühe
+die Müllabfuhr
+die Mülltonne
+die Münze
+die Muttersprache
+die Nadel
+die Nase
+die Nichte
+die Nordsee
+die Notaufnahme
+die Oper
+die Operation
+die Organisation
+die Panne
+die Parkuhr
+die Pension
+die Pflaume
+die Pflegeversicherung
+die Pflicht
+die Phantasie
+die Philosophie
+die Physik
+die Pille
+die Politik
+die Pommes
+die Produktion
+die Puppe
+die Querstraße
+die Reform
+die Region
+die Reservierung
+die Richtung
+die Rückfahrt
+die Rückkehr
+die Rücksicht
+die Sahne
+die Saison
+die Salbe
+die Schachtel
+die Scheibe
+die Schicht
+die Schlange
+die Schrift
+die Schuld
+die Schülerin
+die Schwangerschaft
+die Sekretärin
+die Senioren
+die Serie
+die SMS
+die Socke
+die Software
+die Sorge
+die Soße
+die Sozialhilfe
+die Sportart
+die Spritze
+die Spülmaschine
+die Spur
+die Staatsangehörigkeit
+die Station
+die Steckdose
+die Steuer
+die Steuern
+die Stimme
+die Stirn
+die Störung
+die Strafe
+die Strecke
+die Stufe
+die Tabelle
+die Tagesmutter
+die Tankstelle
+die Tante
+die Tastatur
+die Taste
+die Tat
+die Tätigkeit
+die Technik
+die Teilzeit
+die Temperatur
+die Terrasse
+die Therapie
+die Tonne
+die Trauung
+die Tüte
+die U-Bahn
+die Überstunde
+die Überweisung
+die Übung
+die Umfrage
+die Umleitung
+die Umwelt
+die Ursache
+die Verbindung
+die Vergangenheit
+die Verletzung
+die Versichertenkarte
+die Versicherung
+die Vertretung
+die Verwaltung
+die Verzeihung
+die Vollzeit
+die Vorfahrt
+die Vorschrift
+die Vorspeise
+die Wahrheit
+die Ware
+die Wärme
+die Wäsche
+die Weltmeisterschaft
+die Werbung
+die Werkstatt
+die Wiese
+die Wirklichkeit
+die Wohngemeinschaft
+die Wolle
+die Wunde
+die Wurst
+die Zahl
+die Zahlung
+die Zahnbürste
+die Zahncreme
+die Zahnpasta
+die Zeitarbeit
+die Zinsen
+die Zitrone
+die Zone
+die Zulassung
+die Zwiebel
+drehen
+eben
+eilen
+einbrechen
+einfallen
+einigen
+einnehmen
+einrichten
+einschalten
+einsetzen
+einverstanden
+einzahlen
+empfangen
+entdecken
+enthalten
+entlassen
+entschlossen
+entsorgen
+entstehen
+enttäuschen
+erfinden
+erfordern
+erfüllen
+ergänzen
+erhalten
+erhöhen
+erkennen
+erkundigen
+erledigen
+erleichtern
+ernähren
+eröffnen
+erschrecken
+ersetzen
+erstellen
+erwarten
+erziehen
+fangen
+faxen
+festhalten
+festlegen
+festnehmen
+festsetzen
+feststellen
+finanzieren
+fliehen
+fließen
+fordern
+fördern
+fortsetzen
+fressen
+frieren
+garantieren
+gebrauchen
+gelten
+genügen
+geschehen
+geschieden
+gewöhnen
+gießen
+greifen
+grüßen
+gucken
+hassen
+heben
+heizen
+hinterlassen
+hinweisen
+hupen
+impfen
+innen
+installieren
+integrieren
+inzwischen
+irren
+isolieren
+jeden
+jobben
+kaputtgehen
+kaputtmachen
+klären
+kleben
+klicken
+klingen
+klopfen
+kopieren
+küssen
+landen
+langen
+leiden
+leisten
+leiten
+löschen
+losfahren
+markieren
+meinetwegen
+melden
+messen
+mischen
+missverstehen
+mitteilen
+mitten
+nachholen
+nachschlagen
+nächsten
+nähen
+niemanden
+nutzen
+operieren
+pflegen
+präsentieren
+rasieren
+reduzieren
+reichen
+reinigen
+rennen
+retten
+rühren
+schaden
+schalten
+schätzen
+schauen
+schieben
+schien
+schießen
+schlagen
+schreien
+schützen
+schwitzen
+selten
+senden
+sich amüsieren
+sich anstrengen
+sich befinden
+sich beteiligen
+sich eignen
+sich entschließen
+sich erkälten
+sich lohnen
+sich scheiden
+sich verlassen
+sich verlaufen
+sich vornehmen
+sich weiterbilden
+sinken
+sondern
+sorgen
+springen
+spülen
+spüren
+stammen
+starten
+stecken
+stehlen
+steigen
+stimmen
+stinken
+stoppen
+stoßen
+streichen
+streiken
+stürzen
+tanken
+täuschen
+testen
+transportieren
+treiben
+treten
+trocknen
+überfahren
+überholen
+überqueren
+überreden
+übertragen
+übertreiben
+umarmen
+umdrehen
+unterbrechen
+unternehmen
+unterscheiden
+unterstreichen
+verabreden
+verbinden
+verbrauchen
+verbrennen
+verbringen
+vereinbaren
+vergrößern
+verhaften
+verhindern
+verlangen
+verlängern
+verlassen
+verlaufen
+verleihen
+verlieben
+vermissen
+verpacken
+verschieben
+verschreiben
+verschwinden
+versorgen
+verstecken
+verteilen
+vertreten
+verurteilen
+vorgestern
+vorkommen
+vorlesen
+wachsen
+warnen
+wecken
+wenden
+werfen
+widersprechen
+wiegen
+winken
+wirken
+wundern
+zählen
+zeichnen
+zerstören
+zulassen
+zurechtkommen
+zusagen

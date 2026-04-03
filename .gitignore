@@ -45,3 +45,7 @@ metro.config.js
 # generated native folders
 /ios
 /android
+
+# B2 word list PDF (large file, not needed in repo)
+B2 Wordlist.pdf
+B2 Wordlist.pdf:Zone.Identifier
