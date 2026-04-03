@@ -5,6 +5,8 @@ A German language learning web application for CEFR levels A1 through B2.
 Built for personal use initially, with potential to expand to other users later.
 The app is called **Lerne Deutsch** (means "Learn German" in German).
 
+This is a **TypeScript Expo React Native app**. The backend uses **Supabase** (auth + database). AI features use the **Gemini API**.
+
 ---
 
 ## Tech Stack
@@ -204,13 +206,17 @@ This project must remain completely free to run.
 - Prefer simple and readable code over clever compact code
 - Ask before making large changes or refactors
 - Commit friendly — keep changes small and logical so each commit is meaningful
-- Remind me to clear the chat context or start a new chat after every feature 
+- Remind me to clear the chat context or start a new chat after every feature
+- **When I paste text or feedback, do NOT autonomously start editing files or updating docs.** Ask me what I want done with it first
+- **When I say "implement Phase X", check CLAUDE.md for the phase description first.** Do not guess what a phase contains — confirm the phase number and scope with me before starting any work
 
 ---
 
 ## GitHub Workflow Rules
 
 **IMPORTANT: Never execute git commands. Always print the commands for the user to run themselves. Do not use the Bash tool for any git operation.**
+
+**Always work on feature branches — never commit directly to main. Before giving any git commit command, confirm which branch we are on.**
 
 Before starting any new phase, give the user these commands:
 ```bash
@@ -221,6 +227,7 @@ git checkout -b branch-name
 
 Branch naming:
 - New phase/feature: feat/descriptive-name
+- Don't use phase names in the 'descriptive-name' for features.
 - Bug fix: fix/bug-name
 - UI change: ui/change-name
 
