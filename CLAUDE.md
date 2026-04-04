@@ -291,21 +291,11 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 34 — Bug Fixes & Code Quality (Complete)
 ### ✅ Phase 36 — A2 Content Completion (Complete)
 ### ✅ Phase 28 — Reading Mode Improvements (Complete)
+### ✅ Phase 26 — Grammar Exercises Expansion (Complete)
 ### ✅ Phase 35 — Sentence Builder Improvements (Complete)
 
 ---
 ## ACTIVE PIPELINE
-
-### ⏳ Phase 26 — Grammar Exercises Expansion · Effort: Medium
-- [ ] Expand hard grammar topics from ~7 exercises to 15-20 each
-- [ ] Priority topics to expand: Akkusativ, prepositions (in/auf/mit/zu/bei/nach/aus/von/für), separable verbs, modal verbs, word order
-- [ ] Keep same format as existing exercises (fill-blank and multiple-choice mix)
-- [ ] Write in chunks of 1 topic at a time to avoid cutoff issues
-- [ ] Add missing A1 grammar topics currently at zero coverage:
-  - Time expressions — um X Uhr, halb, Viertel (appear in every real A1 exam)
-  - Reflexive verbs — sich vorstellen, sich fühlen (extremely common at A1)
-  - Days/months/seasons in grammar context (vocabulary cards exist, grammar drills don't)
-- [ ] Undertested topics to expand to 15+ exercises: word order: verb in 2nd position (3 → 15+), indefinite articles ein/eine (3 → 15+), negation nicht/kein (5 → 15+)
 
 ### ⏳ Phase 27 — Flashcard Verb Sub-categories · Effort: Medium
 - [ ] Add verb type sub-categories under the Verbs pill in flashcard category filter
@@ -475,6 +465,7 @@ B2 Cheat Sheet:
 - [2026-04-04] Phase 25 complete — Tips now use Fisher-Yates shuffle at session start (sequential traversal, no repeats). German time-of-day greeting replaces LERNE DEUTSCH wordmark on home screen. Speaker icon on flashcard front/back reads German word via Web Speech API (de-DE). Home Flashcards card shows "X due · Y known" from mastery data. 1/2/3 keyboard shortcuts rate Unknown/Shaky/Known at any point. logActivity() added to grammar, flashcard, and game session ends. Streak grace period: missing one day continues streak; "Grace day used" shown on daily done screen.
 - [2026-04-04] Phase 28 complete — A1 passages extended from ~5 sentences to 8-9 sentences each. 5 A1 non-narrative passages added (bakery sign, SMS exchange, email to school, building notice, flat-to-let ad). 5 A2 non-narrative passages added (WhatsApp group, formal email, job ad, office notice, hotel review). Conjugated verb lookup fixed in reading.tsx: buildInfinitiveAttempts() strips -est/-st/-et/-t/-e endings and reconstructs the infinitive, plus umlaut reversal (fährt→fahren); "not found" message updated to "Word not found — search in Flashcards". "Next Passage →" button added at the bottom of each passage (more discoverable than the header arrows).
 - [2026-04-04] Phase 36 complete — A2 content complete. 12 A2 reading passages added to passages.ts (travel, shopping, work, social plans — 6-8 sentences each, Perfekt + subordinate clauses). 50 A2 Sentence Builder sentences added to sentenceBuilder.ts across 7 categories (Perfekt haben/sein, weil/dass/obwohl/wenn subordinate clauses, comparatives, adjective endings, two-way prepositions, modal Präteritum, reflexive verbs, werden future). sentenceBuilder.ts restructured to Record<Level, SentenceEntry[]> (A1_SENTENCES + A2_SENTENCES). SentenceBuilderGame.tsx updated to read level from useLevelStore and pick from the correct pool; falls back to A1 if B1/B2 selected.
+- [2026-04-04] Phase 26 complete — A1 grammar expanded from 111 to 223 exercises (19 topics). 9 thin/priority topics brought to 15 each. 3 new topics added: Time expressions (12 exercises — um/halb/Viertel/am Abend), Reflexive verbs (10 — sich vorstellen/fühlen/freuen/setzen), Days/months/seasons (10 — am Montag/im Januar/im Sommer). A2 grammar expanded from 96 to 168 exercises (12 topics). Adjective endings (both) → 18 each; Perfekt irregular, haben vs sein, Two-way prepositions, Subordinate clauses → 15 each (adds obwohl/ob/wenn/als/denn vs weil); all remaining 6 topics → 12 each.
 - [2026-04-04] Phase 35 complete — Difficulty tagging added to all 130 sentences (80 A1 + 50 A2). simple/medium/complex tags based on grammar complexity. Pre-game difficulty picker in SentenceBuilderGame.tsx (All / Simple / Medium / Complex); filters pool, adjusts round count, shows badge during play.
 - [2026-04-04] Phase 34 complete — 6 silent correctness bugs fixed. topicTipMap.ts keys audited and corrected to match a1.ts exactly ('Accusative case', 'Modal verbs', 'Questions') — Focus Tips now fire for A1's most common mistakes. DST streak bug fixed in streakService.ts and insights.tsx: setDate() replaces ms subtraction so spring-forward nights don't corrupt streak or heatmap. loadMistakes() now has .limit(100). getUserId() reads synchronously from useAuthStore (userId field added), eliminating 3 Supabase round-trips per grammar session end. Daily challenge seed XORs date with a hash of the user ID so each user gets different exercises. Shared date utilities extracted to src/lib/dateUtils.ts (toDateString, getTodayString, getTomorrowString, formatDate); all three callers updated.
 
