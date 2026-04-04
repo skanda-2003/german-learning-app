@@ -10,17 +10,20 @@ import type { Session, User } from '@supabase/supabase-js';
 type AuthStore = {
   session: Session | null; // null = not logged in
   user: User | null;       // convenience — same as session?.user
+  userId: string | null;   // user.id cached here so services can read it synchronously
   setSession: (session: Session | null) => void;
 };
 
 const useAuthStore = create<AuthStore>((set) => ({
   session: null,
   user: null,
+  userId: null,
 
   // Called by _layout.tsx whenever Supabase fires onAuthStateChange
   setSession: (session) => set({
     session,
-    user: session?.user ?? null,
+    user:   session?.user ?? null,
+    userId: session?.user?.id ?? null,
   }),
 }));
 

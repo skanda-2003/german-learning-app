@@ -26,6 +26,7 @@ import type { MasteryState } from '../src/lib/masteryService';
 import {
   colors, font, fontSize, spacing, radius, labelStyle,
 } from '../src/styles/theme';
+import { toDateString } from '../src/lib/dateUtils';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -40,29 +41,25 @@ const MAX_MISTAKES     = 10;
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function toDateString(d: Date): string {
-  const yyyy = d.getFullYear();
-  const mm   = String(d.getMonth() + 1).padStart(2, '0');
-  const dd   = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
-}
+// toDateString is imported from src/lib/dateUtils.ts
 
 // Build the calendar grid for the last DAYS_SHOWN days.
 // Returns an array of week-columns; each column is 7 day slots (null = padding).
 type DaySlot = { dateStr: string; isActive: boolean } | null;
 
 function buildCalendarWeeks(activeDatesSet: Set<string>): DaySlot[][] {
-  const today = new Date();
-
-  // Build flat array of the last DAYS_SHOWN days
+  // Build flat array of the last DAYS_SHOWN days.
+  // Use setDate() instead of subtracting ms to avoid DST edge cases.
   const allDays: DaySlot[] = [];
   for (let i = DAYS_SHOWN - 1; i >= 0; i--) {
-    const d = new Date(today.getTime() - i * 86_400_000);
+    const d = new Date();
+    d.setDate(d.getDate() - i);
     allDays.push({ dateStr: toDateString(d), isActive: activeDatesSet.has(toDateString(d)) });
   }
 
-  // Pad the start so day 0 falls on the correct weekday column (0 = Sunday)
-  const firstDay    = new Date(today.getTime() - (DAYS_SHOWN - 1) * 86_400_000);
+  // Pad the start so day 0 falls on the correct weekday column (0 = Sunday).
+  const firstDay    = new Date();
+  firstDay.setDate(firstDay.getDate() - (DAYS_SHOWN - 1));
   const startPad    = firstDay.getDay(); // 0 = Sunday
   const padded: DaySlot[] = [...Array<null>(startPad).fill(null), ...allDays];
 

@@ -63,7 +63,8 @@ export async function loadMistakes(): Promise<MistakeEntry[]> {
       .from('mistake_log')
       .select('id, section, question, user_answer, correct_answer, created_at')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(100); // Insights shows 10, contextual tip needs 20 — 100 is more than enough
 
     if (error) {
       console.error('Failed to load mistakes:', error.message);
