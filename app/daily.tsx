@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import useLevelStore from '../src/store/useLevelStore';
+import useAuthStore from '../src/store/useAuthStore';
 import { GRAMMAR, GrammarExercise } from '../src/data/grammar';
 import ExerciseCard from '../src/components/ExerciseCard';
 import {
@@ -25,6 +26,7 @@ import {
   getTodayString,
   UserProgress,
 } from '../src/lib/streakService';
+import { getTomorrowString, formatDate } from '../src/lib/dateUtils';
 import { logActivity } from '../src/lib/activityService';
 import { loadMistakes } from '../src/lib/mistakeService';
 import { getContextualTip } from '../src/lib/contextualTipService';
@@ -40,10 +42,24 @@ const CHALLENGE_SIZE = 5;
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function getDailyExercises(allExercises: GrammarExercise[]): GrammarExercise[] {
+// Simple hash: sums char codes of a string, returns a non-negative integer.
+// Good enough for seeding — no crypto needed here.
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (h + s.charCodeAt(i)) & 0xffff; // keep it in safe integer range
+  }
+  return h;
+}
+
+// Returns 5 exercises seeded by today's date XORed with a hash of the user ID.
+// This ensures each user gets a different set on any given day.
+function getDailyExercises(allExercises: GrammarExercise[], userId: string): GrammarExercise[] {
   if (allExercises.length === 0) return [];
-  const seed = parseInt(getTodayString().replace(/-/g, ''), 10);
-  const startIndex = seed % allExercises.length;
+  const dateSeed = parseInt(getTodayString().replace(/-/g, ''), 10);
+  const userSeed = hashString(userId);
+  const seed = dateSeed ^ userSeed; // XOR combines date and user into unique seed
+  const startIndex = Math.abs(seed) % allExercises.length;
   const result: GrammarExercise[] = [];
   for (let i = 0; i < CHALLENGE_SIZE; i++) {
     result.push(allExercises[(startIndex + i) % allExercises.length]);
@@ -51,23 +67,7 @@ function getDailyExercises(allExercises: GrammarExercise[]): GrammarExercise[] {
   return result;
 }
 
-function getTomorrowString(): string {
-  const d = new Date(Date.now() + 86_400_000);
-  const yyyy = d.getFullYear();
-  const mm   = String(d.getMonth() + 1).padStart(2, '0');
-  const dd   = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '';
-  const [yyyy, mm, dd] = dateStr.split('-').map(Number);
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
-  return `${dd} ${months[mm - 1]} ${yyyy}`;
-}
+// getTomorrowString and formatDate are imported from src/lib/dateUtils.ts
 
 // ─── Screen types ──────────────────────────────────────────────────────────────
 
@@ -79,6 +79,7 @@ export default function DailyScreen() {
   const level = useLevelStore(state => state.level);
   const allExercises = GRAMMAR[level];
   const setContextualTip = useTipStore((state) => state.setContextualTip);
+  const userId = useAuthStore(state => state.userId) ?? 'fallback-user';
 
   const [screen, setScreen] = useState<Screen>('loading');
   const [progress, setProgress] = useState<UserProgress>({
@@ -86,7 +87,7 @@ export default function DailyScreen() {
     lastActiveDate: '',
     dailyChallengeCompletedDate: '',
   });
-  const [exercises] = useState<GrammarExercise[]>(() => getDailyExercises(allExercises));
+  const [exercises] = useState<GrammarExercise[]>(() => getDailyExercises(allExercises, userId));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
 

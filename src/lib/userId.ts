@@ -1,18 +1,21 @@
 // userId.ts — Returns the authenticated Supabase user's ID (Phase 15)
 //
-// Before Phase 15 this generated a random device UUID.
-// Now we use the real Supabase auth user ID so all data is tied to the account.
-//
-// Every service (scoresService, masteryService, etc.) calls getUserId() and
-// nothing else needs to change — they all just get the auth ID now instead of
-// the device UUID.
+// Phase 34 update: reads user ID synchronously from useAuthStore when available,
+// avoiding a Supabase round-trip on every write (3 calls per grammar session end).
+// Falls back to a live supabase.auth.getUser() call only if the store is empty
+// (shouldn't happen since all screens are behind the auth gate in _layout.tsx).
 
 import { supabase } from './supabase';
+import useAuthStore from '../store/useAuthStore';
 
 // Returns the current user's Supabase auth ID.
-// Falls back to 'fallback-user' if called before login (should not happen
-// since all screens are behind the auth gate in _layout.tsx).
+// Reads from the in-memory auth store first (no network call).
+// Falls back to supabase.auth.getUser() if store has no ID yet.
 export async function getUserId(): Promise<string> {
+  const cached = useAuthStore.getState().userId;
+  if (cached) return cached;
+
+  // Fallback — should only happen in edge cases before the session has loaded
   const { data: { user } } = await supabase.auth.getUser();
   return user?.id ?? 'fallback-user';
 }

@@ -34,20 +34,11 @@ export const TOPIC_TIP_MAP: Partial<Record<Level, Record<string, string>>> = {
     'Regular verb conjugation':
       'Regular verbs: add endings to the stem — -e, -st, -t, -en, -t, -en. E.g. machen → mache, machst, macht.',
 
-    'Modal verbs: können':
-      '"Können" (can): ich kann, du kannst, er kann. Modal verbs send the main verb to the end: "Ich kann kommen."',
+    'Modal verbs':
+      'Modal verbs send the main verb to the end: "Ich kann kommen." können: kann/kannst/kann. müssen: muss/musst/muss. wollen: will/willst/will.',
 
-    'Modal verbs: müssen':
-      '"Müssen" (must): ich muss, du musst, er muss, wir müssen, ihr müsst, sie müssen.',
-
-    'Modal verbs: wollen':
-      '"Wollen" (want to): ich will, du willst, er will, wir wollen, ihr wollt, sie wollen.',
-
-    'Modal verbs: dürfen':
-      '"Dürfen" (may/allowed to): ich darf, du darfst, er darf, wir dürfen, ihr dürft, sie dürfen.',
-
-    'Akkusativ case':
-      'In the Akkusativ, only masculine changes: der → den, ein → einen. Feminine and neuter stay the same.',
+    'Accusative case':
+      'In the Accusative, only masculine changes: der → den, ein → einen. Feminine and neuter stay the same.',
 
     'Separable verbs':
       'Separable verbs split apart in a sentence: anrufen → "Ich rufe dich an." The prefix goes to the end!',
@@ -55,11 +46,8 @@ export const TOPIC_TIP_MAP: Partial<Record<Level, Record<string, string>>> = {
     'Possessive articles':
       'Possessives: mein (my), dein (your), sein (his), ihr (her), unser (our), euer (your pl), ihr/Ihr (their/formal).',
 
-    'Question formation':
-      'Yes/no questions: verb comes first — "Kommst du?" W-questions use Wer, Was, Wo, Wann, Warum, Wie.',
-
-    'W-questions':
-      'W-question words: Wer (who), Was (what), Wo (where), Wann (when), Warum (why), Wie (how), Woher (from where).',
+    'Questions':
+      'Yes/no questions: verb comes first — "Kommst du?" W-questions: Wer (who), Was (what), Wo (where), Wann (when), Warum (why), Wie (how).',
 
     'Plural nouns':
       'The plural article is always "die" regardless of gender: der Mann → die Männer, das Kind → die Kinder.',

@@ -9,6 +9,7 @@
 
 import { supabase } from './supabase';
 import { getUserId } from './userId';
+import { getTodayString, toDateString } from './dateUtils';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -21,31 +22,25 @@ export type UserProgress = {
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-// Returns today's date as a YYYY-MM-DD string in local time
-export function getTodayString(): string {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm   = String(d.getMonth() + 1).padStart(2, '0');
-  const dd   = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
-}
+// getTodayString is re-exported from dateUtils so callers (daily.tsx etc.) that
+// import it from streakService don't need to change their import paths.
+export { getTodayString } from './dateUtils';
 
-// Returns yesterday's date as a YYYY-MM-DD string
+// Returns yesterday's date as a YYYY-MM-DD string.
+// Uses setDate() rather than subtracting 86,400,000ms — the ms approach gives
+// the wrong date on DST spring-forward nights (e.g. Germany clocks skip 1 hour).
 function getYesterdayString(): string {
-  const d = new Date(Date.now() - 86_400_000); // 24 hours ago
-  const yyyy = d.getFullYear();
-  const mm   = String(d.getMonth() + 1).padStart(2, '0');
-  const dd   = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return toDateString(d);
 }
 
-// Returns the date two days ago as a YYYY-MM-DD string (used for grace period check)
+// Returns the date two days ago as a YYYY-MM-DD string (used for grace period check).
+// Uses setDate() for the same DST reason as getYesterdayString().
 function getTwoDaysAgoString(): string {
-  const d = new Date(Date.now() - 2 * 86_400_000);
-  const yyyy = d.getFullYear();
-  const mm   = String(d.getMonth() + 1).padStart(2, '0');
-  const dd   = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+  const d = new Date();
+  d.setDate(d.getDate() - 2);
+  return toDateString(d);
 }
 
 // ─── Load progress ─────────────────────────────────────────────────────────────

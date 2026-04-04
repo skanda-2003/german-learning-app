@@ -288,6 +288,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 24 — Smart Interruption Tips (Complete)
 ### ✅ Phase 20 — AI / Gemini Features (Complete)
 ### ✅ Phase 25 — Quick Fixes & Small Improvements (Complete)
+### ✅ Phase 34 — Bug Fixes & Code Quality (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -304,15 +305,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Add option to generate a new passage without reloading the screen
 - [ ] Fix conjugated verb lookup — tapping "fährt" currently finds nothing because lookup only matches base forms; strip common verb endings (-t, -st, -en, -e, -et) to find root, then look up; show "Word not found — search in Flashcards" for truly unrecognised forms; file: app/reading.tsx
 - [ ] Add non-narrative passage formats — all 15 current passages are first-person narratives; add 5 passages in real A1 exam formats: signs, short notices, SMS messages, short emails, and advertisements (needed before Phase 29 exam simulation is realistic)
-
-### Phase 34 — Bug Fixes & Code Quality · Effort: Low
-*These are silent correctness bugs — the app works but behaves subtly wrong in edge cases.*
-- [ ] Fix topicTipMap.ts topic key mismatches — grammar exercises in a1.ts use e.g. 'Accusative case' but topicTipMap.ts has 'Akkusativ case'; audit all 21 topic keys against a1.ts exact strings and fix every mismatch; Focus Tip is fully built but silently returns null for A1's most common mistakes; files: src/data/grammar/a1.ts, src/data/topicTipMap.ts
-- [ ] Fix DST streak bug — getYesterdayString() in streakService.ts subtracts 86,400,000ms (can give wrong date on DST spring-forward night in Germany); replace with: yesterday.setDate(yesterday.getDate() - 1); file: src/lib/streakService.ts
-- [ ] Add LIMIT to mistake log fetch — loadMistakes() fetches ALL rows with no limit; add .limit(100) to the Supabase query; Insights only shows 10, contextual tip only needs 20; file: src/lib/mistakeService.ts
-- [ ] Make getUserId() synchronous — masteryService, scoresService, streakService each call await supabase.auth.getUser() independently on every write (3 round-trips on grammar session end); store session.user.id in useAuthStore when onAuthStateChange fires in _layout.tsx, then read it synchronously from the store; files: src/lib/userId.ts, src/store/useAuthStore.ts, app/_layout.tsx
-- [ ] User-specific daily challenge seed — current seed is date-only, so all users get identical exercises; XOR date integer with a hash of the user ID so each user gets a different set; file: app/daily.tsx
-- [ ] Shared date utilities — daily.tsx, streakService.ts, and insights.tsx each define their own formatDate/getTodayString helpers with slightly different formats; extract to src/lib/dateUtils.ts and import everywhere to prevent subtle streak/heatmap mismatches
 
 ### Phase 35 — Sentence Builder Improvements · Effort: Low
 - [ ] Add difficulty tagging to sentence templates — 80 sentences in src/data/sentenceBuilder.ts currently have no difficulty level; sessions randomly mix complex subordinate-clause sentences with simple SVO ones; tag each template as simple / medium / complex
@@ -392,6 +384,69 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Weight Daily Challenge to show more questions from weak topics
 - [ ] Persist weakness data to Supabase per user
 
+### Phase 37 — Cheat Sheet / Reference Section · Effort: Medium
+
+**Concept:**
+A dedicated reference screen for each level — not an exercise, not a game.
+Pure grammar reference that the user opens when they want to quickly recall a rule. Like the grammar tables at the back of a textbook. Clean, scannable, no scoring, no API calls needed — entirely static content.
+
+**Navigation:**
+- Add "Cheat Sheet" or "Referenz" as a new sidebar item
+- Level-aware: shows the cheat sheet for the currently selected level
+- Lower level cheat sheets remain accessible when on higher levels (A1 cheat sheet is still useful when studying A2/B1/B2)
+
+**UI Design:**
+- Same design system as rest of app (IBM Plex Mono for German text, Inter for labels)
+- Content split into collapsible sections — tap/click to expand each section
+- Each section has a clean table or rule summary + 2-3 concise examples
+- No exercises, no scoring, no Gemini, no Supabase needed
+- Pure reference — static TypeScript data rendered as a reference UI
+
+**Content per level:**
+
+A1 Cheat Sheet:
+- Article table — der/die/das with 5-6 example nouns each
+- Personal pronouns — ich/du/er/sie/es/wir/ihr/sie/Sie
+- sein and haben full conjugation tables
+- Present tense endings table — regular verbs (-e/-st/-t/-en/-t/-en)
+- Numbers 1-100 quick reference
+- Common question words — wer, was, wo, wann, wie, warum with examples
+- Negation — nicht vs kein explained simply with 3 examples each
+- Basic sentence word order — Subject → Verb → Object with examples
+
+A2 Cheat Sheet:
+- Nominativ vs Akkusativ — when to use each, article changes (der→den etc)
+- Dativ — article table (dem/der/dem/den) + common Dativ verbs (helfen, danken, gefallen, gehören) with examples
+- Perfekt formation — haben vs sein rule, regular/irregular Partizip II patterns
+- Separable verbs — how they split in a sentence, list of common examples
+- Two-way prepositions — in/an/auf/über/unter/vor/hinter/neben/zwischen with Akkusativ (movement) vs Dativ (location) rule and examples
+- Modal verbs — können/müssen/wollen/dürfen/sollen/möchten all conjugated in one table
+- Comparative and superlative — schnell → schneller → am schnellsten, irregular forms (gut/besser/am besten, viel/mehr/am meisten)
+
+B1 Cheat Sheet:
+- Konjunktiv II — würden + infinitive construction, common irregular forms (wäre, hätte, könnte, müsste, dürfte, sollte) with example sentences
+- Passive voice — werden + Partizip II, present and past forms, with vs without agent (von + Dativ)
+- Subordinate clauses — verb moves to end, table of common subordinating conjunctions (weil, dass, obwohl, wenn, als, ob, damit, bevor, nachdem) each with an example sentence
+- Genitiv — des/der article forms, common Genitiv prepositions (wegen, trotz, während, innerhalb, außerhalb)
+- Reflexive verbs — accusative vs dative reflexive pronouns, list of common reflexive verbs (sich freuen, sich erinnern, sich waschen etc)
+- da-compounds — dafür, darüber, damit, davon explained with examples and when to use them instead of a preposition + pronoun
+
+B2 Cheat Sheet:
+- Extended participial phrases — how they replace relative clauses, with side-by-side examples (der Mann, der schläft → der schlafende Mann)
+- Konjunktiv I — formation and usage in reported speech, (er sagt, er sei krank / er habe keine Zeit) with examples
+- Modal particles — doch, ja, mal, eigentlich, wohl, halt — what each implies emotionally/contextually, example sentences showing the difference
+- Complex connectors — obwohl vs trotzdem, weil vs denn, als vs wenn vs wann differences explained with examples
+- Nominalisierung — turning verbs and adjectives into nouns, common patterns (lernen → das Lernen, müde → die Müdigkeit, schnell → die Schnelligkeit)
+- Genitiv prepositions full table — wegen, trotz, während, innerhalb, außerhalb, anstatt, aufgrund, mithilfe with examples
+
+**Implementation notes:**
+- Create src/data/cheatsheets/ folder with a1.ts, a2.ts, b1.ts, b2.ts
+- Each file exports a CheatSheetSection[] array with title and content
+- Create a new screen app/cheatsheet.tsx
+- Add to sidebar navigation (icon: book-open or list) and app routing in _layout.tsx
+- No API calls, no database reads — purely static rendered data
+- Collapsible sections using simple useState toggle per section
+
 ---
 
 ## Progress Log
@@ -432,6 +487,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-04-03] Phase 21 scaffolds complete — B1: 1406 words total (319 complete, 1087 placeholders). B2: 232 words in b2.ts so far — but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1, so b2.ts is incomplete. Phase 21 on hold — will resume later.
 - [2026-04-04] Phase 21 A2 complete — 96 grammar exercises across 12 topics (a2.ts), wired into grammar/index.ts. A2 tips expanded to 20 (rule+example format). topicTipMap.ts updated with all 12 A2 topic entries. B1/B2 show "coming soon" via existing empty-array check in grammar.tsx.
 - [2026-04-04] Phase 25 complete — Tips now use Fisher-Yates shuffle at session start (sequential traversal, no repeats). German time-of-day greeting replaces LERNE DEUTSCH wordmark on home screen. Speaker icon on flashcard front/back reads German word via Web Speech API (de-DE). Home Flashcards card shows "X due · Y known" from mastery data. 1/2/3 keyboard shortcuts rate Unknown/Shaky/Known at any point. logActivity() added to grammar, flashcard, and game session ends. Streak grace period: missing one day continues streak; "Grace day used" shown on daily done screen.
+- [2026-04-04] Phase 34 complete — 6 silent correctness bugs fixed. topicTipMap.ts keys audited and corrected to match a1.ts exactly ('Accusative case', 'Modal verbs', 'Questions') — Focus Tips now fire for A1's most common mistakes. DST streak bug fixed in streakService.ts and insights.tsx: setDate() replaces ms subtraction so spring-forward nights don't corrupt streak or heatmap. loadMistakes() now has .limit(100). getUserId() reads synchronously from useAuthStore (userId field added), eliminating 3 Supabase round-trips per grammar session end. Daily challenge seed XORs date with a hash of the user ID so each user gets different exercises. Shared date utilities extracted to src/lib/dateUtils.ts (toDateString, getTodayString, getTomorrowString, formatDate); all three callers updated.
 
 ---
 *This file is the single source of truth for the project.
