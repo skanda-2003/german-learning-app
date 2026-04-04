@@ -292,14 +292,31 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ---
 ## ACTIVE PIPELINE
 
-### ✅ Phase 25 — Quick Fixes & Small Improvements · Effort: Low
-- [x] Tips shuffle fix — randomise entire tip list order at session start so every session feels different, smart tip appears somewhere in rotation not always first
-- [x] Home page heading — replaced "LERNE DEUTSCH" with German time-of-day greeting (Guten Morgen / Guten Tag / Guten Abend / Gute Nacht) + streak line
-- [x] Audio speaker on flashcards — small speaker icon (Feather volume-2) on front and back, tapping reads German word via Web Speech API (de-DE, rate 0.9)
-- [x] Review Due count on Home screen — calculates words with next_review_date ≤ today; Flashcards card shows "X due · Y known"
-- [x] 1/2/3 keyboard shortcuts for flashcard rating — 1 = Unknown, 2 = Shaky, 3 = Known; works regardless of flip state
-- [x] Log activity for all sessions — logActivity() called at session end in grammar.tsx, flashcards.tsx, and games.tsx
-- [x] Streak grace period — missing exactly one day continues the streak; "Grace day used" indicator shown on daily done screen
+### ⏳ Phase 36 — A2 Content Completion · Effort: Medium
+*Completes A2 so all screens work at that level. Everything else already works for A2 — only these two areas are missing.*
+
+- [ ] **Reading passages for A2** — `src/data/passages.ts` has `A2: []`. Add 10–15 A2-level passages (slightly longer than A1, covering everyday topics like travel, shopping, work, social plans). Same format as A1 passages. A2 reading mode currently shows "no passages" when level is A2.
+- [ ] **Sentence Builder A2 sentences** — `src/data/sentenceBuilder.ts` has 80 A1 sentences only, and the game ignores the current level. Add ~50 A2 sentences (Perfekt tense, subordinate clauses, adjective-heavy, comparatives) and make the game level-aware by exporting sentences per level (same `Record<Level, ...>` pattern as GRAMMAR and VOCABULARY). File to update: `src/data/sentenceBuilder.ts` + `src/components/SentenceBuilderGame.tsx`.
+
+### ⏳ Phase 28 — Reading Mode Improvements · Effort: Low–Medium
+- [ ] Increase passage length from ~4 sentences to 8-10 sentences
+- [ ] Ensure passages use only A1 vocabulary from the word list
+- [ ] Add option to generate a new passage without reloading the screen
+- [ ] Fix conjugated verb lookup — tapping "fährt" currently finds nothing because lookup only matches base forms; strip common verb endings (-t, -st, -en, -e, -et) to find root, then look up; show "Word not found — search in Flashcards" for truly unrecognised forms; file: app/reading.tsx
+- [ ] Add non-narrative passage formats — all 15 current passages are first-person narratives; add 5 passages in real A1 exam formats: signs, short notices, SMS messages, short emails, and advertisements (needed before Phase 29 exam simulation is realistic)
+
+### Phase 34 — Bug Fixes & Code Quality · Effort: Low
+*These are silent correctness bugs — the app works but behaves subtly wrong in edge cases.*
+- [ ] Fix topicTipMap.ts topic key mismatches — grammar exercises in a1.ts use e.g. 'Accusative case' but topicTipMap.ts has 'Akkusativ case'; audit all 21 topic keys against a1.ts exact strings and fix every mismatch; Focus Tip is fully built but silently returns null for A1's most common mistakes; files: src/data/grammar/a1.ts, src/data/topicTipMap.ts
+- [ ] Fix DST streak bug — getYesterdayString() in streakService.ts subtracts 86,400,000ms (can give wrong date on DST spring-forward night in Germany); replace with: yesterday.setDate(yesterday.getDate() - 1); file: src/lib/streakService.ts
+- [ ] Add LIMIT to mistake log fetch — loadMistakes() fetches ALL rows with no limit; add .limit(100) to the Supabase query; Insights only shows 10, contextual tip only needs 20; file: src/lib/mistakeService.ts
+- [ ] Make getUserId() synchronous — masteryService, scoresService, streakService each call await supabase.auth.getUser() independently on every write (3 round-trips on grammar session end); store session.user.id in useAuthStore when onAuthStateChange fires in _layout.tsx, then read it synchronously from the store; files: src/lib/userId.ts, src/store/useAuthStore.ts, app/_layout.tsx
+- [ ] User-specific daily challenge seed — current seed is date-only, so all users get identical exercises; XOR date integer with a hash of the user ID so each user gets a different set; file: app/daily.tsx
+- [ ] Shared date utilities — daily.tsx, streakService.ts, and insights.tsx each define their own formatDate/getTodayString helpers with slightly different formats; extract to src/lib/dateUtils.ts and import everywhere to prevent subtle streak/heatmap mismatches
+
+### Phase 35 — Sentence Builder Improvements · Effort: Low
+- [ ] Add difficulty tagging to sentence templates — 80 sentences in src/data/sentenceBuilder.ts currently have no difficulty level; sessions randomly mix complex subordinate-clause sentences with simple SVO ones; tag each template as simple / medium / complex
+- [ ] Use difficulty tags to graduate sessions — start with simple sentences, progress to complex as score improves; or let user choose difficulty level before session starts
 
 ### ⏳ Phase 26 — Grammar Exercises Expansion · Effort: Medium
 - [ ] Expand hard grammar topics from ~7 exercises to 15-20 each
@@ -318,29 +335,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Each sub-category shows count e.g. "Modal Verbs 6"
 - [ ] Requires tagging each verb in a1.ts with its verb type (verbType field)
 - [ ] UI: tapping Verbs pill expands to show sub-category pills below
-
-### ⏳ Phase 28 — Reading Mode Improvements · Effort: Low–Medium
-- [ ] Increase passage length from ~4 sentences to 8-10 sentences
-- [ ] Ensure passages use only A1 vocabulary from the word list
-- [ ] Add option to generate a new passage without reloading the screen
-- [ ] Fix conjugated verb lookup — tapping "fährt" currently finds nothing because lookup only matches base forms; strip common verb endings (-t, -st, -en, -e, -et) to find root, then look up; show "Word not found — search in Flashcards" for truly unrecognised forms; file: app/reading.tsx
-- [ ] Add non-narrative passage formats — all 15 current passages are first-person narratives; add 5 passages in real A1 exam formats: signs, short notices, SMS messages, short emails, and advertisements (needed before Phase 29 exam simulation is realistic)
-
-### ⏳ Phase 29 — Real A1 Exam Simulation · Effort: High
-- [ ] Research and replicate actual Goethe-Zertifikat A1 exam format and difficulty
-- [ ] Reading section: real-world text formats — signs, notices, short messages, form-filling tasks (not just passage + questions)
-- [ ] Listening section: real dialogue between two people (not single sentences), multiple choice on what was discussed
-- [ ] Writing section: short formal message or form completion (e.g. fill in a registration form, write a short reply to an email)
-- [ ] Speaking section: introduce yourself prompt, respond to questions about daily life
-- [ ] Difficulty calibrated to actual A1 exam — currently too easy
-- [ ] Add a separate "Exam Simulation" mode distinct from practice mode
-- [ ] Score and feedback aligned with real exam marking criteria
-
-### ⏳ Phase 36 — A2 Content Completion · Effort: Medium
-*Completes A2 so all screens work at that level. Everything else already works for A2 — only these two areas are missing.*
-
-- [ ] **Reading passages for A2** — `src/data/passages.ts` has `A2: []`. Add 10–15 A2-level passages (slightly longer than A1, covering everyday topics like travel, shopping, work, social plans). Same format as A1 passages. A2 reading mode currently shows "no passages" when level is A2.
-- [ ] **Sentence Builder A2 sentences** — `src/data/sentenceBuilder.ts` has 80 A1 sentences only, and the game ignores the current level. Add ~50 A2 sentences (Perfekt tense, subordinate clauses, adjective-heavy, comparatives) and make the game level-aware by exporting sentences per level (same `Record<Level, ...>` pattern as GRAMMAR and VOCABULARY). File to update: `src/data/sentenceBuilder.ts` + `src/components/SentenceBuilderGame.tsx`.
 
 ### ⏳ Phase 30 — Newspaper / Comprehension Exercise · Effort: Medium
 - [ ] Add new sub-section to Exam Prep called "Comprehension"
@@ -362,6 +356,16 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Add B2 vocabulary list — **INCOMPLETE: b2.ts currently has 232 words (b2_0001–b2_0232), but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1. More entries need to be added and filled with english/examples/conjugations/plurals before wiring into index.ts.**
 - [ ] Add B1 / B2 grammar exercises and tips (when vocabulary is complete)
 - [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for B1 and B2 (A2 already done — paths were pre-filled)
+
+### ⏳ Phase 29 — Real A1 Exam Simulation · Effort: High
+- [ ] Research and replicate actual Goethe-Zertifikat A1 exam format and difficulty
+- [ ] Reading section: real-world text formats — signs, notices, short messages, form-filling tasks (not just passage + questions)
+- [ ] Listening section: real dialogue between two people (not single sentences), multiple choice on what was discussed
+- [ ] Writing section: short formal message or form completion (e.g. fill in a registration form, write a short reply to an email)
+- [ ] Speaking section: introduce yourself prompt, respond to questions about daily life
+- [ ] Difficulty calibrated to actual A1 exam — currently too easy
+- [ ] Add a separate "Exam Simulation" mode distinct from practice mode
+- [ ] Score and feedback aligned with real exam marking criteria
 
 ### Phase 23 — Multi-user · Effort: High
 - [ ] Auth already handled — this phase adds multi-user features on top
@@ -387,19 +391,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Track which grammar topics are answered wrong
 - [ ] Weight Daily Challenge to show more questions from weak topics
 - [ ] Persist weakness data to Supabase per user
-
-### Phase 34 — Bug Fixes & Code Quality · Effort: Low
-*These are silent correctness bugs — the app works but behaves subtly wrong in edge cases.*
-- [ ] Fix topicTipMap.ts topic key mismatches — grammar exercises in a1.ts use e.g. 'Accusative case' but topicTipMap.ts has 'Akkusativ case'; audit all 21 topic keys against a1.ts exact strings and fix every mismatch; Focus Tip is fully built but silently returns null for A1's most common mistakes; files: src/data/grammar/a1.ts, src/data/topicTipMap.ts
-- [ ] Fix DST streak bug — getYesterdayString() in streakService.ts subtracts 86,400,000ms (can give wrong date on DST spring-forward night in Germany); replace with: yesterday.setDate(yesterday.getDate() - 1); file: src/lib/streakService.ts
-- [ ] Add LIMIT to mistake log fetch — loadMistakes() fetches ALL rows with no limit; add .limit(100) to the Supabase query; Insights only shows 10, contextual tip only needs 20; file: src/lib/mistakeService.ts
-- [ ] Make getUserId() synchronous — masteryService, scoresService, streakService each call await supabase.auth.getUser() independently on every write (3 round-trips on grammar session end); store session.user.id in useAuthStore when onAuthStateChange fires in _layout.tsx, then read it synchronously from the store; files: src/lib/userId.ts, src/store/useAuthStore.ts, app/_layout.tsx
-- [ ] User-specific daily challenge seed — current seed is date-only, so all users get identical exercises; XOR date integer with a hash of the user ID so each user gets a different set; file: app/daily.tsx
-- [ ] Shared date utilities — daily.tsx, streakService.ts, and insights.tsx each define their own formatDate/getTodayString helpers with slightly different formats; extract to src/lib/dateUtils.ts and import everywhere to prevent subtle streak/heatmap mismatches
-
-### Phase 35 — Sentence Builder Improvements · Effort: Low
-- [ ] Add difficulty tagging to sentence templates — 80 sentences in src/data/sentenceBuilder.ts currently have no difficulty level; sessions randomly mix complex subordinate-clause sentences with simple SVO ones; tag each template as simple / medium / complex
-- [ ] Use difficulty tags to graduate sessions — start with simple sentences, progress to complex as score improves; or let user choose difficulty level before session starts
 
 ---
 
