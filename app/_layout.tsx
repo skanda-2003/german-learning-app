@@ -48,6 +48,7 @@ const NAV_ITEMS: NavItem[] = [
   { route: 'flashcards',    label: 'Flashcards',      icon: 'layers'      },
   { route: 'games',         label: 'Mini Games',      icon: 'zap'         },
   { route: 'grammar',       label: 'Grammar',         icon: 'edit-3'      },
+  { route: 'cheatsheet',    label: 'Cheat Sheet',     icon: 'list'        },
   { route: 'daily',         label: 'Daily Challenge', icon: 'calendar'    },
   { route: 'reading',       label: 'Reading Mode',    icon: 'book'        },
   { route: 'pronunciation', label: 'Pronunciation',   icon: 'volume-2'    },
@@ -279,6 +280,7 @@ export default function RootLayout() {
           <Drawer.Screen name="flashcards"    options={{ title: 'Flashcards' }}       />
           <Drawer.Screen name="games"         options={{ title: 'Mini Games' }}       />
           <Drawer.Screen name="grammar"       options={{ title: 'Grammar' }}          />
+          <Drawer.Screen name="cheatsheet"    options={{ title: 'Cheat Sheet' }}      />
           <Drawer.Screen name="daily"         options={{ title: 'Daily Challenge' }}  />
           <Drawer.Screen name="exam"          options={{ title: 'Exam Prep' }}        />
           <Drawer.Screen name="progress"      options={{ title: 'Progress' }}         />
