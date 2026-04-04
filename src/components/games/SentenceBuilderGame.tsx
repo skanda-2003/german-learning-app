@@ -1,13 +1,14 @@
 // SentenceBuilderGame.tsx — Sentence Builder mini game
 //
 // Flow:
+//   0. Difficulty picker — user chooses Simple / Medium / Complex / All.
 //   1. The English translation is shown as the prompt.
 //   2. German word tiles are displayed in a shuffled "bank" below.
 //   3. User taps tiles to build the sentence in the answer area (top).
 //   4. Tapping a placed tile removes it back to the bank.
 //   5. User submits — green flash for correct, red for wrong (correct shown).
 //   6. Grammar note revealed after each submission.
-//   7. After 10 rounds → done screen with score.
+//   7. After all rounds → done screen with score.
 
 import React, { useState } from 'react';
 import {
@@ -20,7 +21,7 @@ import {
 import { Word } from '../../data/vocabulary';
 import { saveScore } from '../../lib/scoresService';
 import { colors, font, fontSize, spacing, radius } from '../../styles/theme';
-import { SENTENCE_BUILDER_DATA, SentenceEntry } from '../../data/sentenceBuilder';
+import { SENTENCE_BUILDER_DATA, SentenceEntry, Difficulty } from '../../data/sentenceBuilder';
 import useLevelStore from '../../store/useLevelStore';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ type Props = {
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
-const TOTAL_ROUNDS = 10;
+const MAX_ROUNDS = 10;
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -42,17 +43,32 @@ type WordTile = {
   originalIndex: number;
 };
 
+// The difficulty the user picks on the pre-game screen.
+// 'all' means no filtering — mix every sentence in the pool.
+type PickedDifficulty = Difficulty | 'all';
+
+// ─── Difficulty config ─────────────────────────────────────────────────────────
+
+const DIFFICULTY_OPTIONS: { value: PickedDifficulty; label: string; description: string }[] = [
+  { value: 'all',     label: 'All',     description: 'Mix of all difficulties' },
+  { value: 'simple',  label: 'Simple',  description: 'Short sentences, basic sein / haben' },
+  { value: 'medium',  label: 'Medium',  description: 'Irregular verbs, separable verbs, negation' },
+  { value: 'complex', label: 'Complex', description: 'Modal verbs, subordinate clauses, dative' },
+];
+
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-// Pick TOTAL_ROUNDS random entries from the level's pool (no repeats within a session).
+// Pick up to MAX_ROUNDS entries from the pool filtered by difficulty.
 // Falls back to A1 if the selected level has no sentences yet (B1/B2).
-function pickEntries(pool: SentenceEntry[]): SentenceEntry[] {
+function pickEntries(pool: SentenceEntry[], picked: PickedDifficulty): SentenceEntry[] {
   const source = pool.length > 0 ? pool : SENTENCE_BUILDER_DATA['A1'];
-  return shuffle([...source]).slice(0, TOTAL_ROUNDS);
+  const filtered = picked === 'all' ? source : source.filter(e => e.difficulty === picked);
+  // If a difficulty has fewer than MAX_ROUNDS entries, use all of them.
+  return shuffle([...filtered]).slice(0, MAX_ROUNDS);
 }
 
 // Convert a SentenceEntry's words into a shuffled tile array for the bank.
@@ -66,33 +82,47 @@ export default function SentenceBuilderGame({ onExit }: Props) {
   const level = useLevelStore(state => state.level);
   const levelPool = SENTENCE_BUILDER_DATA[level];
 
+  // ── Pre-game: difficulty picker ───────────────────────────────────────────
+  const [pickedDifficulty, setPickedDifficulty] = useState<PickedDifficulty | null>(null);
+
   // ── Session state (stays for the whole game) ──────────────────────────────
-  const [entries, setEntries] = useState<SentenceEntry[]>(() => pickEntries(levelPool));
+  const [entries, setEntries] = useState<SentenceEntry[]>([]);
+  const [totalRounds, setTotalRounds] = useState(MAX_ROUNDS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [isDone, setIsDone] = useState(false);
 
   // ── Round state (resets each round) ──────────────────────────────────────
-  // bankTiles: tiles available to place (start shuffled, shrinks as user places tiles)
-  const [bankTiles, setBankTiles] = useState<WordTile[]>(() => makeBankTiles(entries[0]));
-  // answerTiles: tiles placed by the user, in order
+  const [bankTiles, setBankTiles] = useState<WordTile[]>([]);
   const [answerTiles, setAnswerTiles] = useState<WordTile[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
 
-  const entry = entries[currentIndex];
-  const progress = currentIndex / TOTAL_ROUNDS;
+  // ── Start session after difficulty is chosen ──────────────────────────────
+
+  function startSession(difficulty: PickedDifficulty) {
+    const newEntries = pickEntries(levelPool, difficulty);
+    const rounds = newEntries.length;
+    setPickedDifficulty(difficulty);
+    setEntries(newEntries);
+    setTotalRounds(rounds);
+    setCurrentIndex(0);
+    setCorrectCount(0);
+    setIsDone(false);
+    setBankTiles(makeBankTiles(newEntries[0]));
+    setAnswerTiles([]);
+    setSubmitted(false);
+    setIsCorrect(false);
+  }
 
   // ── Tile interaction ──────────────────────────────────────────────────────
 
-  // Move a tile from the bank into the answer area.
   function placeTile(tile: WordTile) {
     if (submitted) return;
     setBankTiles(prev => prev.filter(t => t.originalIndex !== tile.originalIndex));
     setAnswerTiles(prev => [...prev, tile]);
   }
 
-  // Move a tile from the answer area back into the bank.
   function removeTile(tile: WordTile) {
     if (submitted) return;
     setAnswerTiles(prev => prev.filter(t => t.originalIndex !== tile.originalIndex));
@@ -102,9 +132,9 @@ export default function SentenceBuilderGame({ onExit }: Props) {
   // ── Submit ────────────────────────────────────────────────────────────────
 
   function handleSubmit() {
-    if (submitted) return;
+    if (submitted || entries.length === 0) return;
 
-    // Compare the user's word order against the correct order.
+    const entry = entries[currentIndex];
     const userAnswer = answerTiles.map(t => t.word).join(' ');
     const correctAnswer = entry.words.join(' ');
     const wasCorrect = userAnswer === correctAnswer;
@@ -112,7 +142,6 @@ export default function SentenceBuilderGame({ onExit }: Props) {
     setIsCorrect(wasCorrect);
     setSubmitted(true);
 
-    // Increment correct count here; React batches this so it's ready before Next.
     if (wasCorrect) {
       setCorrectCount(prev => prev + 1);
     }
@@ -123,10 +152,8 @@ export default function SentenceBuilderGame({ onExit }: Props) {
   function handleNext() {
     const nextIndex = currentIndex + 1;
 
-    if (nextIndex >= TOTAL_ROUNDS) {
-      // Use the score as it will be after this round.
-      // correctCount has already been updated by handleSubmit (separate render cycle).
-      saveScore('game_sentence_builder', correctCount, TOTAL_ROUNDS);
+    if (nextIndex >= totalRounds) {
+      saveScore('game_sentence_builder', correctCount, totalRounds);
       setIsDone(true);
     } else {
       setCurrentIndex(nextIndex);
@@ -139,27 +166,72 @@ export default function SentenceBuilderGame({ onExit }: Props) {
 
   // ── Reset / Play Again ────────────────────────────────────────────────────
 
-  // Play Again — called from the done screen. We need to force new entries.
-  // We keep entries as const, so we use a key trick via a wrapper component.
-  // Instead, we just reset all state by reloading a new session key.
-  // Simplest: accept that entries don't change on Play Again (shuffle is random anyway).
-  // For a proper shuffle, the parent could unmount/remount us — for now we just reset state.
   function handlePlayAgain() {
-    const newEntries = pickEntries(levelPool);
-    setEntries(newEntries);
+    // Go back to difficulty picker so user can change or replay same.
+    setPickedDifficulty(null);
+    setEntries([]);
     setCurrentIndex(0);
     setCorrectCount(0);
     setIsDone(false);
-    setBankTiles(makeBankTiles(newEntries[0]));
+    setBankTiles([]);
     setAnswerTiles([]);
     setSubmitted(false);
     setIsCorrect(false);
   }
 
+  // ─── Difficulty picker screen ─────────────────────────────────────────────────
+
+  if (pickedDifficulty === null) {
+    // Count how many sentences are available per difficulty at this level.
+    const source = levelPool.length > 0 ? levelPool : SENTENCE_BUILDER_DATA['A1'];
+    const counts: Record<PickedDifficulty, number> = {
+      all:     source.length,
+      simple:  source.filter(e => e.difficulty === 'simple').length,
+      medium:  source.filter(e => e.difficulty === 'medium').length,
+      complex: source.filter(e => e.difficulty === 'complex').length,
+    };
+
+    return (
+      <ScrollView contentContainerStyle={styles.pickerContainer}>
+        <View style={styles.pickerHeader}>
+          <TouchableOpacity onPress={onExit}>
+            <Text style={styles.backText}>← Games</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Sentence Builder</Text>
+          <View style={{ width: 60 }} />
+        </View>
+
+        <Text style={styles.pickerPromptLabel}>CHOOSE DIFFICULTY</Text>
+        <Text style={styles.pickerPromptSub}>
+          Select a level to filter the sentences, or pick All to mix everything.
+        </Text>
+
+        {DIFFICULTY_OPTIONS.map(opt => {
+          const count = counts[opt.value];
+          const rounds = Math.min(count, MAX_ROUNDS);
+          return (
+            <TouchableOpacity
+              key={opt.value}
+              style={styles.difficultyCard}
+              onPress={() => startSession(opt.value)}
+              activeOpacity={0.75}
+            >
+              <View style={styles.difficultyCardLeft}>
+                <Text style={styles.difficultyLabel}>{opt.label}</Text>
+                <Text style={styles.difficultyDesc}>{opt.description}</Text>
+              </View>
+              <Text style={styles.difficultyCount}>{rounds} rounds</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    );
+  }
+
   // ─── Done screen ─────────────────────────────────────────────────────────────
 
   if (isDone) {
-    const percentage = Math.round((correctCount / TOTAL_ROUNDS) * 100);
+    const percentage = Math.round((correctCount / totalRounds) * 100);
     const emoji =
       percentage === 100 ? '🏆' :
       percentage >= 80   ? '🎉' :
@@ -176,7 +248,7 @@ export default function SentenceBuilderGame({ onExit }: Props) {
 
         <View style={styles.scoreCircle}>
           <Text style={styles.scorePercentage}>{percentage}%</Text>
-          <Text style={styles.scoreDetail}>{correctCount} / {TOTAL_ROUNDS} correct</Text>
+          <Text style={styles.scoreDetail}>{correctCount} / {totalRounds} correct</Text>
         </View>
 
         <TouchableOpacity style={styles.primaryButton} onPress={handlePlayAgain}>
@@ -191,7 +263,12 @@ export default function SentenceBuilderGame({ onExit }: Props) {
 
   // ─── Game screen ─────────────────────────────────────────────────────────────
 
-  // Determine the colour of the answer area border after submission.
+  // Guard: entries may be empty if session hasn't started (shouldn't happen, but safe).
+  if (entries.length === 0) return null;
+
+  const entry = entries[currentIndex];
+  const progress = currentIndex / totalRounds;
+
   const answerBorderColor =
     !submitted ? colors.border :
     isCorrect  ? colors.success : colors.error;
@@ -205,7 +282,7 @@ export default function SentenceBuilderGame({ onExit }: Props) {
           <Text style={styles.backText}>← Games</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Sentence Builder</Text>
-        <Text style={styles.headerProgress}>{currentIndex + 1} / {TOTAL_ROUNDS}</Text>
+        <Text style={styles.headerProgress}>{currentIndex + 1} / {totalRounds}</Text>
       </View>
 
       {/* ── Progress bar ── */}
@@ -213,8 +290,13 @@ export default function SentenceBuilderGame({ onExit }: Props) {
         <View style={[styles.progressBarFill, { width: `${progress * 100}%` as any }]} />
       </View>
 
-      {/* ── Score counter ── */}
-      <Text style={styles.scoreLabel}>✓ {correctCount} correct</Text>
+      {/* ── Score + difficulty badge ── */}
+      <View style={styles.metaRow}>
+        <Text style={styles.difficultyBadge}>
+          {pickedDifficulty === 'all' ? 'ALL' : pickedDifficulty.toUpperCase()}
+        </Text>
+        <Text style={styles.scoreLabel}>✓ {correctCount} correct</Text>
+      </View>
 
       {/* ── English prompt ── */}
       <View style={styles.promptCard}>
@@ -288,7 +370,7 @@ export default function SentenceBuilderGame({ onExit }: Props) {
       ) : (
         <TouchableOpacity style={styles.primaryButton} onPress={handleNext}>
           <Text style={styles.primaryButtonText}>
-            {currentIndex + 1 >= TOTAL_ROUNDS ? 'See Results' : 'Next →'}
+            {currentIndex + 1 >= totalRounds ? 'See Results' : 'Next →'}
           </Text>
         </TouchableOpacity>
       )}
@@ -304,6 +386,74 @@ const styles = StyleSheet.create({
     padding: spacing.xxl,
     backgroundColor: colors.background,
     alignItems: 'center',
+  },
+
+  // ── Difficulty picker ──
+  pickerContainer: {
+    padding: spacing.xxl,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 560,
+    marginBottom: spacing.xxl,
+  },
+  pickerPromptLabel: {
+    fontFamily: font.semiBold,
+    fontSize: 11,
+    letterSpacing: 0.08 * 11,
+    color: colors.textSecondary,
+    alignSelf: 'flex-start',
+    width: '100%',
+    maxWidth: 560,
+    marginBottom: spacing.sm,
+  },
+  pickerPromptSub: {
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    alignSelf: 'flex-start',
+    width: '100%',
+    maxWidth: 560,
+    marginBottom: spacing.xl,
+    lineHeight: 20,
+  },
+  difficultyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 560,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.xl,
+    marginBottom: spacing.md,
+  },
+  difficultyCardLeft: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  difficultyLabel: {
+    fontFamily: font.bold,
+    fontSize: fontSize.md,
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  difficultyDesc: {
+    fontFamily: font.regular,
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+  },
+  difficultyCount: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
   },
 
   // ── Header ──
@@ -347,16 +497,30 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
 
-  // ── Score counter ──
+  // ── Meta row (difficulty badge + score) ──
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 560,
+    marginBottom: spacing.xl,
+  },
+  difficultyBadge: {
+    fontFamily: font.semiBold,
+    fontSize: 10,
+    letterSpacing: 0.08 * 10,
+    color: colors.accent,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.sm,
+    paddingVertical: 2,
+    paddingHorizontal: spacing.sm,
+  },
   scoreLabel: {
     fontFamily: font.semiBold,
     fontSize: fontSize.sm,
     color: colors.success,
-    alignSelf: 'flex-end',
-    width: '100%',
-    maxWidth: 560,
-    textAlign: 'right',
-    marginBottom: spacing.xl,
   },
 
   // ── English prompt card ──
