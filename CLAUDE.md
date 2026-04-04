@@ -56,6 +56,7 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Flashcards (icon: layers)
 - Mini Games (icon: zap)
 - Grammar (icon: edit-3)
+- Cheat Sheet (icon: list)
 - Daily Challenge (icon: calendar)
 - Exam Prep (icon: book-open)
 - Progress (icon: bar-chart-2)
@@ -132,6 +133,14 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - Short German text at current level
 - Tap any word to see translation + part of speech popup
 - No questions — pure reading with on-demand word lookup
+
+### 📋 Cheat Sheet (Reference)
+- Static grammar reference per level (A1–B2) — no scoring, no Gemini, no Supabase
+- Data: `src/data/cheatsheets/` (`CheatSheetSection` + block types rendered in `app/cheatsheet.tsx`)
+- **Web:** CSS multi-column masonry (`column-count` + `column-gap`); 3 / 2 / 1 columns at viewport `>1200px` / `768–1200px` / `<768px`; cards use `break-inside: avoid`; wide cards (`column-span: all`) for **sein and haben (present)** (two conjugation tables side-by-side with vertical divider) and **Present tense — regular verbs**
+- **Native:** single-column vertical scroll (no CSS columns)
+- Level tabs at top: Inter styling; selected = `#111` on white text; sticky tab bar on web; `useEffect` syncs sheet level when global header level changes
+- Card chrome: white surface, 1px border, 4px radius; Inter for section labels, descriptions, and table headers; IBM Plex Mono for German examples and table body cells; compact tables with heuristic first-column widths
 
 ### 💡 Tips / Hints Bar
 - Always visible at the bottom of every screen
@@ -312,69 +321,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Weight Daily Challenge to show more questions from weak topics
 - [ ] Persist weakness data to Supabase per user
 
-### Phase 37 — Cheat Sheet / Reference Section · Effort: Medium
-
-**Concept:**
-A dedicated reference screen for each level — not an exercise, not a game.
-Pure grammar reference that the user opens when they want to quickly recall a rule. Like the grammar tables at the back of a textbook. Clean, scannable, no scoring, no API calls needed — entirely static content.
-
-**Navigation:**
-- Add "Cheat Sheet" or "Referenz" as a new sidebar item
-- Level-aware: shows the cheat sheet for the currently selected level
-- Lower level cheat sheets remain accessible when on higher levels (A1 cheat sheet is still useful when studying A2/B1/B2)
-
-**UI Design:**
-- Same design system as rest of app (IBM Plex Mono for German text, Inter for labels)
-- Content split into collapsible sections — tap/click to expand each section
-- Each section has a clean table or rule summary + 2-3 concise examples
-- No exercises, no scoring, no Gemini, no Supabase needed
-- Pure reference — static TypeScript data rendered as a reference UI
-
-**Content per level:**
-
-A1 Cheat Sheet:
-- Article table — der/die/das with 5-6 example nouns each
-- Personal pronouns — ich/du/er/sie/es/wir/ihr/sie/Sie
-- sein and haben full conjugation tables
-- Present tense endings table — regular verbs (-e/-st/-t/-en/-t/-en)
-- Numbers 1-100 quick reference
-- Common question words — wer, was, wo, wann, wie, warum with examples
-- Negation — nicht vs kein explained simply with 3 examples each
-- Basic sentence word order — Subject → Verb → Object with examples
-
-A2 Cheat Sheet:
-- Nominativ vs Akkusativ — when to use each, article changes (der→den etc)
-- Dativ — article table (dem/der/dem/den) + common Dativ verbs (helfen, danken, gefallen, gehören) with examples
-- Perfekt formation — haben vs sein rule, regular/irregular Partizip II patterns
-- Separable verbs — how they split in a sentence, list of common examples
-- Two-way prepositions — in/an/auf/über/unter/vor/hinter/neben/zwischen with Akkusativ (movement) vs Dativ (location) rule and examples
-- Modal verbs — können/müssen/wollen/dürfen/sollen/möchten all conjugated in one table
-- Comparative and superlative — schnell → schneller → am schnellsten, irregular forms (gut/besser/am besten, viel/mehr/am meisten)
-
-B1 Cheat Sheet:
-- Konjunktiv II — würden + infinitive construction, common irregular forms (wäre, hätte, könnte, müsste, dürfte, sollte) with example sentences
-- Passive voice — werden + Partizip II, present and past forms, with vs without agent (von + Dativ)
-- Subordinate clauses — verb moves to end, table of common subordinating conjunctions (weil, dass, obwohl, wenn, als, ob, damit, bevor, nachdem) each with an example sentence
-- Genitiv — des/der article forms, common Genitiv prepositions (wegen, trotz, während, innerhalb, außerhalb)
-- Reflexive verbs — accusative vs dative reflexive pronouns, list of common reflexive verbs (sich freuen, sich erinnern, sich waschen etc)
-- da-compounds — dafür, darüber, damit, davon explained with examples and when to use them instead of a preposition + pronoun
-
-B2 Cheat Sheet:
-- Extended participial phrases — how they replace relative clauses, with side-by-side examples (der Mann, der schläft → der schlafende Mann)
-- Konjunktiv I — formation and usage in reported speech, (er sagt, er sei krank / er habe keine Zeit) with examples
-- Modal particles — doch, ja, mal, eigentlich, wohl, halt — what each implies emotionally/contextually, example sentences showing the difference
-- Complex connectors — obwohl vs trotzdem, weil vs denn, als vs wenn vs wann differences explained with examples
-- Nominalisierung — turning verbs and adjectives into nouns, common patterns (lernen → das Lernen, müde → die Müdigkeit, schnell → die Schnelligkeit)
-- Genitiv prepositions full table — wegen, trotz, während, innerhalb, außerhalb, anstatt, aufgrund, mithilfe with examples
-
-**Implementation notes:**
-- Create src/data/cheatsheets/ folder with a1.ts, a2.ts, b1.ts, b2.ts
-- Each file exports a CheatSheetSection[] array with title and content
-- Create a new screen app/cheatsheet.tsx
-- Add to sidebar navigation (icon: book-open or list) and app routing in _layout.tsx
-- No API calls, no database reads — purely static rendered data
-- Collapsible sections using simple useState toggle per section
-
 ### ⏳ Phase 27 — Flashcard Verb Sub-categories · Effort: Medium
 - [ ] Add verb type sub-categories under the Verbs pill in flashcard category filter
 - [ ] Sub-categories: Regular Verbs, Irregular Verbs, Modal Verbs (können/müssen/wollen/möchten/dürfen/sollen), Separable Verbs
@@ -464,7 +410,7 @@ B2 Cheat Sheet:
 - [2026-04-04] Phase 35 complete — Difficulty tagging added to all 130 sentences (80 A1 + 50 A2). simple/medium/complex tags based on grammar complexity. Pre-game difficulty picker in SentenceBuilderGame.tsx (All / Simple / Medium / Complex); filters pool, adjusts round count, shows badge during play.
 - [2026-04-04] Phase 30 complete — Comprehension sub-section added to Exam Prep. New ComprehensionExercise.tsx component: 5 A1 texts + 5 A2 texts (NOTICE, AD, SHORT MESSAGE, JOB AD, EVENT, etc.), user writes German answers, Gemini returns structured feedback (content/tasks, language, suggestions). New getComprehensionFeedback() in gemini.ts (JSON output, 3 fields). New examComprehension.ts data file with ComprehensionItem type and COMPREHENSION_BY_LEVEL lookup. exam_comprehension SectionKey added to scoresService. Comprehension card added to Exam Prep selector and progress.tsx. B1/B2 show "coming soon" empty state.
 - [2026-04-04] Phase 34 complete — 6 silent correctness bugs fixed. topicTipMap.ts keys audited and corrected to match a1.ts exactly ('Accusative case', 'Modal verbs', 'Questions') — Focus Tips now fire for A1's most common mistakes. DST streak bug fixed in streakService.ts and insights.tsx: setDate() replaces ms subtraction so spring-forward nights don't corrupt streak or heatmap. loadMistakes() now has .limit(100). getUserId() reads synchronously from useAuthStore (userId field added), eliminating 3 Supabase round-trips per grammar session end. Daily challenge seed XORs date with a hash of the user ID so each user gets different exercises. Shared date utilities extracted to src/lib/dateUtils.ts (toDateString, getTodayString, getTomorrowString, formatDate); all three callers updated.
-- [2026-04-04] Phase 37 complete — Cheat Sheet reference screen built. New src/data/cheatsheets/ folder with a1.ts/a2.ts/b1.ts/b2.ts (static CheatSheetSection[] data), types.ts (discriminated union CheatSheetBlock), and index.ts (Record<Level, CheatSheetSection[]> lookup). New app/cheatsheet.tsx: collapsible sections, local level picker (A1–B2, independent of global level), table/example/text/subheading block renderers, horizontal scroll for wide tables. Sidebar entry added (icon: list) and Drawer.Screen registered in _layout.tsx. No API calls, no Supabase.
+- [2026-04-04] Phase 37 complete — Cheat Sheet / Reference. **Data:** `src/data/cheatsheets/` — `a1.ts`–`b2.ts` (`CheatSheetSection[]`), `types.ts` (`CheatSheetBlock` union: text, table, example, subheading), `index.ts` (`CHEATSHEETS: Record<Level, …>`). **Routing:** `app/cheatsheet.tsx`, sidebar label "Cheat Sheet" (Feather `list`), `Drawer.Screen` in `_layout.tsx`. **UI (final):** Masonry-style card grid on web via CSS `column-count` + `column-gap` (12px), responsive 1 / 2 / 3 columns at `<768` / `768–1200` / `>1200px`; cards `break-inside: avoid`, `margin-bottom: 12px`; `column-span: all` wide cards for **sein and haben (present)** (sein | haben tables side-by-side, 1px vertical divider; stacks on narrow width) and **Present tense — regular verbs**. Native: single-column `ScrollView`. Level pills use Inter (12px / 500); selected pill `#111` bg + white text, unselected white + `#888` + 1px `#e0e0e0` border; tab bar `border-bottom` + `margin-bottom` 16px; sticky tabs on web; `useEffect` syncs sheet level to global header level. Cards: white `#fff`, 1px `#e0e0e0`, 4px radius, padding 12×14; section title Inter 600, 10px caps, `#888`, left 2px `#2563eb` accent; body copy Inter 12px `#555`; tables — web `display: table` + `border-collapse`, th Inter 10px, td IBM Plex Mono 12px, explicit first-column widths by header shape (pronoun / question-word / article / conjugation / modal). German examples: IBM Plex Mono 13px semibold; English: Inter 11px `#888`. No Gemini, no Supabase.
 
 ---
 *This file is the single source of truth for the project.
