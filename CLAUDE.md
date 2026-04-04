@@ -297,56 +297,6 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ---
 ## ACTIVE PIPELINE
 
-### ⏳ Phase 27 — Flashcard Verb Sub-categories · Effort: Medium
-- [ ] Add verb type sub-categories under the Verbs pill in flashcard category filter
-- [ ] Sub-categories: Regular Verbs, Irregular Verbs, Modal Verbs (können/müssen/wollen/möchten/dürfen/sollen), Separable Verbs
-- [ ] Each sub-category shows count e.g. "Modal Verbs 6"
-- [ ] Requires tagging each verb in a1.ts with its verb type (verbType field)
-- [ ] UI: tapping Verbs pill expands to show sub-category pills below
-
-### ⏳ Phase 30 — Newspaper / Comprehension Exercise · Effort: Medium
-- [ ] Add new sub-section to Exam Prep called "Comprehension"
-- [ ] Show a real-format German text — newspaper excerpt, advertisement, or notice
-- [ ] User reads and writes a summary or answers open questions in German
-- [ ] Gemini evaluates the response and gives structured feedback
-- [ ] Texts sourced from Deutsche Welle (openly licensed) or Gemini generated at correct level
-
----
-## LATER
-*Planned but not immediate.*
-
-### ⏳ Phase 21 — Expand to A2, B1, B2 · Effort: Very High
-- [x] Add A2 vocabulary list — 585 words (src/data/vocabulary/a2.ts), wired into index.ts. Plurals, conjugations, comparatives already filled.
-- [x] Add A2 grammar exercises — 96 exercises across 12 topics (src/data/grammar/a2.ts), wired into grammar/index.ts.
-- [x] Write A2 tips — 20 tips with rule+example format (src/data/tips.ts). topicTipMap.ts updated with all 12 A2 topic entries.
-- [x] B1/B2 grammar shows "coming soon" automatically (grammar.tsx returns early when GRAMMAR[level] is empty).
-- [ ] Add B1 vocabulary list — **SCAFFOLD DONE: b1.ts has all 1406 words in alphabetical order (b1_0001–b1_1406). 319 entries have complete data (english, examples, conjugations/plurals). 1087 entries are placeholders with empty english/exampleDe/exampleEn — these need content filled in chunks of 100. Fill placeholders by reading the file, finding the next empty-english entry, and generating content for the next 100. Do NOT rebuild the file — just fill in the empty fields.**
-- [ ] Add B2 vocabulary list — **INCOMPLETE: b2.ts currently has 232 words (b2_0001–b2_0232), but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1. More entries need to be added and filled with english/examples/conjugations/plurals before wiring into index.ts.**
-- [ ] Add B1 / B2 grammar exercises and tips (when vocabulary is complete)
-- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for B1 and B2 (A2 already done — paths were pre-filled)
-
-### ⏳ Phase 29 — Real A1 Exam Simulation · Effort: High
-- [ ] Research and replicate actual Goethe-Zertifikat A1 exam format and difficulty
-- [ ] Reading section: real-world text formats — signs, notices, short messages, form-filling tasks (not just passage + questions)
-- [ ] Listening section: real dialogue between two people (not single sentences), multiple choice on what was discussed
-- [ ] Writing section: short formal message or form completion (e.g. fill in a registration form, write a short reply to an email)
-- [ ] Speaking section: introduce yourself prompt, respond to questions about daily life
-- [ ] Difficulty calibrated to actual A1 exam — currently too easy
-- [ ] Add a separate "Exam Simulation" mode distinct from practice mode
-- [ ] Score and feedback aligned with real exam marking criteria
-
-### Phase 23 — Multi-user · Effort: High
-- [ ] Auth already handled — this phase adds multi-user features on top
-- [ ] Leaderboard for streaks
-- [ ] User profiles
-- [ ] Shared progress comparisons
-
-### Phase 31 — Lessons · Effort: High
-- [ ] Lesson screen per grammar topic — explanation in plain English, examples, "Practice this now" button
-- [ ] Curriculum sourced from Goethe Institut A1 syllabus
-- [ ] Each lesson links directly to the relevant grammar exercise topic
-- [ ] Lessons section added to sidebar
-
 ### Phase 32 — Progress & Analytics Enhancements · Effort: Medium
 - [ ] Consistency score — "studied X out of last 7 days" (not just streak)
 - [ ] Accuracy trend — grammar score going up or down week over week
@@ -422,6 +372,56 @@ B2 Cheat Sheet:
 - Add to sidebar navigation (icon: book-open or list) and app routing in _layout.tsx
 - No API calls, no database reads — purely static rendered data
 - Collapsible sections using simple useState toggle per section
+
+### ⏳ Phase 27 — Flashcard Verb Sub-categories · Effort: Medium
+- [ ] Add verb type sub-categories under the Verbs pill in flashcard category filter
+- [ ] Sub-categories: Regular Verbs, Irregular Verbs, Modal Verbs (können/müssen/wollen/möchten/dürfen/sollen), Separable Verbs
+- [ ] Each sub-category shows count e.g. "Modal Verbs 6"
+- [ ] Requires tagging each verb in a1.ts with its verb type (verbType field)
+- [ ] UI: tapping Verbs pill expands to show sub-category pills below
+
+### ⏳ Phase 30 — Newspaper / Comprehension Exercise · Effort: Medium
+- [ ] Add new sub-section to Exam Prep called "Comprehension"
+- [ ] Show a real-format German text — newspaper excerpt, advertisement, or notice
+- [ ] User reads and writes a summary or answers open questions in German
+- [ ] Gemini evaluates the response and gives structured feedback
+- [ ] Texts sourced from Deutsche Welle (openly licensed) or Gemini generated at correct level
+
+---
+## LATER
+*Planned but not immediate.*
+
+### ⏳ Phase 21 — Expand to A2, B1, B2 · Effort: Very High
+- [x] Add A2 vocabulary list — 585 words (src/data/vocabulary/a2.ts), wired into index.ts. Plurals, conjugations, comparatives already filled.
+- [x] Add A2 grammar exercises — 96 exercises across 12 topics (src/data/grammar/a2.ts), wired into grammar/index.ts.
+- [x] Write A2 tips — 20 tips with rule+example format (src/data/tips.ts). topicTipMap.ts updated with all 12 A2 topic entries.
+- [x] B1/B2 grammar shows "coming soon" automatically (grammar.tsx returns early when GRAMMAR[level] is empty).
+- [ ] Add B1 vocabulary list — **SCAFFOLD DONE: b1.ts has all 1406 words in alphabetical order (b1_0001–b1_1406). 319 entries have complete data (english, examples, conjugations/plurals). 1087 entries are placeholders with empty english/exampleDe/exampleEn — these need content filled in chunks of 100. Fill placeholders by reading the file, finding the next empty-english entry, and generating content for the next 100. Do NOT rebuild the file — just fill in the empty fields.**
+- [ ] Add B2 vocabulary list — **INCOMPLETE: b2.ts currently has 232 words (b2_0001–b2_0232), but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1. More entries need to be added and filled with english/examples/conjugations/plurals before wiring into index.ts.**
+- [ ] Add B1 / B2 grammar exercises and tips (when vocabulary is complete)
+- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for B1 and B2 (A2 already done — paths were pre-filled)
+
+### ⏳ Phase 29 — Real A1 Exam Simulation · Effort: High
+- [ ] Research and replicate actual Goethe-Zertifikat A1 exam format and difficulty
+- [ ] Reading section: real-world text formats — signs, notices, short messages, form-filling tasks (not just passage + questions)
+- [ ] Listening section: real dialogue between two people (not single sentences), multiple choice on what was discussed
+- [ ] Writing section: short formal message or form completion (e.g. fill in a registration form, write a short reply to an email)
+- [ ] Speaking section: introduce yourself prompt, respond to questions about daily life
+- [ ] Difficulty calibrated to actual A1 exam — currently too easy
+- [ ] Add a separate "Exam Simulation" mode distinct from practice mode
+- [ ] Score and feedback aligned with real exam marking criteria
+
+### Phase 23 — Multi-user · Effort: High
+- [ ] Auth already handled — this phase adds multi-user features on top
+- [ ] Leaderboard for streaks
+- [ ] User profiles
+- [ ] Shared progress comparisons
+
+### Phase 31 — Lessons · Effort: High
+- [ ] Lesson screen per grammar topic — explanation in plain English, examples, "Practice this now" button
+- [ ] Curriculum sourced from Goethe Institut A1 syllabus
+- [ ] Each lesson links directly to the relevant grammar exercise topic
+- [ ] Lessons section added to sidebar
 
 ---
 
