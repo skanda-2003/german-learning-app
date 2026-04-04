@@ -28,6 +28,7 @@ import ListeningQuizGame from '../src/components/games/ListeningQuizGame';
 import SentenceBuilderGame from '../src/components/games/SentenceBuilderGame';
 import FillInBlankGame from '../src/components/games/FillInBlankGame';
 import { colors, font, fontSize, spacing, radius, labelStyle } from '../src/styles/theme';
+import { logActivity } from '../src/lib/activityService';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -97,21 +98,27 @@ export default function GamesScreen() {
     }, [])
   );
 
+  // Wraps onExit so every game session logs activity for the Insights heatmap
+  function exitGame() {
+    logActivity();
+    setActiveGame(null);
+  }
+
   // ── Active game screens ──
   if (activeGame === 'word-match') {
-    return <WordMatchGame words={words} onExit={() => setActiveGame(null)} />;
+    return <WordMatchGame words={words} onExit={exitGame} />;
   }
   if (activeGame === 'gender-battle') {
-    return <GenderBattleGame words={words} onExit={() => setActiveGame(null)} />;
+    return <GenderBattleGame words={words} onExit={exitGame} />;
   }
   if (activeGame === 'listening-quiz') {
-    return <ListeningQuizGame words={words} onExit={() => setActiveGame(null)} />;
+    return <ListeningQuizGame words={words} onExit={exitGame} />;
   }
   if (activeGame === 'sentence-builder') {
-    return <SentenceBuilderGame words={words} onExit={() => setActiveGame(null)} />;
+    return <SentenceBuilderGame words={words} onExit={exitGame} />;
   }
   if (activeGame === 'fill-in-blank') {
-    return <FillInBlankGame words={words} level={level} onExit={() => setActiveGame(null)} />;
+    return <FillInBlankGame words={words} level={level} onExit={exitGame} />;
   }
 
   // ── Selector screen ──

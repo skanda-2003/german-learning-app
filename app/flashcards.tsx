@@ -24,6 +24,7 @@ import { VOCABULARY, Word } from '../src/data/vocabulary';
 import FlashCard from '../src/components/FlashCard';
 import { useSpacedRepetition } from '../src/hooks/useSpacedRepetition';
 import { loadMastery, saveMastery, MasteryMap } from '../src/lib/masteryService';
+import { logActivity } from '../src/lib/activityService';
 import {
   colors, font, fontSize, spacing, radius,
   cardStyle, labelStyle,
@@ -72,6 +73,24 @@ function FlashcardDeck({ studyWords, allCategoryWords }: DeckProps) {
     restart,
     restartWeak,
   } = useSpacedRepetition(studyWords, allCategoryWords);
+
+  // Log today's activity when the deck is finished so the Insights heatmap reflects flashcard sessions
+  useEffect(() => {
+    if (isDone) logActivity();
+  }, [isDone]);
+
+  // Keyboard shortcut: 1 = Unknown, 2 = Shaky, 3 = Known (works regardless of flip state)
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const tag = (document.activeElement as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.key === '1') handleUnknown();
+      else if (e.key === '2') handleShaky();
+      else if (e.key === '3') handleKnown();
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [currentWord]); // re-bind when word changes so handlers close over fresh word
 
   function handleKnown() {
     if (!currentWord) return;

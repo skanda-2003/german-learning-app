@@ -221,6 +221,11 @@ export default function DailyScreen() {
             {progress.streakCount} days in a row
           </Text>
         )}
+
+        {/* Grace period indicator — only shown when grace was applied */}
+        {progress.graceUsed && (
+          <Text style={styles.graceNote}>Grace day used</Text>
+        )}
       </View>
     );
   }
@@ -395,6 +400,13 @@ const styles = StyleSheet.create({
     fontFamily: font.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
+  },
+  graceNote: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    marginTop: spacing.sm,
+    letterSpacing: 0.3,
   },
 
   // ── Challenge screen ──

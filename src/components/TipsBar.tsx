@@ -15,9 +15,14 @@ import useLevelStore from '../store/useLevelStore';
 import useTipStore from '../store/useTipStore';
 import { TIPS } from '../data/tips';
 
-// Returns a random index into an array of a given length
-function randomIndex(length: number): number {
-  return Math.floor(Math.random() * length);
+// Fisher-Yates shuffle — returns a new shuffled copy of the array
+function shuffleArray<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
 }
 
 export default function TipsBar() {
@@ -33,17 +38,20 @@ export default function TipsBar() {
 
   const tips = TIPS[level];
 
-  // tipIndex tracks position in the regular tips array — starts at a random tip
-  const [tipIndex, setTipIndex] = useState(() => randomIndex(TIPS['A1'].length));
+  // shuffledOrder holds the full tip list in a randomised order for this session.
+  // tipIndex is the current position within that shuffled order.
+  // This ensures every tip is seen before any repeat, and each session starts differently.
+  const [shuffledOrder, setShuffledOrder] = useState<string[]>(() => shuffleArray(TIPS['A1']));
+  const [tipIndex, setTipIndex] = useState(0);
 
   // showContextual: true when we're displaying the focus tip instead of a regular tip
   const [showContextual, setShowContextual] = useState(false);
 
-  // Each time the user navigates to a new screen, show a different random tip.
+  // Each time the user navigates to a new screen, advance to the next tip in the shuffled list.
   // Skip this if a focus tip is active — we don't want to hide it on navigation.
   useEffect(() => {
     if (!showContextual) {
-      setTipIndex(randomIndex(tips.length));
+      setTipIndex((prev) => (prev + 1) % shuffledOrder.length);
     }
   }, [pathname]);
 
@@ -54,9 +62,10 @@ export default function TipsBar() {
     }
   }, [contextualTip]);
 
-  // When the level changes, pick a fresh random tip and clear any focus tip
+  // When the level changes, generate a fresh shuffled order and reset position
   useEffect(() => {
-    setTipIndex(randomIndex(TIPS[level].length));
+    setShuffledOrder(shuffleArray(TIPS[level]));
+    setTipIndex(0);
     setShowContextual(false);
     clearContextualTip();
   }, [level]);
@@ -64,32 +73,32 @@ export default function TipsBar() {
   // The tip text currently on screen
   const displayTip = showContextual && contextualTip
     ? contextualTip
-    : tips[tipIndex];
+    : shuffledOrder[tipIndex] ?? tips[tipIndex];
 
   // True when we're showing the focus tip (affects label colour)
   const isFocusTip = showContextual && !!contextualTip;
 
   function goBack() {
     if (showContextual) {
-      // Already at the focus tip — wrap around to the last regular tip
+      // Already at the focus tip — wrap around to the last tip in the shuffled list
       setShowContextual(false);
-      setTipIndex(tips.length - 1);
+      setTipIndex(shuffledOrder.length - 1);
     } else if (tipIndex === 0 && contextualTip) {
-      // Step back from first regular tip → show the focus tip again
+      // Step back from position 0 → show the focus tip again
       setShowContextual(true);
     } else {
-      setTipIndex((prev) => (prev === 0 ? tips.length - 1 : prev - 1));
+      setTipIndex((prev) => (prev === 0 ? shuffledOrder.length - 1 : prev - 1));
     }
   }
 
   function goForward() {
     if (showContextual) {
-      // Dismiss the focus tip and move to regular tip 0
+      // Dismiss the focus tip and move forward in the shuffled list
       setShowContextual(false);
       clearContextualTip();
-      setTipIndex(0);
+      setTipIndex((prev) => (prev + 1) % shuffledOrder.length);
     } else {
-      setTipIndex((prev) => (prev === tips.length - 1 ? 0 : prev + 1));
+      setTipIndex((prev) => (prev === shuffledOrder.length - 1 ? 0 : prev + 1));
     }
   }
 

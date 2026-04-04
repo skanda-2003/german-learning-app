@@ -38,6 +38,7 @@ type DashboardData = {
   challengeDoneToday: boolean;
   knownCount: number;
   totalCount: number;
+  dueCount: number;       // words with next_review_date <= today
   grammarSessions: number;
   grammarBestPct: number | null;
   examSessions: number;
@@ -53,6 +54,15 @@ type FocusSection = {
   icon: string;        // Feather icon name
   route: string;       // expo-router href
 };
+
+// Returns the appropriate German greeting based on the current hour
+function getGermanGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return 'Guten Morgen.';
+  if (hour >= 12 && hour < 18) return 'Guten Tag.';
+  if (hour >= 18 && hour < 22) return 'Guten Abend.';
+  return 'Gute Nacht.';
+}
 
 function getFocusSection(data: DashboardData): FocusSection {
   // Priority 1: daily challenge not done today
@@ -136,6 +146,15 @@ export default function HomeScreen() {
         const knownCount = vocab.filter(w => mastery.get(w.id)?.state === 'known').length;
         const totalCount = vocab.length;
 
+        // Count words due for review today (next_review_date <= today, or never studied)
+        const todayStr = new Date().toISOString().split('T')[0];
+        const dueCount = vocab.filter(w => {
+          const m = mastery.get(w.id);
+          if (!m) return true; // never studied — always due
+          if (m.nextReviewDate && m.nextReviewDate > todayStr) return false;
+          return true;
+        }).length;
+
         const challengeDoneToday =
           progress.dailyChallengeCompletedDate === getTodayString();
 
@@ -161,6 +180,7 @@ export default function HomeScreen() {
             challengeDoneToday,
             knownCount,
             totalCount,
+            dueCount,
             grammarSessions: g.sessionsCompleted,
             grammarBestPct,
             examSessions,
@@ -205,9 +225,9 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* ── 2. Greeting: wordmark + streak message ── */}
+      {/* ── 2. Greeting: German time-of-day greeting + streak message ── */}
       <View style={styles.greetingBlock}>
-        <Text style={styles.wordmark}>LERNE DEUTSCH</Text>
+        <Text style={styles.greeting}>{getGermanGreeting()}</Text>
         <Text style={styles.streakMessage}>{streakMessage}</Text>
       </View>
 
@@ -266,7 +286,7 @@ export default function HomeScreen() {
         <SectionCard
           icon="layers"
           title="Flashcards"
-          detail={`${data.knownCount} / ${data.totalCount} known`}
+          detail={`${data.dueCount} due · ${data.knownCount} known`}
           onPress={() => router.push('/flashcards')}
         />
         <SectionCard
@@ -388,12 +408,11 @@ const styles = StyleSheet.create({
   greetingBlock: {
     marginBottom: spacing.xxl,
   },
-  // "LERNE DEUTSCH" in Inter — the only place Inter appears in content
-  wordmark: {
-    fontFamily: 'Inter_600SemiBold',
+  // German time-of-day greeting — large, IBM Plex Mono, primary text
+  greeting: {
+    fontFamily: font.bold,
     fontSize: fontSize.xxxl,
     color: colors.textPrimary,
-    letterSpacing: 1,
     marginBottom: spacing.sm,
   },
   streakMessage: {
