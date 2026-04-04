@@ -287,18 +287,19 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 22 — Deep Progress Insights (Complete)
 ### ✅ Phase 24 — Smart Interruption Tips (Complete)
 ### ✅ Phase 20 — AI / Gemini Features (Complete)
+### ✅ Phase 25 — Quick Fixes & Small Improvements (Complete)
 
 ---
 ## ACTIVE PIPELINE
 
-### ⏳ Phase 25 — Quick Fixes & Small Improvements · Effort: Low
-- [ ] Tips shuffle fix — randomise entire tip list order at session start so every session feels different, smart tip appears somewhere in rotation not always first
-- [ ] Home page heading — remove "LERNE DEUTSCH" large heading, replace with personalised time-of-day greeting + streak line (e.g. "Good morning. 3 day streak — keep it going.")
-- [ ] Audio speaker on flashcards — add small speaker icon to flashcard front and back, tapping reads the German word aloud using Web Speech API (de-DE voice), same API already used in Listening Quiz
-- [ ] Review Due count on Home screen — calculate how many words have next_review_date ≤ today using the mastery data already loaded in index.tsx; display as "X due for review" in the Flashcards quick-launch card (makes spaced repetition visible and actionable)
-- [ ] 1/2/3 keyboard shortcuts for flashcard rating — extend the existing Space-to-flip keydown listener: after card is flipped, 1 = Unknown, 2 = Shaky, 3 = Known; file: app/flashcards.tsx
-- [ ] Log activity for all sessions — call activityService.logActivity() at session end in app/grammar.tsx, app/flashcards.tsx, and app/games.tsx so the Insights heatmap reflects all study activity, not just daily challenge completions
-- [ ] Streak grace period — if user misses exactly one day then completes the challenge, continue their streak instead of resetting; add a small indicator ("grace day used") when this happens; file: src/lib/streakService.ts
+### ✅ Phase 25 — Quick Fixes & Small Improvements · Effort: Low
+- [x] Tips shuffle fix — randomise entire tip list order at session start so every session feels different, smart tip appears somewhere in rotation not always first
+- [x] Home page heading — replaced "LERNE DEUTSCH" with German time-of-day greeting (Guten Morgen / Guten Tag / Guten Abend / Gute Nacht) + streak line
+- [x] Audio speaker on flashcards — small speaker icon (Feather volume-2) on front and back, tapping reads German word via Web Speech API (de-DE, rate 0.9)
+- [x] Review Due count on Home screen — calculates words with next_review_date ≤ today; Flashcards card shows "X due · Y known"
+- [x] 1/2/3 keyboard shortcuts for flashcard rating — 1 = Unknown, 2 = Shaky, 3 = Known; works regardless of flip state
+- [x] Log activity for all sessions — logActivity() called at session end in grammar.tsx, flashcards.tsx, and games.tsx
+- [x] Streak grace period — missing exactly one day continues the streak; "Grace day used" indicator shown on daily done screen
 
 ### ⏳ Phase 26 — Grammar Exercises Expansion · Effort: Medium
 - [ ] Expand hard grammar topics from ~7 exercises to 15-20 each
@@ -434,11 +435,12 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-30] Bug fix complete — Favicon: root cause found (assets/favicon.png was old default Expo logo, sharp-cli conversion never replaced it). Regenerated correct "LD" monogram PNG from scratch in pure Node.js. Added app/+html.tsx (Expo Router HTML shell) with explicit SVG + PNG favicon link tags. Copied favicon.svg to public/ so it serves from web root. Confirmed working on Vercel. Supabase 406: scoresService .single() → .maybeSingle() in saveScore and saveCompletion — all services now consistent.
 - [2026-03-30] Gemini model updated — gemini-2.0-flash deprecated and shut down, replaced with gemini-2.5-flash in src/lib/gemini.ts.
 - [2026-03-30] Phase 11 complete — All Exam Prep sections tested and working. Fixed Gemini markdown formatting in Writing and Speaking feedback (responses now output plain text paragraphs, no asterisks or bullet points).
-- [2026-03-30] Phase 25 complete (investigation only, no code changes) — Suspected logging gaps confirmed to already be handled: WritingExercise and SpeakingExercise both call saveCompletion(); grammar handleNext() calls saveMistake() for all wrong answers including AI-generated exercises. Original analysis was incorrect (grep missed saveCompletion).
+- [2026-03-30] Phase 25 (first pass, investigation only) — Suspected logging gaps confirmed to already be handled. Original analysis was incorrect.
 - [2026-03-31] Phase 24 complete — Smart Interruption Tips. After completing grammar or daily challenge sessions, app loads recent mistakes, identifies most-repeated weak topic, and surfaces a targeted tip in TipsBar with a blue "FOCUS TIP" label. New: useTipStore.ts, topicTipMap.ts (20 A1 entries), contextualTipService.ts. TipsBar updated to show/dismiss focus tips via arrow navigation.
 - [2026-03-31] Phase 20 complete — Fill in the Blank mini game built (FillInBlankGame.tsx). Gemini generates a sentence per round with the target word blanked out; user types the missing word. Article stripped from nouns so blank is just the noun. 10 rounds, score saved to Supabase (game_fill_in_blank). Error + retry/skip UI if Gemini fails. Quota error message improved in callGemini() to detect 429/quota errors. All existing Gemini loading states and feedback tone were already solid — confirmed and left as-is.
 - [2026-04-03] Phase 21 scaffolds complete — B1: 1406 words total (319 complete, 1087 placeholders). B2: 232 words in b2.ts so far — but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1, so b2.ts is incomplete. Phase 21 on hold — will resume later.
 - [2026-04-04] Phase 21 A2 complete — 96 grammar exercises across 12 topics (a2.ts), wired into grammar/index.ts. A2 tips expanded to 20 (rule+example format). topicTipMap.ts updated with all 12 A2 topic entries. B1/B2 show "coming soon" via existing empty-array check in grammar.tsx.
+- [2026-04-04] Phase 25 complete — Tips now use Fisher-Yates shuffle at session start (sequential traversal, no repeats). German time-of-day greeting replaces LERNE DEUTSCH wordmark on home screen. Speaker icon on flashcard front/back reads German word via Web Speech API (de-DE). Home Flashcards card shows "X due · Y known" from mastery data. 1/2/3 keyboard shortcuts rate Unknown/Shaky/Known at any point. logActivity() added to grammar, flashcard, and game session ends. Streak grace period: missing one day continues streak; "Grace day used" shown on daily done screen.
 
 ---
 *This file is the single source of truth for the project.
