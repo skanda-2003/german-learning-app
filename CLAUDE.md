@@ -335,6 +335,12 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Add a separate "Exam Simulation" mode distinct from practice mode
 - [ ] Score and feedback aligned with real exam marking criteria
 
+### ⏳ Phase 36 — A2 Content Completion · Effort: Medium
+*Completes A2 so all screens work at that level. Everything else already works for A2 — only these two areas are missing.*
+
+- [ ] **Reading passages for A2** — `src/data/passages.ts` has `A2: []`. Add 10–15 A2-level passages (slightly longer than A1, covering everyday topics like travel, shopping, work, social plans). Same format as A1 passages. A2 reading mode currently shows "no passages" when level is A2.
+- [ ] **Sentence Builder A2 sentences** — `src/data/sentenceBuilder.ts` has 80 A1 sentences only, and the game ignores the current level. Add ~50 A2 sentences (Perfekt tense, subordinate clauses, adjective-heavy, comparatives) and make the game level-aware by exporting sentences per level (same `Record<Level, ...>` pattern as GRAMMAR and VOCABULARY). File to update: `src/data/sentenceBuilder.ts` + `src/components/SentenceBuilderGame.tsx`.
+
 ### ⏳ Phase 30 — Newspaper / Comprehension Exercise · Effort: Medium
 - [ ] Add new sub-section to Exam Prep called "Comprehension"
 - [ ] Show a real-format German text — newspaper excerpt, advertisement, or notice
