@@ -38,6 +38,7 @@ type DashboardData = {
   challengeDoneToday: boolean;
   knownCount: number;
   totalCount: number;
+  dueCount: number;       // words with next_review_date <= today
   grammarSessions: number;
   grammarBestPct: number | null;
   examSessions: number;
@@ -136,6 +137,15 @@ export default function HomeScreen() {
         const knownCount = vocab.filter(w => mastery.get(w.id)?.state === 'known').length;
         const totalCount = vocab.length;
 
+        // Count words due for review today (next_review_date <= today, or never studied)
+        const todayStr = new Date().toISOString().split('T')[0];
+        const dueCount = vocab.filter(w => {
+          const m = mastery.get(w.id);
+          if (!m) return true; // never studied — always due
+          if (m.nextReviewDate && m.nextReviewDate > todayStr) return false;
+          return true;
+        }).length;
+
         const challengeDoneToday =
           progress.dailyChallengeCompletedDate === getTodayString();
 
@@ -161,6 +171,7 @@ export default function HomeScreen() {
             challengeDoneToday,
             knownCount,
             totalCount,
+            dueCount,
             grammarSessions: g.sessionsCompleted,
             grammarBestPct,
             examSessions,
@@ -266,7 +277,7 @@ export default function HomeScreen() {
         <SectionCard
           icon="layers"
           title="Flashcards"
-          detail={`${data.knownCount} / ${data.totalCount} known`}
+          detail={`${data.dueCount} due · ${data.knownCount} known`}
           onPress={() => router.push('/flashcards')}
         />
         <SectionCard

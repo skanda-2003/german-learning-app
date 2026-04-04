@@ -15,6 +15,7 @@
 
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -30,9 +31,21 @@ const GENDER_COLORS: Record<string, string> = {
   das: '#16a34a', // green — neuter
 };
 
+// Speaks the given text using the Web Speech API with a German voice.
+// Stops any ongoing speech first so tapping twice doesn't queue up.
+function speakGerman(text: string): void {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'de-DE';
+  utterance.rate = 0.9;
+  window.speechSynthesis.speak(utterance);
+}
+
 // ─── Props ─────────────────────────────────────────────────────────────────────
 type Props = {
   word: Word;
+  onFlipChange?: (isFlipped: boolean) => void; // notifies parent when card flips
 };
 
 // ─── Verb conjugation table component ────────────────────────────────────────
@@ -85,7 +98,7 @@ const conjStyles = StyleSheet.create({
 });
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function FlashCard({ word }: Props) {
+export default function FlashCard({ word, onFlipChange }: Props) {
   // flipValue: 0 = front side showing, 1 = back side showing
   const flipValue = useSharedValue(0);
   // Track flip state so we know which way to animate next
@@ -105,14 +118,16 @@ export default function FlashCard({ word }: Props) {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  // Called when the user taps the card
+  // Called when the user taps the card or presses Space
   function handleFlip() {
     if (isFlipped.value) {
       flipValue.value = withTiming(0, { duration: 400 });
       isFlipped.value = false;
+      onFlipChange?.(false);
     } else {
       flipValue.value = withTiming(1, { duration: 400 });
       isFlipped.value = true;
+      onFlipChange?.(true);
     }
   }
 
@@ -158,6 +173,15 @@ export default function FlashCard({ word }: Props) {
 
         {/* Part of speech — small label underneath */}
         <Text style={styles.partOfSpeech}>{word.partOfSpeech}</Text>
+
+        {/* Speaker icon — tapping reads the German word aloud */}
+        <TouchableOpacity
+          style={styles.speakerButton}
+          onPress={(e) => { e.stopPropagation(); speakGerman(word.german); }}
+          activeOpacity={0.6}
+        >
+          <Feather name="volume-2" size={14} color="#aaaaaa" />
+        </TouchableOpacity>
       </Animated.View>
 
       {/* ── BACK FACE ── */}
@@ -173,6 +197,14 @@ export default function FlashCard({ word }: Props) {
         <Text style={styles.exampleDe}>{word.exampleDe}</Text>
         <Text style={styles.exampleEn}>{word.exampleEn}</Text>
 
+        {/* Speaker icon on the back too — reads the German word */}
+        <TouchableOpacity
+          style={styles.speakerButton}
+          onPress={(e) => { e.stopPropagation(); speakGerman(word.german); }}
+          activeOpacity={0.6}
+        >
+          <Feather name="volume-2" size={14} color="#aaaaaa" />
+        </TouchableOpacity>
 
       </Animated.View>
     </TouchableOpacity>
@@ -288,6 +320,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#888888',
     textAlign: 'center',
+  },
+
+  // Speaker button — bottom-right corner of the card
+  speakerButton: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    padding: 6,
   },
 
   // Extra info block (plural / conjugation / comparative)

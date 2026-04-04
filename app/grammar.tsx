@@ -21,6 +21,7 @@ import { GRAMMAR, GrammarExercise } from '../src/data/grammar';
 import ExerciseCard from '../src/components/ExerciseCard';
 import { generateGrammarExercises } from '../src/lib/gemini';
 import { saveScore } from '../src/lib/scoresService';
+import { logActivity } from '../src/lib/activityService';
 import { saveMistake, loadMistakes } from '../src/lib/mistakeService';
 import { saveTopicScore } from '../src/lib/grammarTopicService';
 import { getContextualTip } from '../src/lib/contextualTipService';
@@ -126,6 +127,8 @@ export default function GrammarScreen() {
       if (selectedTopic !== null) {
         saveTopicScore(selectedTopic, level, newCorrectCount, totalExercises);
       }
+      // Log today's activity so the Insights heatmap reflects grammar sessions
+      logActivity();
       // After the session ends, surface a targeted tip based on recent mistakes
       loadMistakes().then((mistakes) => {
         const tip = getContextualTip(mistakes, level);

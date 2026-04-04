@@ -16,6 +16,7 @@ export type UserProgress = {
   streakCount: number;
   lastActiveDate: string;              // YYYY-MM-DD, empty string if never played
   dailyChallengeCompletedDate: string; // YYYY-MM-DD, empty string if never completed
+  graceUsed?: boolean;                 // true if the grace period was applied this completion
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -32,6 +33,15 @@ export function getTodayString(): string {
 // Returns yesterday's date as a YYYY-MM-DD string
 function getYesterdayString(): string {
   const d = new Date(Date.now() - 86_400_000); // 24 hours ago
+  const yyyy = d.getFullYear();
+  const mm   = String(d.getMonth() + 1).padStart(2, '0');
+  const dd   = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+// Returns the date two days ago as a YYYY-MM-DD string (used for grace period check)
+function getTwoDaysAgoString(): string {
+  const d = new Date(Date.now() - 2 * 86_400_000);
   const yyyy = d.getFullYear();
   const mm   = String(d.getMonth() + 1).padStart(2, '0');
   const dd   = String(d.getDate()).padStart(2, '0');
@@ -75,22 +85,29 @@ export async function loadProgress(): Promise<UserProgress> {
 // Returns the updated UserProgress so the UI can show the new streak immediately.
 export async function completeChallenge(): Promise<UserProgress> {
   try {
-    const userId   = await getUserId();
-    const today     = getTodayString();
-    const yesterday = getYesterdayString();
+    const userId     = await getUserId();
+    const today      = getTodayString();
+    const yesterday  = getYesterdayString();
+    const twoDaysAgo = getTwoDaysAgoString();
 
     // Load current state first so we can calculate the new streak
     const current = await loadProgress();
 
     // Streak rules:
-    //   - Last active yesterday → extend the streak by 1
-    //   - Last active today     → already completed, no change (guard; shouldn't happen)
-    //   - Anything older        → streak resets to 1
+    //   - Last active yesterday  → extend the streak by 1
+    //   - Last active today      → already completed, no change (guard; shouldn't happen)
+    //   - Last active 2 days ago → grace period: missed exactly one day, continue the streak
+    //   - Anything older         → streak resets to 1
     let newStreak: number;
+    let graceUsed = false;
     if (current.lastActiveDate === yesterday) {
       newStreak = current.streakCount + 1;
     } else if (current.lastActiveDate === today) {
       newStreak = current.streakCount;
+    } else if (current.lastActiveDate === twoDaysAgo) {
+      // Grace period: missed exactly one day — continue the streak instead of resetting
+      newStreak = current.streakCount + 1;
+      graceUsed = true;
     } else {
       newStreak = 1; // broken streak or first time
     }
@@ -99,6 +116,7 @@ export async function completeChallenge(): Promise<UserProgress> {
       streakCount: newStreak,
       lastActiveDate: today,
       dailyChallengeCompletedDate: today,
+      graceUsed,
     };
 
     // Upsert — insert on first completion, update on subsequent days
