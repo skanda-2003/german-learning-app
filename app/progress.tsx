@@ -448,9 +448,10 @@ export default function ProgressScreen() {
             {/* Left column */}
             <View style={styles.scoresCol}>
               <MiniScoreRow label="Grammar"    value={pct(scores.grammar)} />
-              <MiniScoreRow label="Reading"    value={pct(scores.exam_reading)} />
-              <MiniScoreRow label="Listening"  value={pct(scores.exam_listening)} />
-              <MiniScoreRow label="Writing"    value={sess(scores.exam_writing)}  isLast />
+              <MiniScoreRow label="Reading"       value={pct(scores.exam_reading)} />
+              <MiniScoreRow label="Comprehension" value={sess(scores.exam_comprehension)} />
+              <MiniScoreRow label="Listening"     value={pct(scores.exam_listening)} />
+              <MiniScoreRow label="Writing"       value={sess(scores.exam_writing)} isLast />
             </View>
 
             {/* Vertical divider */}

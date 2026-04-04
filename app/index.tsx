@@ -167,7 +167,8 @@ export default function HomeScreen() {
           scores.exam_reading.sessionsCompleted +
           scores.exam_listening.sessionsCompleted +
           scores.exam_writing.sessionsCompleted +
-          scores.exam_speaking.sessionsCompleted;
+          scores.exam_speaking.sessionsCompleted +
+          scores.exam_comprehension.sessionsCompleted;
 
         const gamesSessions =
           scores.game_gender_battle.sessionsCompleted +

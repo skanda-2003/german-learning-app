@@ -11,7 +11,7 @@
 // Two types of section:
 //   Scored    — grammar, exam_reading, exam_listening, games
 //               → call saveScore(section, score, total)
-//   Completion — exam_writing, exam_speaking (AI feedback, no numeric score)
+//   Completion — exam_writing, exam_speaking, exam_comprehension (AI feedback, no numeric score)
 //               → call saveCompletion(section)
 
 import { supabase } from './supabase';
@@ -32,6 +32,7 @@ export type SectionKey =
   | 'exam_listening'
   | 'exam_writing'
   | 'exam_speaking'
+  | 'exam_comprehension'
   | 'game_gender_battle'
   | 'game_listening_quiz'
   | 'game_word_match'
@@ -97,7 +98,7 @@ export async function saveScore(
 
 // ─── Save a completion-only section ───────────────────────────────────────────
 
-// Call this for Writing and Speaking where there is no numeric score.
+// Call this for Writing, Speaking, and Comprehension where there is no numeric score.
 // Only increments sessions_completed.
 export async function saveCompletion(section: SectionKey): Promise<void> {
   try {
@@ -145,6 +146,7 @@ export async function loadAllScores(): Promise<Record<SectionKey, SectionScore>>
     exam_listening:      { ...DEFAULT_SCORE },
     exam_writing:        { ...DEFAULT_SCORE },
     exam_speaking:       { ...DEFAULT_SCORE },
+    exam_comprehension:  { ...DEFAULT_SCORE },
     game_gender_battle:    { ...DEFAULT_SCORE },
     game_listening_quiz:   { ...DEFAULT_SCORE },
     game_word_match:       { ...DEFAULT_SCORE },
