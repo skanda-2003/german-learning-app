@@ -21,6 +21,7 @@ import { Word } from '../../data/vocabulary';
 import { saveScore } from '../../lib/scoresService';
 import { colors, font, fontSize, spacing, radius } from '../../styles/theme';
 import { SENTENCE_BUILDER_DATA, SentenceEntry } from '../../data/sentenceBuilder';
+import useLevelStore from '../../store/useLevelStore';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
 
@@ -47,9 +48,11 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-// Pick TOTAL_ROUNDS random entries from the full pool (no repeats within a session).
-function pickEntries(): SentenceEntry[] {
-  return shuffle([...SENTENCE_BUILDER_DATA]).slice(0, TOTAL_ROUNDS);
+// Pick TOTAL_ROUNDS random entries from the level's pool (no repeats within a session).
+// Falls back to A1 if the selected level has no sentences yet (B1/B2).
+function pickEntries(pool: SentenceEntry[]): SentenceEntry[] {
+  const source = pool.length > 0 ? pool : SENTENCE_BUILDER_DATA['A1'];
+  return shuffle([...source]).slice(0, TOTAL_ROUNDS);
 }
 
 // Convert a SentenceEntry's words into a shuffled tile array for the bank.
@@ -60,8 +63,11 @@ function makeBankTiles(entry: SentenceEntry): WordTile[] {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SentenceBuilderGame({ onExit }: Props) {
+  const level = useLevelStore(state => state.level);
+  const levelPool = SENTENCE_BUILDER_DATA[level];
+
   // ── Session state (stays for the whole game) ──────────────────────────────
-  const [entries, setEntries] = useState<SentenceEntry[]>(() => pickEntries());
+  const [entries, setEntries] = useState<SentenceEntry[]>(() => pickEntries(levelPool));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [isDone, setIsDone] = useState(false);
@@ -139,7 +145,7 @@ export default function SentenceBuilderGame({ onExit }: Props) {
   // Simplest: accept that entries don't change on Play Again (shuffle is random anyway).
   // For a proper shuffle, the parent could unmount/remount us — for now we just reset state.
   function handlePlayAgain() {
-    const newEntries = pickEntries();
+    const newEntries = pickEntries(levelPool);
     setEntries(newEntries);
     setCurrentIndex(0);
     setCorrectCount(0);

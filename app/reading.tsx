@@ -34,12 +34,57 @@ import {
 // ─── Word lookup ──────────────────────────────────────────────────────────────
 // Tries to find a tapped word in the vocabulary list.
 //
-// Handles two cases:
-//   1. Direct match — works for verbs, adjectives, common words
+// Handles three cases:
+//   1. Direct match — works for adjectives, adverbs, infinitives
 //   2. Noun match — vocab stores "der Apfel", user taps "Apfel", we strip the article
-//
-// Note: conjugated verb forms (e.g., "arbeitet") won't always match the
-// infinitive ("arbeiten") stored in vocab — this is a known limitation for now.
+//   3. Conjugated verb — strip common endings (-t, -st, -en, -e, -est, -et) to
+//      recover the stem, reconstruct the infinitive, then try to match.
+//      Also reverses umlauts (ä→a, ö→o, ü→u) for strong verbs like "fährt" → "fahren".
+
+function tryMatch(candidate: string, vocab: Word[]): Word | null {
+  // Exact match
+  const exact = vocab.find((w) => w.german.toLowerCase() === candidate);
+  if (exact) return exact;
+
+  // Noun stored as "der/die/das Word"
+  const nounMatch = vocab.find((w) => {
+    const parts = w.german.split(' ');
+    return parts.length === 2 && parts[1].toLowerCase() === candidate;
+  });
+  return nounMatch ?? null;
+}
+
+function buildInfinitiveAttempts(lower: string): string[] {
+  const attempts: string[] = [lower];
+
+  // Helper: given a stem, add the infinitive suffix and record it
+  function addInfinitive(stem: string) {
+    if (stem.length < 2) return;              // stems shorter than 2 chars are noise
+    attempts.push(stem + 'en');               // standard: komm → kommen
+    attempts.push(stem + 'n');               // for stems ending in -el/-er: lächel → lächeln
+  }
+
+  // Strip endings — longest first to avoid partial matches (e.g. -est before -st)
+  if (lower.endsWith('est')) addInfinitive(lower.slice(0, -3));   // du arbeitest → arbeit
+  else if (lower.endsWith('st')) addInfinitive(lower.slice(0, -2)); // du kommst → komm
+  if (lower.endsWith('et'))  addInfinitive(lower.slice(0, -2));   // ihr arbeitet → arbeit
+  else if (lower.endsWith('t'))  addInfinitive(lower.slice(0, -1)); // er kommt → komm
+  if (lower.endsWith('e'))   addInfinitive(lower.slice(0, -1));   // ich komme → komm
+  if (lower.endsWith('en'))  attempts.push(lower);                // might already be infinitive
+
+  // Umlaut reversal for strong verbs: fährt → fahrt → fahr → fahren
+  const plain = lower.replace(/ä/g, 'a').replace(/ö/g, 'o').replace(/ü/g, 'u');
+  if (plain !== lower) {
+    // Recursively build attempts on the de-umlauted form (without umlaut reversal again)
+    if (plain.endsWith('est')) addInfinitive(plain.slice(0, -3));
+    else if (plain.endsWith('st')) addInfinitive(plain.slice(0, -2));
+    if (plain.endsWith('et'))  addInfinitive(plain.slice(0, -2));
+    else if (plain.endsWith('t'))  addInfinitive(plain.slice(0, -1));
+    if (plain.endsWith('e'))   addInfinitive(plain.slice(0, -1));
+  }
+
+  return attempts;
+}
 
 function lookupWord(rawToken: string, vocab: Word[]): Word | null {
   // Strip leading/trailing punctuation so "Berlin." matches "Berlin"
@@ -48,20 +93,11 @@ function lookupWord(rawToken: string, vocab: Word[]): Word | null {
 
   const lower = clean.toLowerCase();
 
-  // 1. Exact match (case-insensitive)
-  const exact = vocab.find((w) => w.german.toLowerCase() === lower);
-  if (exact) return exact;
-
-  // 2. Noun stored as "der/die/das Word" — match against the word part only
-  const nounMatch = vocab.find((w) => {
-    const parts = w.german.split(' ');
-    // Only try this for entries with an article prefix (2 parts: article + noun)
-    if (parts.length === 2) {
-      return parts[1].toLowerCase() === lower;
-    }
-    return false;
-  });
-  if (nounMatch) return nounMatch;
+  // Try direct match and all verb stem derivations in order
+  for (const attempt of buildInfinitiveAttempts(lower)) {
+    const match = tryMatch(attempt, vocab);
+    if (match) return match;
+  }
 
   return null;
 }
@@ -217,6 +253,11 @@ export default function ReadingScreen() {
             ))}
           </Text>
         </View>
+
+        {/* Next Passage button — more discoverable than the header arrows */}
+        <TouchableOpacity style={styles.nextPassageBtn} onPress={handleNext} activeOpacity={0.7}>
+          <Text style={styles.nextPassageBtnText}>Next Passage →</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* ── Word lookup popup ── */}
@@ -237,8 +278,10 @@ export default function ReadingScreen() {
           </View>
 
           {lookupResult === 'not-found' ? (
-            // Word not in vocabulary list
-            <Text style={styles.popupNotFound}>Not in {level} vocabulary list</Text>
+            // Word not found even after verb stem stripping
+            <Text style={styles.popupNotFound}>
+              Word not found — search in Flashcards
+            </Text>
           ) : (
             // Word found — show translation + metadata
             <View>
@@ -443,6 +486,23 @@ const styles = StyleSheet.create({
     fontFamily: font.regular,
     fontSize: fontSize.sm,
     color: colors.textMuted,
+  },
+
+  // ── Next Passage button ──
+  nextPassageBtn: {
+    alignSelf: 'flex-end',
+    marginTop: spacing.lg,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+  },
+  nextPassageBtnText: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
   },
 
   // ── Empty state ──
