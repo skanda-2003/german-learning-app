@@ -32,7 +32,7 @@ This is a **TypeScript Expo React Native app**. The backend uses **Supabase** (a
 ## Design System
 - **Style:** Data-Forward Minimalism (inspired by developer dashboards like Linear, Vercel, Railway)
 - **Background:** `#fafafa` page background, `#ffffff` white cards on top
-- **Font:** IBM Plex Mono for all content, data, headings — Inter for sidebar/topbar navigation only
+- **Font:** IBM Plex Mono for all content, data, headings — Inter for sidebar/topbar navigation only. Exception: Cheat Sheet screen uses Inter for card headers, body descriptions, and table column headers; German examples and table body cells stay IBM Plex Mono.
 - **Cards:** 1px `#e0e0e0` border, 4px border-radius, no shadows, no gradients
 - **Colors:** `#111111` primary text, `#888888` secondary/labels, `#2563eb` blue accent, `#16a34a` green, `#dc2626` red, `#f59e0b` amber (shaky state)
 - **Labels:** ALL CAPS, 11px, letter-spacing 0.08em, `#888888`
@@ -294,6 +294,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 26 — Grammar Exercises Expansion (Complete)
 ### ✅ Phase 35 — Sentence Builder Improvements (Complete)
 ### ✅ Phase 30 — Newspaper / Comprehension Exercise (Complete)
+### ✅ Phase 37 — Cheat Sheet / Reference Section (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -463,6 +464,7 @@ B2 Cheat Sheet:
 - [2026-04-04] Phase 35 complete — Difficulty tagging added to all 130 sentences (80 A1 + 50 A2). simple/medium/complex tags based on grammar complexity. Pre-game difficulty picker in SentenceBuilderGame.tsx (All / Simple / Medium / Complex); filters pool, adjusts round count, shows badge during play.
 - [2026-04-04] Phase 30 complete — Comprehension sub-section added to Exam Prep. New ComprehensionExercise.tsx component: 5 A1 texts + 5 A2 texts (NOTICE, AD, SHORT MESSAGE, JOB AD, EVENT, etc.), user writes German answers, Gemini returns structured feedback (content/tasks, language, suggestions). New getComprehensionFeedback() in gemini.ts (JSON output, 3 fields). New examComprehension.ts data file with ComprehensionItem type and COMPREHENSION_BY_LEVEL lookup. exam_comprehension SectionKey added to scoresService. Comprehension card added to Exam Prep selector and progress.tsx. B1/B2 show "coming soon" empty state.
 - [2026-04-04] Phase 34 complete — 6 silent correctness bugs fixed. topicTipMap.ts keys audited and corrected to match a1.ts exactly ('Accusative case', 'Modal verbs', 'Questions') — Focus Tips now fire for A1's most common mistakes. DST streak bug fixed in streakService.ts and insights.tsx: setDate() replaces ms subtraction so spring-forward nights don't corrupt streak or heatmap. loadMistakes() now has .limit(100). getUserId() reads synchronously from useAuthStore (userId field added), eliminating 3 Supabase round-trips per grammar session end. Daily challenge seed XORs date with a hash of the user ID so each user gets different exercises. Shared date utilities extracted to src/lib/dateUtils.ts (toDateString, getTodayString, getTomorrowString, formatDate); all three callers updated.
+- [2026-04-04] Phase 37 complete — Cheat Sheet reference screen built. New src/data/cheatsheets/ folder with a1.ts/a2.ts/b1.ts/b2.ts (static CheatSheetSection[] data), types.ts (discriminated union CheatSheetBlock), and index.ts (Record<Level, CheatSheetSection[]> lookup). New app/cheatsheet.tsx: collapsible sections, local level picker (A1–B2, independent of global level), table/example/text/subheading block renderers, horizontal scroll for wide tables. Sidebar entry added (icon: list) and Drawer.Screen registered in _layout.tsx. No API calls, no Supabase.
 
 ---
 *This file is the single source of truth for the project.
