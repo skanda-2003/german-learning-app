@@ -32,7 +32,7 @@ This is a **TypeScript Expo React Native app**. The backend uses **Supabase** (a
 ## Design System
 - **Style:** Data-Forward Minimalism (inspired by developer dashboards like Linear, Vercel, Railway)
 - **Background:** `#fafafa` page background, `#ffffff` white cards on top
-- **Font:** IBM Plex Mono for all content, data, headings — Inter for sidebar/topbar navigation only
+- **Font:** IBM Plex Mono for all content, data, headings — Inter for sidebar/topbar navigation only. Exception: Cheat Sheet screen uses Inter for card headers, body descriptions, and table column headers; German examples and table body cells stay IBM Plex Mono.
 - **Cards:** 1px `#e0e0e0` border, 4px border-radius, no shadows, no gradients
 - **Colors:** `#111111` primary text, `#888888` secondary/labels, `#2563eb` blue accent, `#16a34a` green, `#dc2626` red, `#f59e0b` amber (shaky state)
 - **Labels:** ALL CAPS, 11px, letter-spacing 0.08em, `#888888`

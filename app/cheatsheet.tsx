@@ -1,352 +1,545 @@
-// cheatsheet.tsx — Static grammar reference per level (Phase 37)
+// cheatsheet.tsx — Grammar reference (Phase 37)
 //
-// Level picker chooses which static sheet to show; it does not change the
-// global level (header toggle). Picker syncs when the global level changes.
+// Web: CSS multi-column masonry (column-count + gap). Native: single-column scroll.
+// Sheet level syncs with global level from the header toggle.
+// Inter is used here for tabs, card headers, descriptions, and table headers only;
+// German examples and table body stay IBM Plex Mono (theme.font).
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  Platform,
+  useWindowDimensions,
+  type ViewStyle,
+  type TextStyle,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
 import useLevelStore, { type Level } from '../src/store/useLevelStore';
 import { CHEATSHEETS } from '../src/data/cheatsheets';
-import type { CheatSheetBlock } from '../src/data/cheatsheets/types';
-import {
-  colors,
-  font,
-  fontSize,
-  spacing,
-  radius,
-  cardStyle,
-  labelStyle,
-} from '../src/styles/theme';
+import type {
+  CheatSheetBlock,
+  CheatSheetSection,
+  CheatSheetTableBlock,
+  CheatSheetTextBlock,
+} from '../src/data/cheatsheets/types';
+import { colors, font, radius } from '../src/styles/theme';
 
 const LEVELS: Level[] = ['A1', 'A2', 'B1', 'B2'];
 
-function BlockView({ block }: { block: CheatSheetBlock }) {
+// Exact tokens from spec (aligned with theme where they match)
+const CARD_BG = colors.surface;
+const BORDER = colors.border;
+const BORDER_LIGHT = '#f0f0f0';
+const DESC_COLOR = '#555555';
+const ACCENT = colors.accent;
+
+const INTER_400 = 'Inter_400Regular';
+const INTER_500 = 'Inter_500Medium';
+const INTER_600 = 'Inter_600SemiBold';
+
+type ColWidth = number | 'flex';
+
+function inferColumnWidths(columns: string[]): ColWidth[] {
+  const n = columns.length;
+  const c0 = (columns[0] ?? '').trim().toLowerCase();
+  const c1 = (columns[1] ?? '').trim().toLowerCase();
+
+  if (n === 3 && c0 === 'word') {
+    return [70, 100, 'flex'];
+  }
+  if (n === 2 && c0 === 'pronoun') {
+    return [80, 'flex'];
+  }
+  if (n === 2 && c0 === 'article') {
+    return [120, 'flex'];
+  }
+  if (n === 3 && c1 === 'ending') {
+    return [90, 'flex', 'flex'];
+  }
+  if (columns.every((c) => c.trim() === '')) {
+    return Array(n).fill('flex' as const);
+  }
+  if (n >= 2 && c0 === '') {
+    return [90, ...Array(n - 1).fill('flex' as const)];
+  }
+  if (n === 2) {
+    return [90, 'flex'];
+  }
+  return Array(n).fill('flex' as const);
+}
+
+function widthStyle(w: ColWidth): ViewStyle {
+  if (w === 'flex') return { flex: 1, minWidth: 0 };
+  return { width: w, maxWidth: w, flexShrink: 0 };
+}
+
+function isSeinHabenSection(title: string): boolean {
+  // Only match the A1 conjugation card — not A2 "Perfekt — haben vs sein"
+  return title.toLowerCase().startsWith('sein and haben');
+}
+
+function isPresentRegularSection(title: string): boolean {
+  const t = title.toLowerCase();
+  return t.includes('present') && t.includes('regular');
+}
+
+function parseSeinHabenBlocks(blocks: CheatSheetBlock[]) {
+  const leading: CheatSheetTextBlock[] = [];
+  let i = 0;
+  while (i < blocks.length && blocks[i].type === 'text') {
+    leading.push(blocks[i] as CheatSheetTextBlock);
+    i++;
+  }
+  const tables: CheatSheetTableBlock[] = [];
+  for (; i < blocks.length; i++) {
+    if (blocks[i].type === 'table') {
+      tables.push(blocks[i] as CheatSheetTableBlock);
+      if (tables.length === 2) {
+        i++;
+        break;
+      }
+    }
+  }
+  return {
+    leading,
+    seinTable: tables[0]!,
+    habenTable: tables[1]!,
+    rest: blocks.slice(i),
+  };
+}
+
+function CheatTable({ block }: { block: CheatSheetTableBlock }) {
+  const colWidths = inferColumnWidths(block.columns);
+  const rowCount = block.rows.length;
+
+  return (
+    <View style={tableStyles.tableWrap}>
+      <View style={tableStyles.table}>
+        <View style={tableStyles.tr}>
+          {block.columns.map((h, ci) => (
+            <View
+              key={`h-${ci}`}
+              style={[tableStyles.thCell, widthStyle(colWidths[ci] ?? 'flex')]}
+            >
+              <Text style={tableStyles.thText}>{h}</Text>
+            </View>
+          ))}
+        </View>
+        {block.rows.map((row, ri) => {
+          const isLast = ri === rowCount - 1;
+          return (
+            <View key={ri} style={tableStyles.tr}>
+              {row.map((cell, ci) => (
+                <View
+                  key={ci}
+                  style={[
+                    tableStyles.tdCell,
+                    widthStyle(colWidths[ci] ?? 'flex'),
+                    isLast && tableStyles.tdLastRow,
+                  ]}
+                >
+                  <Text style={tableStyles.tdText}>{cell}</Text>
+                </View>
+              ))}
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function CardChrome({
+  title,
+  wide,
+  columnCount,
+  children,
+}: {
+  title: string;
+  wide: boolean;
+  columnCount: number;
+  children: React.ReactNode;
+}) {
+  const spanAll = wide && columnCount >= 2;
+  const webMasonryCard: ViewStyle =
+    Platform.OS === 'web' && spanAll ? ({ columnSpan: 'all' } as ViewStyle) : {};
+
+  return (
+    <View style={[styles.card, webMasonryCard]}>
+      <View style={styles.cardHeaderAccent}>
+        <Text style={styles.cardHeaderText}>{title.toUpperCase()}</Text>
+      </View>
+      {children}
+    </View>
+  );
+}
+
+function BlockContent({ block }: { block: CheatSheetBlock }) {
   switch (block.type) {
     case 'text':
-      return <Text style={styles.bodyText}>{block.body}</Text>;
+      return <Text style={styles.cardDescription}>{block.body}</Text>;
     case 'subheading':
       return <Text style={styles.subheading}>{block.text}</Text>;
     case 'example':
       return (
-        <View style={styles.exampleBox}>
+        <View style={styles.exampleBlock}>
           <Text style={styles.exampleDe}>{block.de}</Text>
           <Text style={styles.exampleEn}>{block.en}</Text>
         </View>
       );
-    case 'table': {
-      const colCount = block.columns.length;
-      const rowCount = block.rows.length;
-      const cellWidth = colCount > 3 ? 120 : 140;
-      return (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator
-          style={styles.tableScroll}
-          contentContainerStyle={styles.tableScrollContent}
-        >
-          <View style={styles.table}>
-            {/* Header row — never the last row, so always gets bottom border */}
-            <View style={styles.tableRow}>
-              {block.columns.map((h, i) => (
-                <Text
-                  key={`h-${i}`}
-                  style={[
-                    styles.tableHeaderCell,
-                    { minWidth: cellWidth },
-                    i === colCount - 1 && styles.tableCellLast,
-                  ]}
-                >
-                  {h}
-                </Text>
-              ))}
-            </View>
-            {block.rows.map((row, ri) => (
-              <View
-                key={ri}
-                style={[
-                  styles.tableRow,
-                  ri % 2 === 1 && styles.tableRowAlt,
-                  ri === rowCount - 1 && styles.tableRowLast,
-                ]}
-              >
-                {row.map((cell, ci) => (
-                  <Text
-                    key={ci}
-                    style={[
-                      styles.tableCell,
-                      { minWidth: cellWidth },
-                      ci === row.length - 1 && styles.tableCellLast,
-                    ]}
-                  >
-                    {cell}
-                  </Text>
-                ))}
-              </View>
-            ))}
-          </View>
-        </ScrollView>
-      );
-    }
+    case 'table':
+      return <CheatTable block={block} />;
     default:
       return null;
   }
 }
 
+function SeinHabenWideCard({
+  section,
+  columnCount,
+  windowWidth,
+}: {
+  section: CheatSheetSection;
+  columnCount: number;
+  windowWidth: number;
+}) {
+  const { leading, seinTable, habenTable, rest } = parseSeinHabenBlocks(section.blocks);
+  const stack = windowWidth < 768;
+
+  return (
+    <CardChrome title={section.title} wide columnCount={columnCount}>
+      {leading.map((b, i) => (
+        <View key={i} style={i > 0 ? styles.blockSpacing : undefined}>
+          <Text style={styles.cardDescription}>{b.body}</Text>
+        </View>
+      ))}
+      <View style={[styles.seinHabenRow, stack && styles.seinHabenStack]}>
+        <View style={styles.seinHabenHalf}>
+          <Text style={styles.miniLabel}>sein</Text>
+          <CheatTable block={seinTable} />
+        </View>
+        <View style={[styles.seinHabenDivider, stack && styles.seinHabenDividerH]} />
+        <View style={styles.seinHabenHalf}>
+          <Text style={styles.miniLabel}>haben</Text>
+          <CheatTable block={habenTable} />
+        </View>
+      </View>
+      {rest.map((block, bi) => (
+        <View key={bi} style={styles.blockSpacing}>
+          <BlockContent block={block} />
+        </View>
+      ))}
+    </CardChrome>
+  );
+}
+
+function NormalSectionCard({
+  section,
+  wide,
+  columnCount,
+}: {
+  section: CheatSheetSection;
+  wide: boolean;
+  columnCount: number;
+}) {
+  return (
+    <CardChrome title={section.title} wide={wide} columnCount={columnCount}>
+      {section.blocks.map((block, bi) => (
+        <View key={bi} style={bi > 0 ? styles.blockSpacing : undefined}>
+          <BlockContent block={block} />
+        </View>
+      ))}
+    </CardChrome>
+  );
+}
+
 export default function CheatSheetScreen() {
   const globalLevel = useLevelStore((s) => s.level);
   const [sheetLevel, setSheetLevel] = useState<Level>(globalLevel);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const { width } = useWindowDimensions();
 
-  // Sync picker when the user switches the global level via the header toggle.
   useEffect(() => {
     setSheetLevel(globalLevel);
-    setExpanded({});
   }, [globalLevel]);
 
   const sections = CHEATSHEETS[sheetLevel];
 
-  function sectionKey(index: number) {
-    return `${sheetLevel}-${index}`;
-  }
+  const columnCount = width > 1200 ? 3 : width >= 768 ? 2 : 1;
 
-  function toggleSection(index: number) {
-    const key = sectionKey(index);
-    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
-  }
+  const masonryStyle = useMemo((): ViewStyle => {
+    if (Platform.OS !== 'web') {
+      return styles.masonryNative;
+    }
+    return {
+      columnGap: 12,
+      columnCount,
+    } as ViewStyle;
+  }, [columnCount]);
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Text style={labelStyle}>REFERENCE</Text>
-      <Text style={styles.title}>Cheat Sheet</Text>
-      <Text style={styles.blurb}>
-        Quick grammar tables and examples for each level. Does not change your global level — use the header toggle for flashcards and exercises.
-      </Text>
+    <View style={styles.screenRoot}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.tabBar}>
+          {LEVELS.map((l) => {
+            const active = l === sheetLevel;
+            return (
+              <TouchableOpacity
+                key={l}
+                style={[styles.levelTab, active ? styles.levelTabSelected : styles.levelTabIdle]}
+                onPress={() => setSheetLevel(l)}
+                activeOpacity={0.75}
+              >
+                <Text style={[styles.levelTabText, active && styles.levelTabTextSelected]}>
+                  {l}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
-      <Text style={[labelStyle, styles.pickerLabel]}>Sheet level</Text>
-      <View style={styles.levelRow}>
-        {LEVELS.map((l) => {
-          const active = l === sheetLevel;
-          return (
-            <TouchableOpacity
-              key={l}
-              style={[styles.levelPill, active && styles.levelPillActive]}
-              onPress={() => {
-                setSheetLevel(l);
-                setExpanded({});
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.levelPillText, active && styles.levelPillTextActive]}>
-                {l}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-
-      {sections.map((section, index) => {
-        const key = sectionKey(index);
-        const isOpen = expanded[key] === true;
-        return (
-          <View key={key} style={[cardStyle, styles.sectionCard]}>
-            <TouchableOpacity
-              style={styles.sectionHeader}
-              onPress={() => toggleSection(index)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.sectionTitle} numberOfLines={2}>
-                {section.title}
-              </Text>
-              <Feather
-                name={isOpen ? 'chevron-down' : 'chevron-right'}
-                size={18}
-                color={colors.textSecondary}
-              />
-            </TouchableOpacity>
-            {isOpen && (
-              <View style={styles.sectionBody}>
-                {section.blocks.map((block, bi) => (
-                  <View key={bi} style={styles.blockWrap}>
-                    <BlockView block={block} />
-                  </View>
-                ))}
+        <View style={[styles.masonry, masonryStyle]}>
+          {sections.map((section, si) => {
+            const key = `${sheetLevel}-${section.title}-${si}`;
+            if (isSeinHabenSection(section.title)) {
+              return (
+                <View key={key} style={styles.cardMargin}>
+                  <SeinHabenWideCard
+                    section={section}
+                    columnCount={columnCount}
+                    windowWidth={width}
+                  />
+                </View>
+              );
+            }
+            const wide = isPresentRegularSection(section.title);
+            return (
+              <View key={key} style={styles.cardMargin}>
+                <NormalSectionCard section={section} wide={wide} columnCount={columnCount} />
               </View>
-            )}
-          </View>
-        );
-      })}
-    </ScrollView>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screenRoot: {
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xxxl,
+  scroll: {
+    flex: 1,
   },
-  title: {
-    fontFamily: font.semiBold,
-    fontSize: fontSize.xl,
-    color: colors.textPrimary,
-    marginTop: spacing.xs,
-    marginBottom: spacing.sm,
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 32,
   },
-  blurb: {
-    fontFamily: font.regular,
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: spacing.lg,
-  },
-  pickerLabel: {
-    marginBottom: spacing.sm,
-  },
-  levelRow: {
+  tabBar: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
+    gap: 8,
+    paddingBottom: 16,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER,
+    ...(Platform.OS === 'web'
+      ? ({
+          position: 'sticky',
+          top: 0,
+          zIndex: 20,
+          backgroundColor: colors.background,
+        } as unknown as ViewStyle)
+      : {}),
   },
-  levelPill: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
+  levelTab: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: radius.md,
+  },
+  levelTabIdle: {
+    backgroundColor: CARD_BG,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    borderColor: BORDER,
   },
-  levelPillActive: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentLight,
+  levelTabSelected: {
+    backgroundColor: colors.textPrimary,
+    borderWidth: 1,
+    borderColor: colors.textPrimary,
   },
-  levelPillText: {
-    fontFamily: font.semiBold,
-    fontSize: fontSize.sm,
+  levelTabText: {
+    fontFamily: INTER_500,
+    fontSize: 12,
     color: colors.textSecondary,
   },
-  levelPillTextActive: {
-    color: colors.accent,
+  levelTabTextSelected: {
+    color: colors.surface,
   },
-  sectionCard: {
-    marginBottom: spacing.md,
-    padding: spacing.lg,
+  masonry: {
+    width: '100%',
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.md,
+  masonryNative: {
+    flexDirection: 'column',
   },
-  sectionTitle: {
-    flex: 1,
-    fontFamily: font.semiBold,
-    fontSize: fontSize.lg,
-    color: colors.textPrimary,
+  cardMargin: {
+    marginBottom: 12,
   },
-  sectionBody: {
-    marginTop: spacing.lg,
-    paddingTop: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+  card: {
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: BORDER,
+    borderRadius: radius.md,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    ...(Platform.OS === 'web'
+      ? ({
+          breakInside: 'avoid',
+        } as ViewStyle)
+      : {}),
   },
-  blockWrap: {
-    marginBottom: spacing.md,
+  cardHeaderAccent: {
+    borderLeftWidth: 2,
+    borderLeftColor: ACCENT,
+    paddingLeft: 6,
+    marginBottom: 8,
   },
-  bodyText: {
-    fontFamily: font.regular,
-    fontSize: fontSize.md,
-    color: colors.textPrimary,
-    lineHeight: 22,
+  cardHeaderText: {
+    fontFamily: INTER_600,
+    fontSize: 10,
+    letterSpacing: 0.8,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+  },
+  cardDescription: {
+    fontFamily: INTER_400,
+    fontSize: 12,
+    color: DESC_COLOR,
+    lineHeight: 12 * 1.4,
+    marginBottom: 8,
   },
   subheading: {
-    fontFamily: font.semiBold,
-    fontSize: fontSize.md,
+    fontFamily: INTER_600,
+    fontSize: 10,
     color: colors.textPrimary,
-    marginTop: spacing.xs,
-    marginBottom: spacing.xs,
+    marginBottom: 6,
   },
-  exampleBox: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+  blockSpacing: {
+    marginTop: 8,
+  },
+  exampleBlock: {
+    marginTop: 6,
+    marginBottom: 4,
   },
   exampleDe: {
     fontFamily: font.semiBold,
-    fontSize: fontSize.md,
+    fontSize: 13,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
+    lineHeight: 18,
   },
   exampleEn: {
-    fontFamily: font.regular,
-    fontSize: fontSize.sm,
+    fontFamily: INTER_400,
+    fontSize: 11,
     color: colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: 15,
+    marginTop: 2,
+    marginBottom: 4,
   },
-  tableScroll: {
-    marginVertical: spacing.xs,
-  },
-  tableScrollContent: {
-    paddingBottom: spacing.xs,
-  },
-  table: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    overflow: 'hidden',
-  },
-  tableRow: {
+  seinHabenRow: {
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    alignItems: 'stretch',
+    gap: 0,
+    marginBottom: 8,
   },
-  tableRowAlt: {
-    backgroundColor: colors.surfaceAlt,
+  seinHabenStack: {
+    flexDirection: 'column',
   },
-  tableHeaderCell: {
+  seinHabenHalf: {
     flex: 1,
-    padding: spacing.sm,
-    fontFamily: font.semiBold,
-    fontSize: fontSize.xs,
+    minWidth: 0,
+  },
+  seinHabenDivider: {
+    width: 1,
+    backgroundColor: BORDER,
+    marginHorizontal: 10,
+    alignSelf: 'stretch',
+  },
+  seinHabenDividerH: {
+    width: '100%',
+    height: 1,
+    marginHorizontal: 0,
+    marginVertical: 10,
+  },
+  miniLabel: {
+    fontFamily: INTER_600,
+    fontSize: 10,
     color: colors.textSecondary,
+    marginBottom: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
   },
-  tableCell: {
-    flex: 1,
-    padding: spacing.sm,
-    fontFamily: font.regular,
-    fontSize: fontSize.sm,
-    color: colors.textPrimary,
-    lineHeight: 18,
-    borderRightWidth: 1,
-    borderRightColor: colors.border,
+});
+
+const tableStyles = StyleSheet.create({
+  tableWrap: {
+    width: '100%',
+    marginBottom: 4,
   },
-  // Remove the redundant right border on the last column — the table container provides it.
-  tableCellLast: {
-    borderRightWidth: 0,
+  table: {
+    width: '100%',
+    ...(Platform.OS === 'web'
+      ? ({ display: 'table', borderCollapse: 'collapse' } as unknown as ViewStyle)
+      : {}),
   },
-  // Remove the redundant bottom border on the last row — the table container provides it.
-  tableRowLast: {
+  tr: {
+    width: '100%',
+    ...(Platform.OS === 'web'
+      ? ({ display: 'table-row' } as unknown as ViewStyle)
+      : { flexDirection: 'row', alignItems: 'flex-start' }),
+  },
+  thCell: {
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER,
+    backgroundColor: 'transparent',
+    justifyContent: 'flex-start',
+    ...(Platform.OS === 'web'
+      ? ({ display: 'table-cell', verticalAlign: 'top' } as unknown as ViewStyle)
+      : {}),
+  },
+  thText: {
+    fontFamily: INTER_600,
+    fontSize: 10,
+    color: colors.textSecondary,
+    textAlign: 'left',
+  } as TextStyle,
+  tdCell: {
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_LIGHT,
+    justifyContent: 'flex-start',
+    ...(Platform.OS === 'web'
+      ? ({ display: 'table-cell', verticalAlign: 'top' } as unknown as ViewStyle)
+      : {}),
+  },
+  tdLastRow: {
     borderBottomWidth: 0,
   },
+  tdText: {
+    fontFamily: font.regular,
+    fontSize: 12,
+    color: colors.textPrimary,
+    lineHeight: 16,
+    textAlign: 'left',
+  } as TextStyle,
 });
