@@ -1,9 +1,9 @@
 // cheatsheet.tsx — Static grammar reference per level (Phase 37)
 //
 // Level picker chooses which static sheet to show; it does not change the
-// global level (header toggle). Initial sheet matches global level on first mount.
+// global level (header toggle). Picker syncs when the global level changes.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -42,6 +42,8 @@ function BlockView({ block }: { block: CheatSheetBlock }) {
       );
     case 'table': {
       const colCount = block.columns.length;
+      const rowCount = block.rows.length;
+      const cellWidth = colCount > 3 ? 120 : 140;
       return (
         <ScrollView
           horizontal
@@ -50,11 +52,16 @@ function BlockView({ block }: { block: CheatSheetBlock }) {
           contentContainerStyle={styles.tableScrollContent}
         >
           <View style={styles.table}>
+            {/* Header row — never the last row, so always gets bottom border */}
             <View style={styles.tableRow}>
               {block.columns.map((h, i) => (
                 <Text
                   key={`h-${i}`}
-                  style={[styles.tableHeaderCell, { minWidth: colCount > 3 ? 120 : 140 }]}
+                  style={[
+                    styles.tableHeaderCell,
+                    { minWidth: cellWidth },
+                    i === colCount - 1 && styles.tableCellLast,
+                  ]}
                 >
                   {h}
                 </Text>
@@ -63,12 +70,20 @@ function BlockView({ block }: { block: CheatSheetBlock }) {
             {block.rows.map((row, ri) => (
               <View
                 key={ri}
-                style={[styles.tableRow, ri % 2 === 1 && styles.tableRowAlt]}
+                style={[
+                  styles.tableRow,
+                  ri % 2 === 1 && styles.tableRowAlt,
+                  ri === rowCount - 1 && styles.tableRowLast,
+                ]}
               >
                 {row.map((cell, ci) => (
                   <Text
                     key={ci}
-                    style={[styles.tableCell, { minWidth: colCount > 3 ? 120 : 140 }]}
+                    style={[
+                      styles.tableCell,
+                      { minWidth: cellWidth },
+                      ci === row.length - 1 && styles.tableCellLast,
+                    ]}
                   >
                     {cell}
                   </Text>
@@ -85,8 +100,15 @@ function BlockView({ block }: { block: CheatSheetBlock }) {
 }
 
 export default function CheatSheetScreen() {
-  const [sheetLevel, setSheetLevel] = useState<Level>(() => useLevelStore.getState().level);
+  const globalLevel = useLevelStore((s) => s.level);
+  const [sheetLevel, setSheetLevel] = useState<Level>(globalLevel);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  // Sync picker when the user switches the global level via the header toggle.
+  useEffect(() => {
+    setSheetLevel(globalLevel);
+    setExpanded({});
+  }, [globalLevel]);
 
   const sections = CHEATSHEETS[sheetLevel];
 
@@ -318,5 +340,13 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     borderRightWidth: 1,
     borderRightColor: colors.border,
+  },
+  // Remove the redundant right border on the last column — the table container provides it.
+  tableCellLast: {
+    borderRightWidth: 0,
+  },
+  // Remove the redundant bottom border on the last row — the table container provides it.
+  tableRowLast: {
+    borderBottomWidth: 0,
   },
 });
