@@ -346,13 +346,15 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ## LATER
 *Planned but not immediate.*
 
-### Phase 21 — Expand to A2, B1, B2 · Effort: High
-- [ ] Add A2 / B1 / B2 vocabulary lists
-- [ ] Add A2 / B1 / B2 grammar exercise templates
-- [ ] Write 20-30 tips for A2, B1, B2 (also add topic→tip mappings in topicTipMap.ts)
-- [ ] Test level switching (A1 works, others show "coming soon" until content added)
-- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for each new level
-- [ ] Match A1 tip format: one specific rule per tip with a concrete example sentence (e.g. "Sein (to be): ich bin, du bist...") — A2/B1/B2 currently have 5 generic placeholder tips each, not the detailed rule+example format A1 uses
+### ⏳ Phase 21 — Expand to A2, B1, B2 · Effort: Very High
+- [x] Add A2 vocabulary list — 585 words (src/data/vocabulary/a2.ts), wired into index.ts. Plurals, conjugations, comparatives already filled.
+- [x] Add A2 grammar exercises — 96 exercises across 12 topics (src/data/grammar/a2.ts), wired into grammar/index.ts.
+- [x] Write A2 tips — 20 tips with rule+example format (src/data/tips.ts). topicTipMap.ts updated with all 12 A2 topic entries.
+- [x] B1/B2 grammar shows "coming soon" automatically (grammar.tsx returns early when GRAMMAR[level] is empty).
+- [ ] Add B1 vocabulary list — **SCAFFOLD DONE: b1.ts has all 1406 words in alphabetical order (b1_0001–b1_1406). 319 entries have complete data (english, examples, conjugations/plurals). 1087 entries are placeholders with empty english/exampleDe/exampleEn — these need content filled in chunks of 100. Fill placeholders by reading the file, finding the next empty-english entry, and generating content for the next 100. Do NOT rebuild the file — just fill in the empty fields.**
+- [ ] Add B2 vocabulary list — **INCOMPLETE: b2.ts currently has 232 words (b2_0001–b2_0232), but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1. More entries need to be added and filled with english/examples/conjugations/plurals before wiring into index.ts.**
+- [ ] Add B1 / B2 grammar exercises and tips (when vocabulary is complete)
+- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for B1 and B2 (A2 already done — paths were pre-filled)
 
 ### Phase 23 — Multi-user · Effort: High
 - [ ] Auth already handled — this phase adds multi-user features on top
@@ -429,6 +431,8 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [2026-03-30] Phase 25 complete (investigation only, no code changes) — Suspected logging gaps confirmed to already be handled: WritingExercise and SpeakingExercise both call saveCompletion(); grammar handleNext() calls saveMistake() for all wrong answers including AI-generated exercises. Original analysis was incorrect (grep missed saveCompletion).
 - [2026-03-31] Phase 24 complete — Smart Interruption Tips. After completing grammar or daily challenge sessions, app loads recent mistakes, identifies most-repeated weak topic, and surfaces a targeted tip in TipsBar with a blue "FOCUS TIP" label. New: useTipStore.ts, topicTipMap.ts (20 A1 entries), contextualTipService.ts. TipsBar updated to show/dismiss focus tips via arrow navigation.
 - [2026-03-31] Phase 20 complete — Fill in the Blank mini game built (FillInBlankGame.tsx). Gemini generates a sentence per round with the target word blanked out; user types the missing word. Article stripped from nouns so blank is just the noun. 10 rounds, score saved to Supabase (game_fill_in_blank). Error + retry/skip UI if Gemini fails. Quota error message improved in callGemini() to detect 429/quota errors. All existing Gemini loading states and feedback tone were already solid — confirmed and left as-is.
+- [2026-04-03] Phase 21 scaffolds complete — B1: 1406 words total (319 complete, 1087 placeholders). B2: 232 words in b2.ts so far — but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1, so b2.ts is incomplete. Phase 21 on hold — will resume later.
+- [2026-04-04] Phase 21 A2 complete — 96 grammar exercises across 12 topics (a2.ts), wired into grammar/index.ts. A2 tips expanded to 20 (rule+example format). topicTipMap.ts updated with all 12 A2 topic entries. B1/B2 show "coming soon" via existing empty-array check in grammar.tsx.
 
 ---
 *This file is the single source of truth for the project.

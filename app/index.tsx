@@ -133,7 +133,7 @@ export default function HomeScreen() {
           loadAllScores(),
         ]);
 
-        const knownCount = vocab.filter(w => mastery.get(w.id) === 'known').length;
+        const knownCount = vocab.filter(w => mastery.get(w.id)?.state === 'known').length;
         const totalCount = vocab.length;
 
         const challengeDoneToday =

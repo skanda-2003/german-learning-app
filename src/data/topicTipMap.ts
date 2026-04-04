@@ -4,7 +4,6 @@
 // as a "Focus Tip" so they see a relevant reminder on their next visit.
 //
 // Keys must match the `topic` field on GrammarExercise exactly.
-// Add entries for A2/B1/B2 when those levels are built out.
 
 import type { Level } from '../store/useLevelStore';
 
@@ -73,5 +72,43 @@ export const TOPIC_TIP_MAP: Partial<Record<Level, Record<string, string>>> = {
 
     'Dativ case':
       'In the Dativ: der/ein → dem/einem, die/eine → der/einer, das/ein → dem/einem. Used after: mit, bei, von, zu.',
+  },
+
+  A2: {
+    'Perfekt: regular verbs':
+      'Regular past participles: ge- + stem + -t. machen → gemacht, kaufen → gekauft, lernen → gelernt.',
+
+    'Perfekt: irregular verbs':
+      'Irregular past participles must be memorised — stem vowel often changes: trinken → getrunken, schreiben → geschrieben, lesen → gelesen.',
+
+    'Perfekt: haben vs sein':
+      'Motion and change-of-state verbs use "sein": Ich bin gegangen. Er ist gefahren. Wir sind geblieben. Most other verbs use "haben".',
+
+    'Präteritum: sein / haben / modals':
+      '"Sein" and "haben" use Präteritum in speech: ich war, du warst, er war / ich hatte, er hatte. Modals: konnte, musste, wollte.',
+
+    'Adjective endings: definite articles':
+      'After der/die/das, adjective ending is -e in Nominative singular: der alte Mann, die alte Frau, das alte Kind. Otherwise -en.',
+
+    'Adjective endings: indefinite articles':
+      'After ein/eine, the adjective shows the gender: ein alter Mann (-er), eine alte Frau (-e), ein altes Haus (-es). Dative always -en.',
+
+    'Two-way prepositions':
+      'Two-way prepositions (in, an, auf, über, unter…): Akkusativ for movement (Wohin?), Dativ for location (Wo?). auf den Tisch vs auf dem Tisch.',
+
+    'Reflexive verbs':
+      'Reflexive pronouns: ich→mich, du→dich, er/sie/es→sich, wir→uns, ihr→euch. E.g. Ich freue mich. Er wäscht sich.',
+
+    'Subordinate clauses: weil / dass':
+      '"Weil" and "dass" send the verb to the end: Ich bleibe zu Hause, weil ich krank bin. Er sagt, dass er morgen kommt.',
+
+    'Comparative and superlative':
+      'Comparative: + -er, many take umlaut: alt→älter, groß→größer. Irregular: gut→besser, viel→mehr. Superlative: am + adjective + -sten.',
+
+    'Infinitive with zu':
+      'After versuchen, vergessen, anfangen, planen — use zu + infinitive. Separable verbs: aufstehen → aufzustehen (zu goes inside).',
+
+    'Future tense: werden':
+      'Future: werden + infinitive at the end. ich werde, du wirst, er wird, wir werden, ihr werdet, sie werden. E.g. Ich werde kommen.',
   },
 };

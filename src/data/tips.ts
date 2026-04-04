@@ -1,6 +1,6 @@
 // tips.ts — Static tip/hint content shown in the TipsBar at the bottom of every screen.
 // Each level has its own array of tips.
-// A1 tips are fully written (25 tips). A2/B1/B2 to be expanded in Phase 10.
+// A1: 25 tips. A2: 20 tips. B1/B2: placeholder tips (coming soon).
 
 import { Level } from '../store/useLevelStore';
 
@@ -53,11 +53,35 @@ export const TIPS: Record<Level, string[]> = {
     'German time: "halb elf" means 10:30 — literally "half to eleven". Watch out — it\'s easy to get caught out!',
   ],
   A2: [
-    'The Perfekt tense is used in spoken German for past events: Ich habe gegessen (I ate).',
-    'Regular verbs form the past participle with ge- + stem + -t: machen → gemacht.',
-    'Irregular verbs have unpredictable past participles — these must be memorised.',
-    'Modal verbs (können, müssen, wollen) push the main verb to the end of the sentence.',
-    'Adjective endings change depending on the gender and case of the noun they describe.',
+    // --- Perfekt tense ---
+    'Perfekt is the spoken past tense. Use haben/sein + past participle at the end: Ich habe gegessen. (I ate.)',
+    'Regular past participles: ge- + stem + -t. Examples: machen → gemacht, kaufen → gekauft, lernen → gelernt.',
+    'Irregular past participles must be memorised — the stem vowel often changes: trinken → getrunken, schreiben → geschrieben.',
+    'Movement and change-of-state verbs use "sein" in the Perfekt: Ich bin gegangen. Er ist gefahren. Wir sind geblieben.',
+    // --- Präteritum ---
+    '"Sein" and "haben" are usually used in Präteritum, not Perfekt: ich war (I was), ich hatte (I had), not "ich bin gewesen".',
+    'Modal verbs in Präteritum: können → konnte, müssen → musste, wollen → wollte. No umlaut in these forms!',
+    // --- Adjective endings ---
+    'After der/die/das, adjective endings are mostly -en — except Nominative singular: der alte Mann, die alte Frau, das alte Kind.',
+    'After ein/eine, the adjective must show the gender "ein" hides: ein alter Mann (-er), eine alte Frau (-e), ein altes Haus (-es).',
+    // --- Two-way prepositions ---
+    'Two-way prepositions (in, an, auf, über, unter…): use Akkusativ for movement (Wohin?) and Dativ for location (Wo?).',
+    '"Ich lege das Buch auf den Tisch." (movement → Akk) vs "Das Buch liegt auf dem Tisch." (location → Dat).',
+    // --- Reflexive verbs ---
+    'Reflexive verbs use a reflexive pronoun: ich → mich, du → dich, er/sie/es → sich, wir → uns, ihr → euch.',
+    'Common reflexive verbs: sich waschen (to wash), sich freuen auf (to look forward to), sich vorstellen (to introduce oneself).',
+    // --- Subordinate clauses ---
+    '"Weil" (because) and "dass" (that) are subordinating conjunctions — the verb goes to the end of the clause.',
+    '"Ich bleibe zu Hause, weil ich krank bin." — the verb "bin" is at the end, not in second position.',
+    'With a modal in a weil/dass clause, the infinitive comes before the modal: "...weil er arbeiten muss."',
+    // --- Comparative & superlative ---
+    'Comparative: adjective + -er. Many take an umlaut: alt → älter, groß → größer, warm → wärmer.',
+    'Irregular comparatives: gut → besser, viel → mehr, hoch → höher. Superlatives: gut → am besten, viel → am meisten.',
+    // --- Infinitive with zu ---
+    'After versuchen, vergessen, anfangen, planen — use zu + infinitive: Ich versuche, früh aufzustehen.',
+    'Separable verbs: "zu" goes inside — aufstehen → aufzustehen, einkaufen → einzukaufen.',
+    // --- Future with werden ---
+    'Future tense: werden + infinitive at the end. Conjugation: ich werde, du wirst, er wird, wir werden, ihr werdet, sie werden.',
   ],
   B1: [
     'The Konjunktiv II is used for polite requests and hypothetical situations: Ich würde gern... (I would like to...).',
