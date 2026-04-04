@@ -381,13 +381,6 @@ B2 Cheat Sheet:
 - [ ] Requires tagging each verb in a1.ts with its verb type (verbType field)
 - [ ] UI: tapping Verbs pill expands to show sub-category pills below
 
-### ✅ Phase 30 — Newspaper / Comprehension Exercise · Effort: Medium
-- [x] Add new sub-section to Exam Prep called "Comprehension"
-- [x] Show a real-format German text — newspaper excerpt, advertisement, or notice
-- [x] User reads and writes a summary or answers open questions in German
-- [x] Gemini evaluates the response and gives structured feedback
-- [x] Texts sourced from Deutsche Welle (openly licensed) or Gemini generated at correct level
-
 ---
 ## LATER
 *Planned but not immediate.*
