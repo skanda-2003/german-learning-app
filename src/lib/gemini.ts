@@ -1,7 +1,7 @@
 // gemini.ts — Reusable Gemini API integration for Lerne Deutsch.
 // This is the ONLY file in the app that talks to Gemini.
 // All AI features (Fill in the Blank, Writing feedback, Speaking feedback, Reading passages,
-// Grammar exercise generation) import their functions from here.
+// Exam comprehension feedback, Grammar exercise generation) import their functions from here.
 //
 // Model: gemini-2.5-flash (free tier — 10 requests/min, 250 requests/day on free tier)
 // SDK: @google/generative-ai
@@ -288,5 +288,89 @@ Output format:
   } catch {
     console.error('Failed to parse reading passage response:', raw);
     return { passage: raw, questions: [] };
+  }
+}
+
+// --- 6. Exam Comprehension feedback ---
+// Used by: Exam Prep → Comprehension
+// Student reads an authentic-format text and answers open tasks in German.
+// Returns three plain-text sections for the UI (parsed from JSON).
+export type ComprehensionFeedback = {
+  understanding: string;
+  language: string;
+  suggestions: string;
+};
+
+export async function getComprehensionFeedback(
+  passageTitle: string,
+  passageText: string,
+  tasks: string[],
+  userResponse: string,
+  level: string
+): Promise<ComprehensionFeedback> {
+  const tone = getToneInstruction(level);
+  const tasksBlock = tasks.map((t, i) => `${i + 1}. ${t}`).join('\n');
+
+  const prompt = `
+You are a German language teacher reviewing a ${level} student's answers to comprehension tasks.
+
+The student read this German text.
+
+Title: "${passageTitle}"
+
+Text:
+"""
+${passageText}
+"""
+
+Tasks they were given:
+${tasksBlock}
+
+The student wrote this response in German:
+"""
+${userResponse}
+"""
+
+Your task:
+Evaluate how well they understood the text and answered the tasks, comment on German accuracy and phrasing, and give brief practical suggestions.
+
+${tone}
+Each field should be 2 to 5 short sentences. Plain English only inside the JSON string values — no markdown, no asterisks, no bullet characters inside the strings.
+
+Output ONLY valid JSON. No markdown, no code fences, no extra text.
+
+Output format:
+{
+  "understanding": "How well they captured the main information and answered the tasks.",
+  "language": "German grammar, vocabulary, and clarity.",
+  "suggestions": "Concrete ways to improve."
+}
+  `.trim();
+
+  const raw = await callGemini(prompt);
+
+  if (raw.startsWith('Sorry,')) {
+    return {
+      understanding: raw,
+      language: '',
+      suggestions: '',
+    };
+  }
+
+  try {
+    const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const parsed = JSON.parse(cleaned) as Record<string, unknown>;
+    return {
+      understanding: String(parsed.understanding ?? ''),
+      language: String(parsed.language ?? ''),
+      suggestions: String(parsed.suggestions ?? ''),
+    };
+  } catch {
+    console.error('Failed to parse comprehension feedback:', raw);
+    return {
+      understanding: raw,
+      language: '',
+      suggestions: '',
+    };
   }
 }

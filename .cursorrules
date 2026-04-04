@@ -1,0 +1,509 @@
+# Lerne Deutsch — Cursor Rules
+
+This is a German language learning app called "Lerne Deutsch". It is a TypeScript
+Expo React Native app targeting web (and potentially mobile later). Read these rules
+carefully before writing any code — they describe the exact patterns already in use.
+
+---
+
+## Tech Stack
+
+- **Expo** with **Expo Router** (file-based routing, drawer layout)
+- **TypeScript** throughout — no plain JS files
+- **React Native** components (View, Text, TouchableOpacity, ScrollView, StyleSheet)
+- **Zustand** for global state (level, auth, tips)
+- **Supabase** (@supabase/supabase-js) for auth and database
+- **Google Gemini API** (@google/generative-ai) for AI features — model `gemini-2.5-flash`
+- **Feather icons** via `@expo/vector-icons` — used for all icons, no emojis anywhere
+- **IBM Plex Mono** and **Inter** fonts via `@expo-google-fonts`
+
+---
+
+## Project Structure
+
+```
+app/                        — Expo Router screen files (one file = one route)
+  _layout.tsx               — Root layout: drawer nav, auth gate, font loading, TipsBar
+  index.tsx                 — Home / Dashboard
+  flashcards.tsx
+  games.tsx
+  grammar.tsx
+  daily.tsx
+  exam.tsx
+  progress.tsx
+  insights.tsx
+  reading.tsx
+  pronunciation.tsx
+
+src/
+  components/               — Reusable UI components
+    AuthScreen.tsx
+    ExerciseCard.tsx
+    FlashCard.tsx
+    LevelToggle.tsx
+    TipsBar.tsx
+    exam/                   — Exam Prep sub-components
+    games/                  — Mini Game sub-components
+
+  data/                     — Static content (no API calls here)
+    vocabulary/
+      types.ts              — Word and related types
+      a1.ts, a2.ts, b1.ts, b2.ts
+      index.ts              — VOCABULARY: Record<Level, Word[]>
+    grammar/
+      types.ts              — GrammarExercise and related types
+      a1.ts, a2.ts
+      index.ts              — GRAMMAR: Record<Level, GrammarExercise[]>
+    passages.ts             — Reading Mode passages
+    sentenceBuilder.ts      — Sentence Builder sentences, Record<Level, SentenceEntry[]>
+    tips.ts                 — Tips list
+    topicTipMap.ts          — Grammar topic → tip mapping
+    pronunciationGuide.ts
+
+  lib/                      — Services and utilities
+    supabase.ts             — Supabase client (single instance)
+    gemini.ts               — ALL Gemini calls live here, nowhere else
+    authService.ts
+    levelService.ts
+    scoresService.ts
+    masteryService.ts
+    mistakeService.ts
+    streakService.ts
+    activityService.ts
+    grammarTopicService.ts
+    contextualTipService.ts
+    userId.ts               — getUserId() helper
+    dateUtils.ts            — toDateString, getTodayString, etc.
+
+  store/                    — Zustand stores
+    useAuthStore.ts         — session, user, userId
+    useLevelStore.ts        — level (A1/A2/B1/B2), setLevel, nextLevel
+    useTipStore.ts          — contextual tip state
+
+  styles/
+    theme.ts                — Single source of truth for all design tokens
+
+scripts/                    — One-off data processing scripts (Node.js)
+```
+
+---
+
+## Design System
+
+Import everything from `src/styles/theme.ts`. Never hardcode colors, font names, or
+spacing values inline — always reference theme constants.
+
+### Colors (from `colors` in theme.ts)
+
+```
+colors.background    #fafafa   — page background
+colors.surface       #ffffff   — card background
+colors.surfaceAlt    #f5f5f5   — nested surfaces
+colors.border        #e0e0e0   — card and input borders
+colors.borderStrong  #bbbbbb   — focused input border
+colors.textPrimary   #111111   — headings, body text
+colors.textSecondary #888888   — labels, hints
+colors.textMuted     #aaaaaa   — placeholders, disabled
+colors.accent        #2563eb   — blue, interactive / selected
+colors.accentLight   #eff6ff   — blue tint background
+colors.success       #16a34a   — correct, green
+colors.successLight  #f0fdf4
+colors.error         #dc2626   — wrong, red
+colors.errorLight    #fef2f2
+colors.amber         #f59e0b   — shaky/warning
+colors.amberLight    #fffbeb
+colors.sidebar       #1a1a2e   — dark navy sidebar and topbar
+colors.sidebarText   #ffffff
+```
+
+### Fonts (from `font` in theme.ts)
+
+- **IBM Plex Mono** — used for ALL content: German words, exercises, scores, numbers, body text, headings
+  - `font.regular`  = `IBMPlexMono_400Regular`
+  - `font.medium`   = `IBMPlexMono_500Medium`
+  - `font.semiBold` = `IBMPlexMono_600SemiBold`
+  - `font.bold`     = `IBMPlexMono_700Bold`
+- **Inter** — used ONLY in sidebar and topbar navigation
+  - `Inter_400Regular`, `Inter_500Medium`, `Inter_600SemiBold`
+
+Never use Inter outside the sidebar/topbar. Never use IBM Plex Mono in sidebar/topbar labels.
+
+### Font sizes (from `fontSize`)
+
+```
+fontSize.xxs  10   micro labels
+fontSize.xs   11   ALL CAPS labels
+fontSize.sm   13   secondary body
+fontSize.md   15   primary body
+fontSize.lg   17   card titles
+fontSize.xl   20   section headings
+fontSize.xxl  28   big stat numbers
+fontSize.xxxl 36   hero numbers
+```
+
+### Spacing (from `spacing`)
+
+```
+spacing.xs   4
+spacing.sm   8
+spacing.md   12
+spacing.lg   16
+spacing.xl   20
+spacing.xxl  24
+spacing.xxxl 32
+spacing.hero 48
+```
+
+### Border radius (from `radius`)
+
+```
+radius.sm  2
+radius.md  4   ← standard card radius
+radius.lg  8
+radius.xl  12
+```
+
+### Pre-built style objects (import and use directly)
+
+- `cardStyle` — white bg, 1px border, 4px radius, 24px padding
+- `labelStyle` — ALL CAPS, 11px, letterSpacing 0.9, textSecondary
+- `primaryButtonStyle` — dark fill (#1a1a2e), 4px radius
+- `secondaryButtonStyle` — outlined, no fill, 1px border
+- `ghostButtonStyle` — no border, no fill (back/skip links)
+- `inputStyle` — white, 1px border, 4px radius, IBM Plex Mono
+- `statNumberStyle` — bold, 28px, IBM Plex Mono
+- `progressTrackStyle` — thin 3px track for progress bars
+
+### Rules
+
+- No shadows anywhere (shadowOpacity: 0, elevation: 0)
+- No gradients
+- Cards: 1px border (#e0e0e0), 4px radius, white bg
+- Labels are ALL CAPS in IBM Plex Mono SemiBold at 11px
+- Scores display as "X / Y" where Y is grey (textSecondary)
+- No emojis anywhere in the UI — use Feather icons only
+
+---
+
+## Vocabulary Data Format
+
+Every word in every level uses the `Word` type from `src/data/vocabulary/types.ts`:
+
+```typescript
+type Word = {
+  id: string;            // e.g. "a1_001" — must be unique across all levels
+  german: string;        // the German word (include article for nouns: "die Abfahrt")
+  english: string;       // English translation
+  gender: Gender;        // 'der' | 'die' | 'das' | null (null for non-nouns)
+  partOfSpeech: PartOfSpeech; // 'noun' | 'verb' | 'adjective' | 'adverb' | 'preposition' | 'conjunction' | 'pronoun' | 'phrase'
+  exampleDe: string;     // German example sentence
+  exampleEn: string;     // English translation of example
+  plural?: string;       // nouns only, e.g. "die Bücher"
+  conjugations?: Conjugations; // verbs only — ich/du/er/wir/ihr/sie forms
+  comparative?: string;  // adjectives only, e.g. "älter"
+};
+```
+
+IDs follow the pattern `a1_001`, `a2_001`, `b1_001`, `b2_001` — zero-padded to 3 digits.
+
+All words for a level live in one array exported as `A1_WORDS`, `A2_WORDS`, etc.
+The central lookup is `VOCABULARY: Record<Level, Word[]>` in `src/data/vocabulary/index.ts`.
+Always import from `index.ts`, never directly from `a1.ts` etc.
+
+---
+
+## Grammar Exercise Data Format
+
+```typescript
+type GrammarExercise = {
+  id: string;          // e.g. "a1_gr_001"
+  topic: string;       // e.g. "Verb conjugation: sein" — must match topicTipMap keys exactly
+  type: 'fill-blank' | 'multiple-choice';
+  question: string;    // fill-blank uses ___ for the blank; multiple-choice is just a question
+  options?: string[];  // multiple-choice only — exactly 4 options
+  answer: string;      // correct answer
+  explanation: string; // one-sentence grammar rule explanation
+};
+```
+
+All exercises for a level live in `A1_GRAMMAR`, `A2_GRAMMAR` etc.
+Central lookup: `GRAMMAR: Record<Level, GrammarExercise[]>` in `src/data/grammar/index.ts`.
+
+---
+
+## Level System
+
+The level type and store are in `src/store/useLevelStore.ts`:
+
+```typescript
+type Level = 'A1' | 'A2' | 'B1' | 'B2';
+```
+
+Reading the current level in any screen or component:
+```typescript
+const level = useLevelStore((state) => state.level);
+```
+
+Changing the level (persists to Supabase automatically):
+```typescript
+const setLevel = useLevelStore((state) => state.setLevel);
+setLevel('A2');
+```
+
+The level affects all content globally — vocabulary, grammar, reading passages,
+sentence builder. All data structures that vary by level use `Record<Level, T>`.
+
+When a level has no content yet (B1/B2 grammar), the array is empty and the screen
+shows a "coming soon" message by checking `if (allExercises.length === 0)`.
+
+---
+
+## Component Patterns
+
+### Screen structure
+
+Every screen file in `app/` follows this pattern:
+
+```typescript
+// screenname.tsx — brief description of what this screen does
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import useLevelStore from '../src/store/useLevelStore';
+import { colors, font, fontSize, spacing, radius, cardStyle, labelStyle } from '../src/styles/theme';
+
+export default function ScreenName() {
+  const level = useLevelStore((state) => state.level);
+  // ...state
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      {/* content */}
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  content:   { padding: spacing.lg },
+  // ...
+});
+```
+
+- Use `StyleSheet.create` — never use inline style objects
+- Import colors, font, spacing from theme — never hardcode values
+- Use `TouchableOpacity` with `activeOpacity={0.7}` for all buttons
+- Screens that have sub-views (e.g. topic-select → exercise → done) use a
+  `type Screen = 'view-a' | 'view-b'` union and a `screen` state variable
+
+### Navigation
+
+- All routes are in `app/` — file name = route name
+- Navigate using `useRouter()` from `expo-router`: `router.push('/grammar')`
+- To add a new screen: create the file in `app/`, add a `<Drawer.Screen>` entry in
+  `app/_layout.tsx`, and add a nav item to the `NAV_ITEMS` array in `_layout.tsx`
+- The sidebar is a permanent drawer on web, front drawer on native
+
+### Selector screens (game / topic picker)
+
+Use a 2-column card grid with 1px borders. Each card shows: name, stat line, last score.
+Touch → render the game/exercise component inline (no separate route).
+
+---
+
+## Zustand State Management
+
+Three stores exist — import the one you need:
+
+```typescript
+// Read current level
+import useLevelStore from '../src/store/useLevelStore';
+const level = useLevelStore((state) => state.level);
+
+// Read auth state
+import useAuthStore from '../src/store/useAuthStore';
+const userId = useAuthStore((state) => state.userId);  // string | null
+const session = useAuthStore((state) => state.session); // Session | null
+
+// Read/set contextual tip
+import useTipStore from '../src/store/useTipStore';
+const setContextualTip = useTipStore((state) => state.setContextualTip);
+```
+
+Do not create new Zustand stores unless the state truly needs to be global across
+multiple screens. Most per-screen state should just be `useState`.
+
+---
+
+## Supabase Patterns
+
+The Supabase client is a singleton — always import from `src/lib/supabase.ts`:
+
+```typescript
+import { supabase } from '../lib/supabase';
+```
+
+Getting the current user ID — use `getUserId()` from `src/lib/userId.ts`:
+
+```typescript
+import { getUserId } from './userId';
+const userId = await getUserId();
+```
+
+This reads from the Zustand auth store first (no network call), then falls back to
+`supabase.auth.getUser()`. Do not call `supabase.auth.getUser()` directly in service files.
+
+Database query patterns:
+
+```typescript
+// Read — use maybeSingle() not single() to avoid 406 errors when no row exists
+const { data, error } = await supabase
+  .from('table_name')
+  .select('col1, col2')
+  .eq('user_id', userId)
+  .maybeSingle();
+
+// Upsert (insert or update)
+const { error } = await supabase
+  .from('table_name')
+  .upsert(
+    { user_id: userId, ...fields },
+    { onConflict: 'user_id,other_key' }
+  );
+
+// Select multiple rows
+const { data, error } = await supabase
+  .from('table_name')
+  .select('*')
+  .eq('user_id', userId)
+  .limit(100);
+```
+
+Always wrap Supabase calls in try/catch. Log errors with `console.error('message:', error.message)`.
+
+Service files in `src/lib/` encapsulate all Supabase calls — screens should call service
+functions, not query Supabase directly.
+
+Existing Supabase tables and their primary keys:
+- `section_scores` — (user_id, section)
+- `vocabulary_mastery` — (user_id, word_id)
+- `mistake_log` — auto-id rows
+- `grammar_topic_scores` — (user_id, level, topic)
+- `user_progress` — (user_id) — streak and daily challenge state
+- `user_settings` — (user_id) — level preference
+
+All tables have RLS enabled. Policy: `user_id = auth.uid()::text`.
+
+---
+
+## Gemini Integration
+
+ALL Gemini calls go through `src/lib/gemini.ts`. Never import `@google/generative-ai`
+directly in any component or screen.
+
+Existing exported functions (add new features here, do not create new files):
+
+```typescript
+generateFillInBlankSentence(germanWord, englishTranslation, level)
+getWritingFeedback(writingPrompt, userText, level)
+getSpeakingFeedback(speakingPrompt, userText, level)
+generateGrammarExercises(topic, level)
+generateReadingPassage(topic, level)
+```
+
+The base `callGemini(prompt)` function is not exported — all feature functions call it.
+
+Rules for Gemini prompts:
+- Always include the level so Gemini adjusts difficulty appropriately
+- Always tell Gemini to output plain text only — no markdown, no asterisks, no bullets
+- When expecting JSON back: strip markdown code fences with `.replace(/```json\n?/g, '').replace(/```\n?/g, '')` before parsing
+- Always handle parse failures gracefully (return `[]` or fallback string)
+- The model is `gemini-2.5-flash` — do not change it
+
+---
+
+## Naming Conventions
+
+**Files:**
+- Screens: `lowercase.tsx` in `app/` (e.g. `grammar.tsx`, `daily.tsx`)
+- Components: `PascalCase.tsx` in `src/components/` (e.g. `ExerciseCard.tsx`)
+- Game components: `src/components/games/PascalCaseGame.tsx`
+- Data files: `lowercase.ts` in `src/data/` (e.g. `a1.ts`, `passages.ts`)
+- Services: `camelCaseService.ts` in `src/lib/`
+- Stores: `usePascalCaseStore.ts` in `src/store/`
+
+**Variables and types:**
+- React components: PascalCase
+- Functions: camelCase
+- Types and interfaces: PascalCase
+- Constants (data arrays, lookup tables): SCREAMING_SNAKE_CASE (e.g. `A1_WORDS`, `GRAMMAR`)
+- Local state: camelCase (e.g. `currentIndex`, `selectedTopic`, `isLoading`)
+- Screen state union: `type Screen = 'view-a' | 'view-b'`
+
+**Section keys** used in Supabase `section_scores`:
+`grammar`, `exam_reading`, `exam_listening`, `exam_writing`, `exam_speaking`,
+`game_gender_battle`, `game_listening_quiz`, `game_word_match`, `game_sentence_builder`,
+`game_fill_in_blank`
+
+---
+
+## What NOT To Do
+
+- **No inline styles.** All styles go in `StyleSheet.create` at the bottom of the file.
+- **No hardcoded color values.** Always use `colors.*` from theme.ts.
+- **No hardcoded font family strings.** Always use `font.*` from theme.ts.
+- **No shadows.** Do not add shadowColor, shadowOpacity, elevation, or drop shadows anywhere.
+- **No gradients.** The design is flat — no LinearGradient or similar.
+- **No emojis.** Use Feather icons from `@expo/vector-icons` for all iconography.
+- **No new npm packages** without checking that the project can stay on the free tier and
+  that the package is compatible with Expo web. Check `package.json` first.
+- **No direct Gemini imports** outside of `src/lib/gemini.ts`.
+- **No direct Supabase queries in screen files** — use service functions in `src/lib/`.
+- **Do not use `Inter` font for content.** Inter is only for sidebar/topbar navigation.
+- **Do not use `IBMPlexMono` in the sidebar or topbar.**
+- **Do not call `.single()` in Supabase queries** — use `.maybeSingle()` to avoid 406
+  errors when a row does not yet exist.
+- **Do not create a new Zustand store** unless you have a clear reason why the state
+  needs to be shared across multiple unrelated screens.
+- **Do not add B1/B2 content** to data files that are still marked as "coming soon" —
+  check CLAUDE.md for the current status of each level.
+- **Do not break the existing screen flow** (topic-select → exercise → done pattern
+  in Grammar and Daily Challenge) without reading those screens first.
+
+---
+
+## Environment Variables
+
+All env vars use the `EXPO_PUBLIC_` prefix (required by Expo to be accessible in app code):
+
+```
+EXPO_PUBLIC_SUPABASE_URL
+EXPO_PUBLIC_SUPABASE_ANON_KEY
+EXPO_PUBLIC_GEMINI_API_KEY
+```
+
+These are in `.env.local` (not committed). Never hardcode these values.
+
+---
+
+## Adding a New Screen
+
+1. Create `app/yourscreen.tsx` following the screen structure pattern above
+2. Add a `<Drawer.Screen name="yourscreen" options={{ title: 'Your Screen' }} />` to
+   the `<Drawer>` in `app/_layout.tsx`
+3. Add a nav item to the `NAV_ITEMS` array in `_layout.tsx`:
+   `{ route: 'yourscreen', label: 'Your Screen', icon: 'feather-icon-name' }`
+4. Use a Feather icon name from https://feathericons.com
+
+## Adding a New Mini Game
+
+1. Create `src/components/games/YourNameGame.tsx`
+2. Import and render it from `app/games.tsx` (the existing selector screen pattern)
+3. Save scores using `saveScore('game_your_name', score, total)` from `src/lib/scoresService.ts`
+4. Add the new section key to `SectionKey` type in `scoresService.ts`
+
+## Adding a New Data File
+
+For a new data type (e.g. cheat sheets):
+1. Create `src/data/yourfeature/types.ts` with the TypeScript types
+2. Create `src/data/yourfeature/a1.ts` (and other levels as needed) with the data
+3. Create `src/data/yourfeature/index.ts` with a `Record<Level, T[]>` lookup export
+4. Import from the `index.ts`, never directly from level-specific files

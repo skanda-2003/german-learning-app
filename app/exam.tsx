@@ -1,6 +1,6 @@
 // exam.tsx — Exam Prep screen
 //
-// Shows a 2x2 card grid of the four exam skills.
+// Card grid of exam skills (reading, comprehension, listening, writing, speaking).
 // Each card shows the skill name, description, and last score if attempted.
 // Tapping a card opens that sub-section.
 
@@ -17,12 +17,13 @@ import ReadingExercise from '../src/components/exam/ReadingExercise';
 import ListeningExercise from '../src/components/exam/ListeningExercise';
 import WritingExercise from '../src/components/exam/WritingExercise';
 import SpeakingExercise from '../src/components/exam/SpeakingExercise';
+import ComprehensionExercise from '../src/components/exam/ComprehensionExercise';
 import { loadAllScores } from '../src/lib/scoresService';
 import { colors, font, fontSize, spacing, radius, labelStyle } from '../src/styles/theme';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
-type SubSection = 'reading' | 'listening' | 'writing' | 'speaking';
+type SubSection = 'reading' | 'listening' | 'writing' | 'speaking' | 'comprehension';
 
 type SubSectionDef = {
   id: SubSection;
@@ -40,6 +41,13 @@ const SUB_SECTIONS: SubSectionDef[] = [
     title: 'Reading',
     description: 'Read a short German passage and answer comprehension questions.',
     scoreType: 'percent',
+  },
+  {
+    id: 'comprehension',
+    scoreKey: 'exam_comprehension',
+    title: 'Comprehension',
+    description: 'Read a notice, ad, or short text and answer in German with AI feedback.',
+    scoreType: 'count',
   },
   {
     id: 'listening',
@@ -93,6 +101,14 @@ export default function ExamScreen() {
       </ScrollView>
     );
   }
+  if (activeSection === 'comprehension') {
+    return (
+      <View style={styles.subContainer}>
+        {backButton}
+        <ComprehensionExercise />
+      </View>
+    );
+  }
   if (activeSection === 'listening') {
     return (
       <View style={styles.subContainer}>
@@ -117,18 +133,17 @@ export default function ExamScreen() {
       </View>
     );
   }
-
   // ─── Selector ─────────────────────────────────────────────────────────────
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.pageTitle}>Exam Prep</Text>
       <Text style={styles.pageSubtitle}>
-        Practise the four skills tested in the Goethe Institut A1 exam.
+        Practise reading, listening, writing, speaking, and real-world text comprehension.
       </Text>
 
-      <Text style={[labelStyle, styles.gridLabel]}>FOUR SKILLS</Text>
+      <Text style={[labelStyle, styles.gridLabel]}>EXAM SKILLS</Text>
 
-      {/* 2x2 card grid */}
+      {/* Card grid (wraps to multiple rows) */}
       <View style={styles.grid}>
         {SUB_SECTIONS.map((section) => {
           const s = scores[section.scoreKey];

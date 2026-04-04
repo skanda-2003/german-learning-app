@@ -293,6 +293,7 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 28 — Reading Mode Improvements (Complete)
 ### ✅ Phase 26 — Grammar Exercises Expansion (Complete)
 ### ✅ Phase 35 — Sentence Builder Improvements (Complete)
+### ✅ Phase 30 — Newspaper / Comprehension Exercise (Complete)
 
 ---
 ## ACTIVE PIPELINE
@@ -380,13 +381,6 @@ B2 Cheat Sheet:
 - [ ] Requires tagging each verb in a1.ts with its verb type (verbType field)
 - [ ] UI: tapping Verbs pill expands to show sub-category pills below
 
-### ⏳ Phase 30 — Newspaper / Comprehension Exercise · Effort: Medium
-- [ ] Add new sub-section to Exam Prep called "Comprehension"
-- [ ] Show a real-format German text — newspaper excerpt, advertisement, or notice
-- [ ] User reads and writes a summary or answers open questions in German
-- [ ] Gemini evaluates the response and gives structured feedback
-- [ ] Texts sourced from Deutsche Welle (openly licensed) or Gemini generated at correct level
-
 ---
 ## LATER
 *Planned but not immediate.*
@@ -467,6 +461,7 @@ B2 Cheat Sheet:
 - [2026-04-04] Phase 36 complete — A2 content complete. 12 A2 reading passages added to passages.ts (travel, shopping, work, social plans — 6-8 sentences each, Perfekt + subordinate clauses). 50 A2 Sentence Builder sentences added to sentenceBuilder.ts across 7 categories (Perfekt haben/sein, weil/dass/obwohl/wenn subordinate clauses, comparatives, adjective endings, two-way prepositions, modal Präteritum, reflexive verbs, werden future). sentenceBuilder.ts restructured to Record<Level, SentenceEntry[]> (A1_SENTENCES + A2_SENTENCES). SentenceBuilderGame.tsx updated to read level from useLevelStore and pick from the correct pool; falls back to A1 if B1/B2 selected.
 - [2026-04-04] Phase 26 complete — A1 grammar expanded from 111 to 223 exercises (19 topics). 9 thin/priority topics brought to 15 each. 3 new topics added: Time expressions (12 exercises — um/halb/Viertel/am Abend), Reflexive verbs (10 — sich vorstellen/fühlen/freuen/setzen), Days/months/seasons (10 — am Montag/im Januar/im Sommer). A2 grammar expanded from 96 to 168 exercises (12 topics). Adjective endings (both) → 18 each; Perfekt irregular, haben vs sein, Two-way prepositions, Subordinate clauses → 15 each (adds obwohl/ob/wenn/als/denn vs weil); all remaining 6 topics → 12 each.
 - [2026-04-04] Phase 35 complete — Difficulty tagging added to all 130 sentences (80 A1 + 50 A2). simple/medium/complex tags based on grammar complexity. Pre-game difficulty picker in SentenceBuilderGame.tsx (All / Simple / Medium / Complex); filters pool, adjusts round count, shows badge during play.
+- [2026-04-04] Phase 30 complete — Comprehension sub-section added to Exam Prep. New ComprehensionExercise.tsx component: 5 A1 texts + 5 A2 texts (NOTICE, AD, SHORT MESSAGE, JOB AD, EVENT, etc.), user writes German answers, Gemini returns structured feedback (content/tasks, language, suggestions). New getComprehensionFeedback() in gemini.ts (JSON output, 3 fields). New examComprehension.ts data file with ComprehensionItem type and COMPREHENSION_BY_LEVEL lookup. exam_comprehension SectionKey added to scoresService. Comprehension card added to Exam Prep selector and progress.tsx. B1/B2 show "coming soon" empty state.
 - [2026-04-04] Phase 34 complete — 6 silent correctness bugs fixed. topicTipMap.ts keys audited and corrected to match a1.ts exactly ('Accusative case', 'Modal verbs', 'Questions') — Focus Tips now fire for A1's most common mistakes. DST streak bug fixed in streakService.ts and insights.tsx: setDate() replaces ms subtraction so spring-forward nights don't corrupt streak or heatmap. loadMistakes() now has .limit(100). getUserId() reads synchronously from useAuthStore (userId field added), eliminating 3 Supabase round-trips per grammar session end. Daily challenge seed XORs date with a hash of the user ID so each user gets different exercises. Shared date utilities extracted to src/lib/dateUtils.ts (toDateString, getTodayString, getTomorrowString, formatDate); all three callers updated.
 
 ---
