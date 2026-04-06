@@ -13,7 +13,7 @@ import { B1_WORDS } from './b1';
 export const VOCABULARY: Record<Level, Word[]> = {
   A1: A1_WORDS,   // 661 words
   A2: A2_WORDS,   // 585 words
-  B1: B1_WORDS,   // 319 words
+  B1: B1_WORDS,   // 1406 words
   B2: [],         // TODO: add B2 vocabulary
 };
 

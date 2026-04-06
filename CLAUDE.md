@@ -337,10 +337,9 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [x] Add A2 grammar exercises — 96 exercises across 12 topics (src/data/grammar/a2.ts), wired into grammar/index.ts.
 - [x] Write A2 tips — 20 tips with rule+example format (src/data/tips.ts). topicTipMap.ts updated with all 12 A2 topic entries.
 - [x] B1/B2 grammar shows "coming soon" automatically (grammar.tsx returns early when GRAMMAR[level] is empty).
-- [ ] Add B1 vocabulary list — **IN PROGRESS: b1.ts has all 1406 words in alphabetical order (b1_0001–b1_1406). 1218 entries have complete data (english, examples, conjugations/plurals) — filled up to b1_1161. 188 entries are still placeholders with empty english/exampleDe/exampleEn (b1_1162 onwards). Fill placeholders by reading the file, finding the next empty-english entry, and generating content for the next 100. Do NOT rebuild the file — just fill in the empty fields.**
-- [ ] Add B2 vocabulary list — **INCOMPLETE: b2.ts currently has 232 words (b2_0001–b2_0232), but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1. More entries need to be added and filled with english/examples/conjugations/plurals before wiring into index.ts.**
-- [ ] Add B1 / B2 grammar exercises and tips (when vocabulary is complete)
-- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for B1 and B2 (A2 already done — paths were pre-filled)
+- [x] Add B1 vocabulary list — **COMPLETE: b1.ts has all 1406 words (b1_0001–b1_1406), all entries have full data (english, examples, conjugations/plurals). Wired into index.ts.**
+- [ ] Add B1 grammar exercises and tips (next step for B1 completion)
+- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for B1 (A2 already done — paths were pre-filled)
 
 ### ⏳ Phase 29 — Real A1 Exam Simulation · Effort: High
 - [ ] Research and replicate actual Goethe-Zertifikat A1 exam format and difficulty
@@ -363,6 +362,12 @@ List changes grouped by file. For each file, bullet the specific things that cha
 - [ ] Curriculum sourced from Goethe Institut A1 syllabus
 - [ ] Each lesson links directly to the relevant grammar exercise topic
 - [ ] Lessons section added to sidebar
+
+### ⏳ Phase 38 — B2 Content · Effort: Very High
+- [ ] Add B2 vocabulary list — **INCOMPLETE: b2.ts currently has 232 words (b2_0001–b2_0232), but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1. More entries need to be added and filled with english/examples/conjugations/plurals before wiring into index.ts.**
+- [ ] Wire b2.ts into index.ts once vocabulary is complete
+- [ ] Add B2 grammar exercises and tips
+- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for B2
 
 ---
 
