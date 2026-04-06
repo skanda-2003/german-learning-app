@@ -52,7 +52,7 @@ src/
       index.ts              — VOCABULARY: Record<Level, Word[]>
     grammar/
       types.ts              — GrammarExercise and related types
-      a1.ts, a2.ts
+      a1.ts, a2.ts, b1.ts
       index.ts              — GRAMMAR: Record<Level, GrammarExercise[]>
     passages.ts             — Reading Mode passages
     sentenceBuilder.ts      — Sentence Builder sentences, Record<Level, SentenceEntry[]>
@@ -253,7 +253,7 @@ setLevel('A2');
 The level affects all content globally — vocabulary, grammar, reading passages,
 sentence builder. All data structures that vary by level use `Record<Level, T>`.
 
-When a level has no content yet (B1/B2 grammar), the array is empty and the screen
+When a level has no content yet (B2 grammar), the array is empty and the screen
 shows a "coming soon" message by checking `if (allExercises.length === 0)`.
 
 ---
@@ -463,7 +463,7 @@ Rules for Gemini prompts:
   errors when a row does not yet exist.
 - **Do not create a new Zustand store** unless you have a clear reason why the state
   needs to be shared across multiple unrelated screens.
-- **Do not add B1/B2 content** to data files that are still marked as "coming soon" —
+- **Do not add B2 content** to data files that are still marked as "coming soon" —
   check CLAUDE.md for the current status of each level.
 - **Do not break the existing screen flow** (topic-select → exercise → done pattern
   in Grammar and Daily Challenge) without reading those screens first.

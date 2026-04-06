@@ -99,4 +99,42 @@ export const TOPIC_TIP_MAP: Partial<Record<Level, Record<string, string>>> = {
     'Future tense: werden':
       'Future: werden + infinitive at the end. ich werde, du wirst, er wird, wir werden, ihr werdet, sie werden. E.g. Ich werde kommen.',
   },
+
+  B1: {
+    'Konjunktiv II: würden + infinitive':
+      '"würde + infinitive" = would do. Conjugation: ich würde, du würdest, er würde, wir würden, ihr würdet, sie würden. Infinitive goes to the end.',
+
+    'Konjunktiv II: sein / haben / modals':
+      'Konjunktiv II: sein → wäre, haben → hätte, können → könnte, müssen → müsste, sollen → sollte, dürfen → dürfte. Wenn ich reich wäre...',
+
+    'Passive voice: Präsens':
+      'Passive Präsens: "werden" (conjugated) + past participle at end. Das Auto wird repariert. Plural: werden. Agent: von + Dativ.',
+
+    'Passive voice: Präteritum':
+      'Passive Präteritum: "wurde/wurden" + past participle. Das Haus wurde gebaut. Plural: wurden. Agent: von + Dativ.',
+
+    'Relative clauses: Nominativ / Akkusativ':
+      'Nominative relative pronouns: der/die/das/die. Accusative: den/die/das/die — only masculine changes to "den". Verb goes to end.',
+
+    'Relative clauses: Dativ':
+      'Dative relative pronouns: dem (m/n), der (f), denen (plural). Used after dative verbs (helfen, glauben, vertrauen): "Der Mann, dem ich helfe..."',
+
+    'Genitiv case':
+      'Genitiv articles: des (m/n) + noun -(e)s, der (f/pl). Prepositions: wegen, trotz, während, statt — all take Genitiv.',
+
+    'Temporal clauses: als / wenn / während':
+      '"Als" = single past event. "Wenn" = repeated/future/present. "Während" = simultaneous. All send the verb to the end of their clause.',
+
+    'Temporal clauses: bevor / nachdem / seitdem':
+      '"Bevor" = before. "Nachdem" = after — the nachdem clause is one tense earlier (Plusquamperfekt + Präteritum). "Seitdem" = since (ongoing).',
+
+    'Infinitive constructions: um...zu / ohne...zu / statt...zu':
+      '"um...zu" = in order to, "ohne...zu" = without doing, "statt...zu" = instead of. Separable verbs: zu goes inside — aufzustehen, einzukaufen.',
+
+    'Two-part conjunctions':
+      'weder...noch = neither...nor | sowohl...als auch = both...and | entweder...oder = either...or | nicht nur...sondern auch = not only...but also.',
+
+    'Verb + preposition combinations':
+      'Fixed combos: warten auf, denken an, sich interessieren für, sich ärgern über, sich freuen auf (future), sich freuen über (past), bitten um.',
+  },
 };
