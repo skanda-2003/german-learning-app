@@ -310,56 +310,557 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ## ACTIVE PIPELINE
 
 ### Phase 32 — Progress & Analytics Enhancements · Effort: Medium
-- [ ] Consistency score — "studied X out of last 7 days" (not just streak)
-- [ ] Accuracy trend — grammar score going up or down week over week
-- [ ] Words seen vs words mastered (currently only mastered shown)
-- [ ] Error pattern detection — "You've gotten feminine noun genders wrong 15 times this week"
-- [ ] Spaced repetition for grammar — topics you got wrong surface more in Daily Challenge
-- [ ] Grammar score history per topic — only best_score is stored today; add a session history (last 10 scores per topic) so users can see if they are improving or stagnating; requires new column or table in Supabase + service update + sparkline display in Progress or Insights
+
+**Goal:** Make Progress and Insights screens show richer, more actionable data beyond just best scores.
+
+#### 1. Consistency Score — "studied X out of last 7 days"
+- **What:** A "7-day consistency" number shown on the Progress page — how many of the last 7 days the user studied (not just the streak count).
+- **Where to display:** Replace or augment the Streak stat card on progress.tsx. Could show as "5 / 7 days" sub-label under the streak number.
+- **How:** `activityService.ts` already writes a row to `activity_log` (user_id, date) via `logActivity()`. Load rows for the past 7 days (using `getTodayString()` and subtracting 6 days with `setDate()`). Count unique dates. Show as "X / 7 this week".
+- **Files to touch:** `src/lib/activityService.ts` (add `loadActivity(days)` function), `app/progress.tsx` (load and display).
+
+#### 2. Words Seen vs Words Mastered
+- **What:** Currently the Vocabulary stat card shows only "known" words. Add "seen" count = words with any mastery state (known + shaky + unknown).
+- **Where to display:** Vocabulary stat card on progress.tsx. Change sub-label from e.g. "212 known" to "212 known · 340 seen".
+- **How:** `loadMastery()` returns a `MasteryMap` (Map<wordId, { state }>). Count entries with state known → mastered. Count all entries → seen. Total vocabulary pool = `VOCABULARY[level].length`.
+- **Files to touch:** `app/progress.tsx` only — computation is local, no Supabase changes needed.
+
+#### 3. Grammar Score History per Topic (sparklines)
+- **What:** Right now only `best_score` is stored per topic. Add session-by-session history so users can see if they are improving or stagnating on a topic.
+- **Supabase:** New table `grammar_topic_history`:
+  - `id` BIGSERIAL PRIMARY KEY
+  - `user_id` TEXT
+  - `level` TEXT
+  - `topic` TEXT
+  - `score` INT
+  - `total` INT
+  - `created_at` TIMESTAMPTZ DEFAULT now()
+  - RLS: `user_id = auth.uid()::text`
+  - No unique constraint — each session appends a new row. Keep last 10 rows per topic (delete oldest on insert if count > 10, or just keep all and slice in JS).
+- **Service:** Add `saveTopicScoreHistory(topic, level, score, total)` to `src/lib/grammarTopicService.ts`. Call it alongside `saveTopicScore()` in `app/grammar.tsx` at session end.
+- **Load:** Add `loadTopicScoreHistory(level)` returning `Map<topic, number[]>` (last 10 score percentages, oldest first).
+- **Display:** In `app/insights.tsx` Weak Grammar Topics section, render a mini sparkline (5–10 data points) next to each topic's score bar. Use inline SVG on web: a small `<svg>` with a `<polyline>` of percentage values scaled 0–100% mapped to 0–24px height. Each point is spaced 4px apart. Color: blue `#2563eb`.
+- **Files to touch:** Supabase dashboard (create table + RLS), `src/lib/grammarTopicService.ts` (add 2 functions), `app/grammar.tsx` (call save history), `app/insights.tsx` (render sparkline).
+
+#### 4. Accuracy Trend — grammar score going up or down week over week
+- **What:** For each grammar topic, compare average score % in the last 7 days vs the 7 days before that. Show a ↑ (green) or ↓ (red) or → (grey) arrow next to the topic score in Insights.
+- **Depends on:** Feature 3 above (grammar_topic_history table needed first).
+- **How:** `grammar_topic_history` rows have `created_at`. Group by week. Compute `avg(score/total)` for this week vs last week. If this week avg > last week avg by >5%, show ↑. If lower by >5%, show ↓. Otherwise →.
+- **Files to touch:** `src/lib/grammarTopicService.ts` (add trend computation helper), `app/insights.tsx` (render arrow).
+
+#### 5. Error Pattern Detection — gender mistake analysis
+- **What:** In Insights, surface a line like "You've gotten feminine noun genders wrong 12 times" by analyzing Gender Battle mistakes in mistake_log.
+- **How:** `mistake_log` entries for Gender Battle have `section = 'game_gender_battle'`. The `correct_answer` is "der", "die", or "das". Count how many times the user answered wrong for each gender. E.g., if `correct_answer = 'die'` appears 12 times where the user had a different answer → "feminine gender wrong 12 times".
+- **Where to display:** New sub-section in `app/insights.tsx` titled "GENDER ERRORS" — show 3 rows: der X wrong, die X wrong, das X wrong. Only show if total gender mistakes > 0.
+- **Files to touch:** `app/insights.tsx` only — computation done in-screen from loaded `loadMistakes()` data (already loaded).
+
+#### 6. Spaced Repetition for Grammar — surfacing weak topics in Daily Challenge
+- **This item is moved to Phase 33** — see below.
+
+---
 
 ### Phase 33 — Spaced Repetition for Grammar · Effort: Medium
-- [ ] Track which grammar topics are answered wrong
-- [ ] Weight Daily Challenge to show more questions from weak topics
-- [ ] Persist weakness data to Supabase per user
+
+**Goal:** Make the Daily Challenge smarter — weight the 5 exercises toward topics the user struggles with, rather than picking uniformly by date seed.
+
+#### How the Daily Challenge works today
+- `getDailyExercises()` in `app/daily.tsx` picks exercises via `(dateSeed XOR userSeed) % totalExercises` — a simple deterministic offset with no topic weighting.
+- All exercises at the level are pooled flat in `GRAMMAR[level]` — a flat array across all topics.
+
+#### Plan
+
+**Step 1 — Load topic weakness scores at challenge start**
+- When the daily challenge screen loads (before showing the "Start" button), call `loadTopicScores(level)` from `grammarTopicService.ts` to get `TopicScoreMap`.
+- A topic is "weak" if `best_score / best_total < 0.6` (below 60%).
+- A topic is "not attempted" if it's absent from the map — treat the same as weak.
+- A topic is "strong" if `best_score / best_total >= 0.8`.
+
+**Step 2 — Weighted topic slot allocation**
+- There are 5 slots in the daily challenge.
+- For each grammar topic in `GRAMMAR[level]`, compute a weight:
+  - Weak (< 60%) or unattempted → weight 3
+  - Mid (60–79%) → weight 2
+  - Strong (≥ 80%) → weight 1
+- Total weight = sum of all topic weights.
+- Allocate slots proportionally: `slots for topic = round((topicWeight / totalWeight) * 5)`. Clamp to min 0, re-adjust so sum = 5.
+- Minimum 1 slot for each weak topic (up to 5 topics).
+
+**Step 3 — Pick exercises per slot from each topic**
+- For each allocated slot, pick a random exercise from that topic's exercises using the `(dateSeed XOR userSeed)` approach (to keep some determinism per day).
+- Avoid duplicates across slots.
+
+**Step 4 — Persistence**
+- No new Supabase table needed — weakness is derived from `grammar_topic_scores` which already persists.
+- The weighting is computed client-side at challenge load time.
+
+**Files to touch:**
+- `app/daily.tsx` — replace `getDailyExercises()` with new weighted version; add `loadTopicScores()` call at screen load.
+- `src/data/grammar/index.ts` — check if `GRAMMAR[level]` is structured per topic or flat array. Currently it's a flat `GrammarExercise[]`. Exercises have a `topic` field — use that to group them in `getDailyExercises()`.
+- No new services needed.
+
+**Edge cases:**
+- If level has no `grammar_topic_scores` yet (first time), all topics are unattempted → pure random by date seed (same as current behavior, just with topic-grouped picks).
+- If a topic has 0 exercises allocated but is weak, reassign its slot to the next weakest topic.
+- If only 1 topic exists at a level, all 5 exercises come from that topic.
+
+---
 
 ### ⏳ Phase 27 — Flashcard Verb Sub-categories · Effort: Medium
-- [ ] Add verb type sub-categories under the Verbs pill in flashcard category filter
-- [ ] Sub-categories: Regular Verbs, Irregular Verbs, Modal Verbs (können/müssen/wollen/möchten/dürfen/sollen), Separable Verbs
-- [ ] Each sub-category shows count e.g. "Modal Verbs 6"
-- [ ] Requires tagging each verb in a1.ts with its verb type (verbType field)
-- [ ] UI: tapping Verbs pill expands to show sub-category pills below
+
+**Goal:** When the user taps the "Verbs" pill in flashcard categories, show a second row of sub-category pills underneath. Each sub-category filters to that verb type.
+
+#### Verb sub-categories (consistent across all levels)
+| Sub-category | Detection method | A1 count | A2 count | B1 count |
+|---|---|---|---|---|
+| Modal Verbs | `german` is in fixed list: können, müssen, wollen, möchten, dürfen, sollen | 6 | 0 | 0 |
+| Separable Verbs | `conjugations?.ich` contains a space (e.g. "fahre ab") | ~40 | ~35 | ~80 |
+| Reflexive Verbs | `german` starts with "sich " | 1 | ~3 | ~5 |
+| Irregular Verbs | `du` conjugation has a vowel change vs infinitive stem (fahren→fährst, sehen→siehst) — detected by comparing `conjugations.er` to stem; OR manually tagged | ~35 | ~30 | ~60 |
+| Regular Verbs | all verbs that match none of the above | ~65 | ~60 | ~200 |
+
+> Note: A2 and B1 vocabulary lists contain only **new** words not in A1. So modals (all in A1) show 0 at A2 and B1. Show count 0 if empty — don't hide, so users understand why.
+> Actually: hide sub-categories with count 0 to keep UI clean. If no sub-categories have words, don't expand.
+
+#### Detection logic — runtime, no file tagging needed
+Add a helper function `getVerbType(word: Word): VerbSubCategory` to `app/flashcards.tsx` (or a new `src/lib/verbUtils.ts`):
+
+```ts
+const MODAL_VERBS = ['können', 'müssen', 'wollen', 'möchten', 'dürfen', 'sollen'];
+
+function getVerbType(word: Word): VerbSubCategory {
+  if (MODAL_VERBS.includes(word.german)) return 'Modal';
+  if (word.german.startsWith('sich ')) return 'Reflexive';
+  // Separable: ich conjugation has a space (e.g. "hole ab")
+  if (word.conjugations?.ich?.includes(' ')) return 'Separable';
+  // Irregular: er form differs significantly from infinitive (has umlaut / vowel swap)
+  // Simple heuristic: er form is NOT just stem + 't'
+  if (word.conjugations && isIrregular(word)) return 'Irregular';
+  return 'Regular';
+}
+```
+
+For `isIrregular()`: strip infinitive ending (-en / -n), derive stem, check if `conjugations.er` equals `stem + 't'` or `stem + 'et'`. If not → irregular. This covers vowel-change verbs (fahren→fährt, sehen→sieht, lesen→liest, geben→gibt, nehmen→nimmt, etc.).
+
+#### Type changes
+Add to `src/data/vocabulary/types.ts` (optional — only if we decide to pre-tag rather than detect at runtime):
+```ts
+export type VerbSubCategory = 'Regular' | 'Irregular' | 'Modal' | 'Separable' | 'Reflexive';
+```
+This type is used in `flashcards.tsx` for the filter logic regardless.
+
+#### UI changes — `app/flashcards.tsx`
+- State: add `verbSubCategory: VerbSubCategory | null` (null = no sub-filter active).
+- When "Verbs" pill is selected, render a second row of sub-category pills below the main category row.
+- Each sub-category pill shows: `Modal Verbs · 6` format (label + count).
+- Selecting a sub-category pill filters words further: `words.filter(w => w.partOfSpeech === 'verb' && getVerbType(w) === subCategory)`.
+- Selecting "Verbs" again (already selected) collapses the sub-row and clears sub-category. Or pressing a different main category also collapses.
+- Sub-category pills use the same pill style as main categories (same border/bg/text style, just smaller font or same).
+
+#### CategoryId type update
+```ts
+type CategoryId = 'All' | 'Nouns' | 'Verbs' | 'Adjectives' | 'Prepositions' | 'Other';
+type VerbSubCategory = 'Regular' | 'Irregular' | 'Modal' | 'Separable' | 'Reflexive';
+```
+
+#### Files to touch
+- `app/flashcards.tsx` — add sub-category state, detection helper, second pill row, filter logic.
+- `src/data/vocabulary/types.ts` — add `VerbSubCategory` type (if needed as shared type).
+
+#### Notes on counts per level
+- A2 modals = 0 (all modals were introduced at A1 — A2 word list has none). Sub-pill hidden.
+- B1 modals = 0 for same reason. Sub-pill hidden.
+- Reflexive: A1 = 1 (sich kümmern), A2 = ~3 (sich umziehen, sich verabschieden, sich ärgern, sich beeilen), B1 = ~5.
+- The word count on each sub-pill updates automatically because it's computed at runtime from the level's word list.
 
 ---
 ## LATER
 *Planned but not immediate.*
 
 ### ⏳ Phase 29 — Real A1 Exam Simulation · Effort: High
-- [ ] Research and replicate actual Goethe-Zertifikat A1 exam format and difficulty
-- [ ] Reading section: real-world text formats — signs, notices, short messages, form-filling tasks (not just passage + questions)
-- [ ] Listening section: real dialogue between two people (not single sentences), multiple choice on what was discussed
-- [ ] Writing section: short formal message or form completion (e.g. fill in a registration form, write a short reply to an email)
-- [ ] Speaking section: introduce yourself prompt, respond to questions about daily life
-- [ ] Difficulty calibrated to actual A1 exam — currently too easy
-- [ ] Add a separate "Exam Simulation" mode distinct from practice mode
-- [ ] Score and feedback aligned with real exam marking criteria
+
+**Goal:** Replace the current loose Exam Prep practice with a realistic simulation of the actual Goethe-Zertifikat A1 exam — same format, same difficulty, same scoring structure. This is a separate "Exam Simulation" mode, not a replacement for the existing practice sections.
+
+#### Official Goethe-Zertifikat A1 Exam Format
+The real exam has 4 sections. Total time: 75 minutes. Total marks: 100 (pass = 60).
+
+| Section | Time | Marks | Current app equivalent |
+|---|---|---|---|
+| Hören (Listening) | 15 min | 25 pts | exam_listening (too easy) |
+| Lesen (Reading) | 25 min | 25 pts | exam_reading (too easy) |
+| Schreiben (Writing) | 20 min | 15 pts | exam_writing (close) |
+| Sprechen (Speaking) | 15 min | 35 pts | exam_speaking (close) |
+
+---
+
+#### Part 1 — Hören (Listening, 25 pts)
+
+The real Goethe A1 Hören has 4 sub-tasks:
+- **Task 1** (5 items, 5 pts): Short announcements (train station PA, radio, phone message). True/false per item.
+- **Task 2** (5 items, 5 pts): 5 short dialogues at a shop/street/café. Multiple choice (A/B/C) for what was said.
+- **Task 3** (5 items, 5 pts): Answering machine messages. Match each message to a picture/category.
+- **Task 4** (5 items, 5 pts): One longer conversation. Tick the correct answers (multiple choice).
+- **Task 5** (5 items, 5 pts): Short sentences/instructions. True/false.
+
+**App implementation plan:**
+- Use Web Speech API synthesis (already used in Listening Quiz) to read out pre-written A1-level short texts as audio.
+- Each task plays audio once (simulate real exam — no repeat button in strict mode, or allow 1 replay for practice mode).
+- Pre-write the listening scripts in a new `src/data/examListening.ts` file.
+  - Task 1: 5 short announcements (e.g. "Achtung auf Gleis 3...", "Das Café ist von 8 bis 20 Uhr geöffnet...")
+  - Task 2: 5 short dialogues as two-speaker scripts (alternate between voice 1 and voice 2 — use TTS language setting for de-DE)
+  - Task 3: 5 short phone messages
+  - Task 4: 1 longer 6-exchange dialogue about a simple topic (shopping, making an appointment)
+  - Task 5: 5 short instructions/announcements
+- Score: 1 pt per correct answer. Show 0 / 25 after completion.
+
+---
+
+#### Part 2 — Lesen (Reading, 25 pts)
+
+The real exam has 4 sub-tasks:
+- **Task 1** (5 items, 5 pts): 5 short texts (signs, notices, labels). True/false (ist das richtig oder falsch?).
+- **Task 2** (5 items, 5 pts): 1 personal email/message (100–130 words). 5 comprehension questions, each true/false.
+- **Task 3** (5 items, 5 pts): 5 short ads or job listings. Match each to a person's need (multiple choice A/B/C).
+- **Task 4** (5 items, 5 pts): A form with gaps. Read a text and fill in 5 pieces of information into a short form.
+
+**App implementation plan:**
+- Pre-write all reading texts in `src/data/examReading.ts`. Separate from the current exam_reading (which uses passages.ts).
+- Task 4 (form-filling) — use `TextInput` fields for the 5 form slots. Check user input against expected values (case-insensitive, allow minor spelling variations for nouns). Since auto-checking short-form answers is tricky, consider using Gemini to validate: send (expected_answer, user_answer) → true/false. Or use simple string-match with trim+lowercase.
+- Score: 1 pt per correct item. Show 0 / 25 after.
+
+---
+
+#### Part 3 — Schreiben (Writing, 15 pts)
+
+The real exam has 2 sub-tasks:
+- **Task 1** (5 pts): Fill in a form (name, address, phone, nationality, etc.) from information given in a short paragraph.
+- **Task 2** (10 pts): Write a short message (30–40 words) responding to a prompt (e.g. "Reply to your friend's invitation — say yes, tell them what time you can come, and ask about food").
+
+**App implementation plan:**
+- Task 1: Show a paragraph of personal info + a form with 5 blank fields to complete. String-match checking (similar to Reading Task 4). Or Gemini validation for flexibility.
+- Task 2: Current `exam_writing` screen already does this well. Adapt the prompt to match actual Goethe A1 writing tasks (shorter, more specific, mentions the 30-word target).
+- Gemini feedback for Task 2: extend the current `getWritingFeedback()` prompt to also produce a score estimate (0–10 scale, since 10 pts available). Display score alongside feedback.
+- Total: 15 pts.
+
+---
+
+#### Part 4 — Sprechen (Speaking, 35 pts)
+
+The real exam has 3 sub-tasks (done in pairs — simulated solo here):
+- **Task 1** (10 pts): Introduce yourself. Prompted by 6 keyword cards: Name / Land / Wohnort / Sprachen / Beruf / Hobby.
+- **Task 2** (15 pts): Question and answer exchange. User gets 6 question-word cards (Wie heißen Sie? / Woher kommen Sie? / etc.) — ask the questions to an imaginary partner (say them aloud), then answer 6 questions shown on screen.
+- **Task 3** (10 pts): Make requests. Given 3 picture cards (e.g. a phone, a pen, a glass of water), ask for each one politely (Könnte ich bitte...? / Haben Sie...?).
+
+**App implementation plan:**
+- Task 1: Show the 6 keyword cards as a grid. User taps "Start Recording", speaks their intro, taps "Done". Gemini assesses: does the response cover all 6 points? Score 0–10.
+- Task 2: Show question-word cards. User reads each aloud (no assessment), then 6 questions shown in text — user records answers. Gemini scores content + grammar (0–15).
+- Task 3: Show 3 picture descriptions (can't do images, so write what the picture shows). User records a request for each. Gemini assesses politeness + correctness (0–10).
+- Use Web Speech API `SpeechRecognition` (de-DE) to capture spoken text, same as current Listening Quiz and Speaking exam.
+
+---
+
+#### Exam Simulation Mode — UI
+
+- New entry point: a card on the existing Exam Prep selector labelled "EXAM SIMULATION" with a different visual treatment (e.g. solid black border, prominent CTA).
+- Shows a pre-exam briefing screen: "This simulation follows the real Goethe-Zertifikat A1 exam format. 4 sections, 75 minutes, 100 points. Pass mark: 60."
+- Each section shown in sequence with a progress bar (Section 1 of 4).
+- Final results screen: score breakdown per section, total / 100, pass/fail verdict, "Your strongest section" + "Your weakest section".
+- Save score to Supabase as a new `SectionKey`: `exam_simulation`. Store best score + most recent score.
+- No time limit enforced in practice version — just show elapsed time.
+
+---
+
+#### Files to create / modify
+- `src/data/examListening.ts` — new: all listening scripts + questions
+- `src/data/examReading.ts` — new: all reading texts + questions (replace current thin exam data)
+- `app/examSimulation.tsx` — new: the full simulation flow component (reuse ExerciseCard, ExerciseResult patterns)
+- `app/exam.tsx` — add Exam Simulation card to selector
+- `src/lib/scoresService.ts` — add `exam_simulation` SectionKey
+- `src/lib/gemini.ts` — add `getExamSimulationSpeakingFeedback()` that returns score + feedback
 
 ### Phase 23 — Multi-user · Effort: High
-- [ ] Auth already handled — this phase adds multi-user features on top
-- [ ] Leaderboard for streaks
-- [ ] User profiles
-- [ ] Shared progress comparisons
+
+**Goal:** Add social features on top of the existing Supabase auth — user display names, a streak leaderboard visible to all users, and a lightweight progress comparison on the Progress screen.
+
+#### 1. User display name profile
+
+- **Supabase:** New table `user_profiles`:
+  - `user_id` TEXT PRIMARY KEY
+  - `display_name` TEXT NOT NULL (max 20 chars, letters/numbers/spaces only)
+  - `created_at` TIMESTAMPTZ DEFAULT now()
+  - RLS: SELECT open to any authenticated user; INSERT/UPDATE restricted to `auth.uid()::text = user_id`
+- **First-login prompt:** After sign-in, check if a `user_profiles` row exists for the current user. If not, show a one-time `DisplayNameModal` overlay on the home screen asking them to pick a name. Block dismissal until a valid name is submitted.
+- **Display:** Show the display name in the sidebar below the level toggle and above the Sign Out button.
+- **Files to touch:** Supabase dashboard (create table + RLS), `src/lib/profileService.ts` (new: `getProfile()`, `saveDisplayName(name)`), `components/DisplayNameModal.tsx` (new), `app/home.tsx` (show modal if no profile), `app/(drawer)/_layout.tsx` (render name in sidebar).
+
+#### 2. Streak Leaderboard
+
+- **New screen:** `app/leaderboard.tsx`
+- **Data:** Query `user_progress` for ALL users' `streak_count` and `last_active_date`, joined with `user_profiles` for display names.
+  - Requires relaxing the `user_progress` SELECT RLS policy from `user_id = auth.uid()::text` to `true` (any authenticated user can read all rows). INSERT/UPDATE policy stays restricted to own user_id.
+  - Do NOT relax vocabulary_mastery, section_scores, or mistake_log — those remain private.
+- **Display:** Top 20 users ranked by streak count. Each row: rank number, display name, streak count, days-since-active if > 1 day (e.g. "inactive 3d"). Highlight current user's row with a 2px left border in blue `#2563eb`.
+- **Empty state:** "No other users yet — share the app!" if fewer than 2 users exist.
+- **Sidebar:** Add Leaderboard entry between Insights and Progress (icon: `award`, Feather).
+- **Files to touch:** Supabase dashboard (relax user_progress SELECT policy), `src/lib/leaderboardService.ts` (new: `loadLeaderboard()` → `{ userId, displayName, streak, lastActive }[]` sorted by streak desc), `app/leaderboard.tsx` (new), `app/(drawer)/_layout.tsx` (add sidebar entry and Drawer.Screen).
+
+#### 3. Progress comparison ("HOW YOU COMPARE")
+
+- **Where:** New section at the bottom of `app/progress.tsx`, below the existing charts.
+- **What to show:** Two stat lines:
+  - Grammar rank: "You rank #2 in Grammar out of N users" — derived by comparing your best grammar score % against all users' `grammar_topic_scores` averages.
+  - Vocabulary rank: "You know more words than X% of users" — compare your known word count against all users' known counts from `vocabulary_mastery`.
+- **How:** `leaderboardService.ts` adds two helpers: `loadGrammarRankings()` and `loadVocabRankings()` — each fetches the relevant table for all users and returns the current user's percentile.
+- **Fallback:** If only 1 user exists, show "Invite a friend to compare scores!".
+- **Files to touch:** `src/lib/leaderboardService.ts` (add 2 ranking helpers), `app/progress.tsx` (add HOW YOU COMPARE section).
+
+#### Edge cases
+- Display name uniqueness is not enforced — two users can share a name. That's fine for a small-scale app.
+- If a user has no `user_profiles` row (existing users before this phase), they appear on the leaderboard as "Anonymous".
+- Leaderboard only shows users who have logged in after this phase deploys (because `user_profiles` won't exist for old sessions that never triggered the modal). Acceptable for a small user base.
+
+#### Summary of files to touch
+| File | Change |
+|---|---|
+| Supabase dashboard | Create `user_profiles` table + RLS; relax `user_progress` SELECT policy |
+| `src/lib/profileService.ts` | New — `getProfile()`, `saveDisplayName()` |
+| `src/lib/leaderboardService.ts` | New — `loadLeaderboard()`, `loadGrammarRankings()`, `loadVocabRankings()` |
+| `components/DisplayNameModal.tsx` | New — first-login display name prompt |
+| `app/leaderboard.tsx` | New — ranked leaderboard screen |
+| `app/home.tsx` | Show DisplayNameModal if no profile exists |
+| `app/progress.tsx` | Add HOW YOU COMPARE section |
+| `app/(drawer)/_layout.tsx` | Add Leaderboard sidebar entry + Drawer.Screen; render display name in sidebar |
+
+---
 
 ### Phase 31 — Lessons · Effort: High
-- [ ] Lesson screen per grammar topic — explanation in plain English, examples, "Practice this now" button
-- [ ] Curriculum sourced from Goethe Institut A1 syllabus
-- [ ] Each lesson links directly to the relevant grammar exercise topic
-- [ ] Lessons section added to sidebar
+
+**Goal:** Add a Lessons section where each grammar topic has a structured explanation screen — plain English, worked examples, key rules, common mistakes — with a "Practice Now" button that jumps directly into Grammar exercises for that topic.
+
+#### Data structure — `src/data/lessons/types.ts`
+
+```ts
+export type LessonExample = {
+  german: string;   // German sentence in IBM Plex Mono
+  english: string;  // English translation
+  note?: string;    // optional annotation, e.g. "verb in second position"
+};
+
+export type Lesson = {
+  topic: string;          // must match GrammarExercise.topic exactly — used for deep-link
+  level: Level;
+  title: string;          // display title (same as topic, formatted for headings)
+  explanation: string;    // 2–3 paragraph plain English explanation
+  keyPoints: string[];    // 3–5 bullet points of the key rules
+  examples: LessonExample[]; // 4–6 worked examples
+  commonMistake: string;  // one common error described (wrong → right)
+};
+```
+
+#### Data files
+
+- `src/data/lessons/a1.ts` — 19 lessons (one per A1 grammar topic, matching topics in `a1.ts` exactly)
+- `src/data/lessons/a2.ts` — 12 lessons (matching A2 grammar topics)
+- `src/data/lessons/b1.ts` — 12 lessons (matching B1 grammar topics)
+- `src/data/lessons/index.ts` — `LESSONS: Record<Level, Lesson[]>`
+
+**A1 topic list (must match `GrammarExercise.topic` strings exactly):**
+Verb conjugation: sein, Verb conjugation: haben, Definite articles: der/die/das, Negation: nicht / kein, Basic word order, Indefinite articles: ein/eine, Personal pronouns, Regular verb conjugation, Modal verbs, Accusative case, Possessive articles, Questions, Separable verbs, Plural nouns, Imperative, Prepositions, Time expressions, Reflexive verbs, Days/months/seasons.
+
+#### Lesson selector screen — `app/lessons.tsx`
+
+- 2-column card grid (same style as Grammar and Mini Games selectors).
+- Each card shows: topic title, "~3 min read", and a small dot (green if viewed, grey if not).
+- Lesson viewed state is tracked locally via AsyncStorage (`lessons_viewed_A1`, etc.) — a `Set<string>` of topic strings. No Supabase needed; lessons are reference material, not scored.
+- "X / Y lessons read" count shown at top in the LABEL style (`#888`, 11px, caps).
+- B2 lessons show a "coming soon" empty state (same pattern as grammar for B2).
+
+#### Lesson detail screen — `app/lesson.tsx`
+
+- Accessed via `router.push('/lesson?topic=Verb+conjugation+sein&level=A1')`.
+- Scrollable single-column layout.
+- **Header:** Topic title (IBM Plex Mono 18px bold, `#111`), level badge (small pill).
+- **EXPLANATION section:** Plain Inter 14px `#333` text, line-height 1.6, paragraph breaks.
+- **KEY RULES section:** Bulleted list. Rule text in Inter 13px; any German words in rules rendered in IBM Plex Mono inline.
+- **EXAMPLES section:** One card per example. German sentence: IBM Plex Mono 14px semibold `#111`. English: Inter 12px `#888`. Optional note: Inter 11px `#2563eb`.
+- **COMMON MISTAKE section:** A `#dc2626` 1px left-bordered box. Shows ✗ wrong form + ✓ correct form, both in IBM Plex Mono.
+- **Bottom CTA:** "PRACTICE THIS TOPIC" — primary solid black button. Navigates to `app/grammar.tsx` passing `?topic=<topicString>` as a query param.
+- On mount: mark topic as viewed in AsyncStorage.
+
+#### Grammar screen update — `app/grammar.tsx`
+
+- Read `topic` from `useLocalSearchParams()` at mount.
+- If `topic` param is present: skip the topic selector, pre-filter exercises to that topic, and start the session immediately.
+- If topic param is absent: existing behaviour (show topic selector as normal).
+- This is a small addition — just an early-return branch at the top of the component before the selector renders.
+
+#### Sidebar addition
+
+- Icon: `file-text` (Feather)
+- Label: Lessons
+- Position: between Grammar and Cheat Sheet in the sidebar order.
+- Add `Drawer.Screen` for both `lessons` and `lesson` routes in `_layout.tsx` (lesson detail does not appear in the sidebar itself — only the lessons selector does).
+
+#### No Supabase changes needed
+
+Lesson progress (viewed/not viewed) is local-only via AsyncStorage. Lessons are reference material, not a scored section — no `section_scores` entry, no progress page entry.
+
+#### Summary of files to touch
+| File | Change |
+|---|---|
+| `src/data/lessons/types.ts` | New — `Lesson`, `LessonExample` types |
+| `src/data/lessons/a1.ts` | New — 19 A1 lessons |
+| `src/data/lessons/a2.ts` | New — 12 A2 lessons |
+| `src/data/lessons/b1.ts` | New — 12 B1 lessons |
+| `src/data/lessons/index.ts` | New — `LESSONS` record export |
+| `app/lessons.tsx` | New — lesson selector screen |
+| `app/lesson.tsx` | New — lesson detail screen |
+| `app/grammar.tsx` | Read `topic` query param; pre-filter and auto-start if present |
+| `app/(drawer)/_layout.tsx` | Add Lessons + lesson Drawer.Screen entries; add sidebar item |
 
 ### ⏳ Phase 38 — B2 Content · Effort: Very High
-- [ ] Add B2 vocabulary list — **INCOMPLETE: b2.ts currently has 232 words (b2_0001–b2_0232), but the full B2 word list has more than 300 genuinely new words not in A1/A2/B1. More entries need to be added and filled with english/examples/conjugations/plurals before wiring into index.ts.**
-- [ ] Wire b2.ts into index.ts once vocabulary is complete
-- [ ] Add B2 grammar exercises and tips
-- [ ] Run scripts/extract-plurals.js, extract-conjugations.js, apply-comparatives.js for B2
+
+**Goal:** Complete the B2 level so it is fully playable — flashcards, grammar exercises, tips, reading passages, sentence builder, and cheat sheet.
+
+#### Current state of B2
+| Asset | Status |
+|---|---|
+| `src/data/vocabulary/b2.ts` | 232 words — **WRONG SOURCE, must be replaced** (was built from DTZ list; correct source is Aspekte Neu B2) |
+| `src/data/vocabulary/index.ts` | B2 set to `[]` — not wired in yet |
+| `src/data/grammar/b2.ts` | Does not exist |
+| `src/data/grammar/index.ts` | B2 set to `[]` (shows "coming soon") |
+| `src/data/cheatsheets/b2.ts` | ✅ Exists with 6 sections (participial phrases, Konjunktiv I, modal particles, connectors, Nominalisierung, genitiv prepositions) |
+| `src/data/tips.ts` | B2 has placeholder tips — needs real B2 tips |
+| `src/data/topicTipMap.ts` | No B2 entries |
+| `src/data/passages.ts` | No B2 passages |
+| `src/data/sentenceBuilder.ts` | No B2 sentences |
+
+---
+
+#### Step 1 — Replace b2.ts with Aspekte Neu B2 vocabulary
+
+**Source:** `b2_aspekte.txt` — the Aspekte Neu B2 Kapitelwortschatz (Hueber Verlag). This is the standard B2 reference since Goethe Institut does not publish an official B2 Wortliste.
+
+**Cross-reference results** (run against A1+A2+B1 combined, 2,635 known words):
+| | Count |
+|---|---|
+| Total unique entries parsed from Aspekte Neu B2 | ~2,426 |
+| Already covered in A1+A2+B1 | ~303 |
+| **Genuinely new at B2** | **~2,123** |
+
+> Compare: B1 introduced 1,406 new words. B2 introduces ~2,123 new words. B2 is actually a larger vocabulary jump than B1 because Aspekte is a comprehensive academic/professional B2 resource with extensive topical vocabulary (workplace, culture, society, science, media).
+
+**Aspekte file format** (`b2_aspekte.txt`, 2,970 lines):
+```
+die Vorstellung, -en (Meine Vorstellung von Heimat ist …)   ← noun + plural + example
+auflösen (eine Wohnung auflösen)                             ← verb + example
+leichtfallen, fiel leicht, ist leichtgefallen               ← verb + conjugation info
+der/die Grafiker/in, -/-nen                                  ← gendered noun pair
+mittlerweile                                                  ← adverb (plain)
+```
+
+**Parsing rules for building new b2.ts entries:**
+1. Strip all content in `(...)` parentheses — those are example sentences/notes
+2. Stop at first comma — everything after is plural suffix or conjugation info
+3. For `der/die X/in` gendered pairs: create ONE entry as `der/die X/Xin` in the german field, mark gender as `'der'` (masculine default), note in English "(male/female: Grafiker/Grafikerin)" — OR just use the masculine base form with a note. Prefer: `german: 'der Grafiker'`, `english: 'graphic designer (m/f: Grafiker/Grafikerin)'`.
+4. Preserve `sich` for reflexive verbs: `sich einleben` → `german: 'sich einleben'`
+5. Fix typos from PDF extraction (e.g. `Arbeitsvertag` → `Arbeitsvertrag`)
+6. Skip chapter/module headers: "Kapitelwortschatz", "Aspekte neu B2", "Seite N", "Kapitel N", "Modul N", "Auftakt", "Wiederholung"
+7. Strip leading lesson markers: "1b ", "2a ", "4c " etc.
+
+**Build process** — do in chunks of 100 words, alphabetically ordered in final file:
+- Chunk 1: A words (abenteuerlich → aufzeigen) — ~100 entries
+- Chunk 2: B–D words — ~100 entries
+- Chunk 3: E–F words — ~100 entries
+- ... (~21 chunks total for ~2,123 words)
+- Wait for "continue" after each chunk before writing the next
+
+**Final file must be sorted A→Z** (same as a1.ts convention) with IDs `b2_0001` → `b2_N`.
+
+**IDs:** Start fresh from `b2_0001`. The existing 232 entries will be replaced entirely — the DTZ-sourced entries that are also in Aspekte will reappear with correct content; DTZ-only entries that aren't in Aspekte will be dropped.
+
+**Each entry must include** (same structure as a1.ts/a2.ts/b1.ts):
+- `id` — b2_XXXX
+- `german` — full form including article for nouns, `sich X` for reflexives
+- `english` — translation
+- `gender` — `'der'` / `'die'` / `'das'` / `null`
+- `partOfSpeech` — noun / verb / adjective / adverb / preposition / conjunction / phrase
+- `exampleDe` — example sentence in German
+- `exampleEn` — English translation of example
+- `plural?` — for nouns (can derive from Aspekte plural suffix e.g. `-en` → add to base)
+- `conjugations?` — for verbs (ich/du/er/wir/ihr/sie present tense)
+- `comparative?` — for adjectives where applicable
+
+---
+
+#### Step 2 — Wire vocabulary into index.ts
+
+In `src/data/vocabulary/index.ts`, after b2.ts is complete:
+```ts
+import { B2_WORDS } from './b2';
+export const VOCABULARY: Record<Level, Word[]> = {
+  A1: A1_WORDS,
+  A2: A2_WORDS,
+  B1: B1_WORDS,
+  B2: B2_WORDS,  // was [] — wire in once b2.ts is written
+};
+```
+
+---
+
+#### Step 3 — Grammar exercises (`src/data/grammar/b2.ts`)
+
+Create `src/data/grammar/b2.ts`. Target: **~120 exercises across 10 topics** (12 per topic). Topics aligned with `src/data/cheatsheets/b2.ts` sections already written:
+
+1. **Extended participial phrases** — convert relative clauses to participial attributes
+2. **Konjunktiv I** — reported speech forms (er sei, sie habe, er werde, etc.)
+3. **Modal particles** — doch / ja / mal / eigentlich / wohl / halt usage
+4. **Passive with modal verbs** — Das muss gemacht werden / Das kann nicht geändert werden
+5. **N-Deklination** — der Herr/Herrn, der Mensch/Menschen, der Kunde/Kunden, der Kollege/Kollegen
+6. **Nominalisierung** — verb/adjective → noun (das Lernen, die Müdigkeit, die Schnelligkeit)
+7. **Genitiv prepositions** — wegen, trotz, während, innerhalb, außerhalb, anstatt, aufgrund, mithilfe
+8. **Complex connectors** — obwohl vs trotzdem, weil vs denn, als vs wenn vs wann
+9. **Indirect questions** — Ob-clauses and embedded W-questions
+10. **Relative clauses with was / wo** — Das, was er sagt... / dort, wo ich wohne...
+
+Wire into `src/data/grammar/index.ts` (replace `B2: []`).
+
+---
+
+#### Step 4 — Tips (`src/data/tips.ts`)
+
+Replace B2 placeholder tips with 20 real B2 tips (same rule+example format as A1/A2/B1). One tip per grammar topic above plus 10 general B2 vocabulary/register tips.
+
+---
+
+#### Step 5 — topicTipMap (`src/data/topicTipMap.ts`)
+
+Add B2 section with 10 entries — one focus tip per grammar topic from Step 3.
+
+---
+
+#### Step 6 — Reading passages (`src/data/passages.ts`)
+
+Add 10 B2 reading passages (10–14 sentences each). Use complex subordinate clauses, passive constructions, participial phrases, abstract Aspekte-sourced vocabulary. Topics: news article, opinion piece, formal letter, workplace situation, environmental issue, cultural event, scientific explanation, social media debate, job application, travel guide excerpt.
+
+---
+
+#### Step 7 — Sentence Builder (`src/data/sentenceBuilder.ts`)
+
+Add 50 B2 sentences (`B2_SENTENCES`). Grammar complexity: participial phrases, Konjunktiv I, passive with modals, N-Deklination, complex subordinate clauses. Difficulty split: 10 simple / 20 medium / 20 complex. Wire into game (currently falls back to A1 for B1/B2).
+
+---
+
+#### Summary of files to touch
+| File | Change |
+|---|---|
+| `src/data/vocabulary/b2.ts` | **Replace entirely** — ~2,123 Aspekte Neu B2 words, alphabetical, IDs b2_0001 onwards |
+| `src/data/vocabulary/index.ts` | Wire B2_WORDS in (replace `[]`) — 1 line |
+| `src/data/grammar/b2.ts` | New — 120 exercises across 10 topics |
+| `src/data/grammar/index.ts` | Wire B2_GRAMMAR in (replace `[]`) |
+| `src/data/tips.ts` | Replace B2 placeholder tips with 20 real tips |
+| `src/data/topicTipMap.ts` | Add B2 section (10 entries) |
+| `src/data/passages.ts` | Add 10 B2 reading passages |
+| `src/data/sentenceBuilder.ts` | Add 50 B2 sentences + wire into game |
 
 ---
 
