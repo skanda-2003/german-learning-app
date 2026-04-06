@@ -10,7 +10,7 @@ A German language learning web app for CEFR levels A1 through B2, built with Exp
 
 - **Flashcards** — spaced repetition with three mastery states: Known, Shaky, Unknown. Review dates calculated per state (Known→7d, Shaky→2d, Unknown→1d)
 - **Grammar Exercises** — level-specific drills with multiple choice and fill-in-the-blank
-- **Mini Games** — Word Match, Gender Battle, Listening Quiz
+- **Mini Games** — Word Match, Gender Battle, Listening Quiz, Fill in the Blank (AI-generated)
 - **Sentence Builder** — tap-to-place word tiles to form correct German sentences
 - **Daily Challenge** — 5 grammar exercises per day with streak tracking
 - **Exam Prep** — Reading, Listening, Writing, Speaking sections
@@ -18,6 +18,7 @@ A German language learning web app for CEFR levels A1 through B2, built with Exp
 - **Insights** — weak vocabulary, mistake log, activity calendar
 - **Reading Mode** — short German texts with tap-to-translate word lookup
 - **Pronunciation Guide** — 28 phonetic entries with Web Speech API playback
+- **Cheat Sheet** — static grammar reference per level (A1–B2), no login required
 - **AI Feedback** — writing and speaking feedback via Google Gemini (`gemini-2.5-flash`), also used for generating grammar exercises and reading passages
 
 ---
@@ -63,9 +64,16 @@ Output directory: `dist/`
 
 ---
 
-## Vocabulary
+## Vocabulary and content coverage
 
-665 A1 words sourced from the official Goethe Institut A1 word list. Every noun has a plural form, every verb has full present tense conjugations, and every adjective has comparative and superlative forms. A2/B1/B2 content planned for a later phase.
+| Level | Vocabulary | Grammar exercises | Tips |
+|---|---|---|---|
+| A1 | 665 words | 223 exercises / 19 topics | 25 tips |
+| A2 | 585 words | 168 exercises / 12 topics | 20 tips |
+| B1 | 1406 words | 136 exercises / 12 topics | 20 tips |
+| B2 | 232 words (incomplete) | coming soon | coming soon |
+
+Every noun has a plural form, every verb has full present tense conjugations, and every adjective has comparative and superlative forms. B2 vocabulary and grammar are planned for a later phase.
 
 ---
 

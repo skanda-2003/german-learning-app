@@ -84,11 +84,40 @@ export const TIPS: Record<Level, string[]> = {
     'Future tense: werden + infinitive at the end. Conjugation: ich werde, du wirst, er wird, wir werden, ihr werdet, sie werden.',
   ],
   B1: [
-    'The Konjunktiv II is used for polite requests and hypothetical situations: Ich würde gern... (I would like to...).',
-    'Relative clauses use a relative pronoun (der, die, das) that matches the noun\'s gender.',
-    'Separable verbs split apart in a sentence: anrufen → Ich rufe dich an.',
-    'The Genitiv case shows possession: das Auto meines Vaters (my father\'s car).',
-    'Weil (because) and dass (that) are subordinating conjunctions — verb goes to the end.',
+    // --- Konjunktiv II ---
+    '"Würde + infinitive" is the standard Konjunktiv II for most verbs: Ich würde gern... (I would like to...). Use it for polite requests and hypotheticals.',
+    'Konjunktiv II of "sein": wäre. Of "haben": hätte. "Wenn ich reich wäre, hätte ich ein großes Haus." (If I were rich, I would have a big house.)',
+    'Modal verbs have their own Konjunktiv II forms: können→könnte, müssen→müsste, dürfen→dürfte, sollen→sollte. Note the umlaut!',
+    '"Würden Sie mir bitte helfen?" is the standard polite request. "Würdest du...?" is informal. Always "würde + infinitive at end".',
+
+    // --- Passive voice ---
+    'Passive Präsens: "werden" (conjugated) + past participle at end. Das Auto wird repariert. (The car is being repaired.)',
+    'Passive Präteritum: "wurde/wurden" + past participle. Das Haus wurde 1900 gebaut. (The house was built in 1900.)',
+    '"Von + Dativ" shows who performed the action in a passive sentence: Das Buch wurde von ihr gelesen. (The book was read by her.)',
+
+    // --- Relative clauses ---
+    'Relative clauses start with a relative pronoun that matches the noun\'s gender. Nominative: der/die/das/die. The verb goes to the end.',
+    'In an Akkusativ relative clause, only masculine changes: den instead of der. "Der Film, den ich gesehen habe..." (The film that I saw...)',
+    'Dative relative pronouns: dem (m/n), der (f), denen (plural). Used after dative verbs: "Der Mann, dem ich helfe..." (The man I help...)',
+
+    // --- Genitiv ---
+    'Genitiv shows possession. Masculine and neuter add -(e)s: des Mannes, des Kindes. Feminine and plural: der Frau, der Kinder.',
+    'Genitiv prepositions: wegen (because of), trotz (despite), während (during), statt (instead of). All take Genitiv.',
+
+    // --- Temporal clauses ---
+    '"Als" = one specific past event: Als ich jung war... "Wenn" = repeated or future/present: Wenn ich Zeit habe... Never use als for the future!',
+    '"Während" = while (simultaneous actions): Während er schläft, arbeite ich. — "Bevor" = before: Bevor du gehst, ruf mich an.',
+    '"Nachdem" requires a tense shift: the nachdem clause is one tense earlier. Nachdem er gegessen hatte, (Plusquamperfekt) schlief er (Präteritum).',
+    '"Seitdem" = since (a point in time, ongoing): Seitdem ich hier wohne, fühle ich mich besser. (Since I have lived here, I feel better.)',
+
+    // --- Infinitive constructions ---
+    '"um...zu" expresses purpose — in order to: Ich lerne Deutsch, um in Deutschland zu arbeiten. (I learn German in order to work in Germany.)',
+    '"ohne...zu" = without doing: Er kam, ohne etwas zu sagen. "statt...zu" = instead of doing: Er schläft, statt zu lernen.',
+    'Separable verbs: "zu" goes between prefix and stem: aufzustehen, einzukaufen, anzurufen.',
+
+    // --- Two-part conjunctions & verb+prep ---
+    'Two-part conjunctions: weder...noch (neither...nor), sowohl...als auch (both...and), entweder...oder (either...or). Verb stays in 2nd position.',
+    'Verb + preposition: warten auf (to wait for), denken an (to think about), sich freuen auf (looking forward to), sich freuen über (happy about).',
   ],
   B2: [
     'The Konjunktiv I is used for indirect speech in formal writing: Er sagte, er habe keine Zeit.',
