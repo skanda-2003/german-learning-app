@@ -472,32 +472,11 @@ The real exam has 3 sub-tasks (done in pairs — simulated solo here):
 
 ---
 
-### ⏳ Phase 31a — Lessons: A1 + Full Infrastructure · Effort: Medium
+### ✅ Phase 31a — Lessons: A1 + Full Infrastructure (Complete)
 
-Full plan in `lessons.md` (project root).
+### ✅ Phase 31b — Lessons: A2 Content (Complete)
 
-Build the complete Lessons feature with A1 content only. All infrastructure (types, screens, navigation, "Practice This Topic" deep-link, AsyncStorage viewed state + last-studied timestamps) ships in this phase. Verify A1 lessons are accurate and UI feels right before adding more levels.
-
-**Files:**
-- `src/data/lessons/types.ts` — new
-- `src/data/lessons/a1.ts` — 19 A1 lessons
-- `src/data/lessons/index.ts` — new (A2/B1/B2 = `[]` for now)
-- `app/lessons.tsx` — new selector screen
-- `app/lesson.tsx` — new detail screen
-- `app/(drawer)/_layout.tsx` — sidebar item + Drawer.Screen entries
-- `app/grammar.tsx` — `topic` query param support
-
-### ⏳ Phase 31b — Lessons: A2 Content · Effort: Low
-
-Full plan in `lessons.md` (project root).
-
-Add 12 A2 lessons to `src/data/lessons/a2.ts` and wire into index. Includes the `buildingOn` note on "Reflexive verbs" (builds on A1, focuses on dative reflexive + meaning-changing patterns).
-
-### ⏳ Phase 31c — Lessons: B1 Content · Effort: Low
-
-Full plan in `lessons.md` (project root).
-
-Add 12 B1 lessons to `src/data/lessons/b1.ts` and wire into index.
+### ✅ Phase 31c — Lessons: B1 Content (Complete)
 
 ### ⏳ Phase 31d — Lessons: B2 Content · Effort: Low
 
@@ -563,6 +542,7 @@ Add B2 lessons once B2 grammar exercises exist (Phase 38). Until then, B2 shows 
 - [2026-04-07] Phase 33 complete — Spaced repetition for Daily Challenge. getDailyExercises() now groups exercises by topic, weights each topic (weak/unattempted → 3, mid → 2, strong → 1), allocates 5 slots proportionally, and picks per slot using the date×user seed. useFocusEffect loads loadTopicScores() + loadProgress() in parallel before computing exercises. First-time users (no scores) get uniform selection — same as before. No new Supabase tables.
 - [2026-04-07] Phase 32 complete — Progress & Analytics Enhancements. 5 features shipped: (1) loadActivity(days) in activityService.ts — Progress STREAK card now shows "X / 7 this week". (2) seenCount added to progress.tsx — VOCABULARY card shows "N seen · X% mastered". (3) grammar_topic_history Supabase table + saveTopicScoreHistory/loadTopicScoreHistory in grammarTopicService.ts — grammar.tsx saves history per session; Insights renders mini sparklines (blue bars) and ↑/↓/→ trend arrows per topic. (4) Trend computed by comparing this-week avg vs last-week avg (>5pt = trend). (5) GenderBattleGame now calls saveMistake() on wrong answers; Insights shows GENDER ERRORS section with der/die/das bar breakdown when data exists.
 - [2026-04-06] Phase 21 B1 complete — B1 grammar fully playable. b1.ts: 136 exercises across 12 topics (Konjunktiv II würde, Konjunktiv II sein/haben/modals, Passive Präsens, Passive Präteritum, Relative clauses Nom/Akk, Relative clauses Dat, Genitiv, Temporal als/wenn/während, Temporal bevor/nachdem/seitdem, Infinitive constructions, Two-part conjunctions, Verb+preposition). Wired into grammar/index.ts. tips.ts: 20 proper B1 tips (replaced 5 placeholders). topicTipMap.ts: B1 section added with one focus tip per topic.
+- [2026-04-07] Phase 31a/b/c complete — Lessons feature shipped. Full infrastructure: `src/data/lessons/types.ts`, `app/lessons.tsx` (2-column selector with lesson numbers, checkmarks, last-studied timestamps), `app/lesson.tsx` (detail screen with explanation, key rules, examples, common mistake, "Practice This Topic" deep-link into grammar). `app/grammar.tsx` reads `?topic=` query param to auto-start a topic. A1: 19 lessons, A2: 12 lessons (Reflexive verbs uses `buildingOn` field), B1: 12 lessons. B2 shows "coming soon" empty state — blocked on Phase 38.
 - [2026-04-04] Phase 37 complete — Cheat Sheet / Reference. **Data:** `src/data/cheatsheets/` — `a1.ts`–`b2.ts` (`CheatSheetSection[]`), `types.ts` (`CheatSheetBlock` union: text, table, example, subheading), `index.ts` (`CHEATSHEETS: Record<Level, …>`). **Routing:** `app/cheatsheet.tsx`, sidebar label "Cheat Sheet" (Feather `list`), `Drawer.Screen` in `_layout.tsx`. **UI (final):** Masonry-style card grid on web via CSS `column-count` + `column-gap` (12px), responsive 1 / 2 / 3 columns at `<768` / `768–1200` / `>1200px`; cards `break-inside: avoid`, `margin-bottom: 12px`; `column-span: all` wide cards for **sein and haben (present)** (sein | haben tables side-by-side, 1px vertical divider; stacks on narrow width) and **Present tense — regular verbs**. Native: single-column `ScrollView`. Level pills use Inter (12px / 500); selected pill `#111` bg + white text, unselected white + `#888` + 1px `#e0e0e0` border; tab bar `border-bottom` + `margin-bottom` 16px; sticky tabs on web; `useEffect` syncs sheet level to global header level. Cards: white `#fff`, 1px `#e0e0e0`, 4px radius, padding 12×14; section title Inter 600, 10px caps, `#888`, left 2px `#2563eb` accent; body copy Inter 12px `#555`; tables — web `display: table` + `border-collapse`, th Inter 10px, td IBM Plex Mono 12px, explicit first-column widths by header shape (pronoun / question-word / article / conjugation / modal). German examples: IBM Plex Mono 13px semibold; English: Inter 11px `#888`. No Gemini, no Supabase.
 
 ---

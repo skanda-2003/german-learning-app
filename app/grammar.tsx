@@ -7,7 +7,7 @@
 //   4. Score tracker (correct / total answered) updates after each exercise
 //   5. End screen with final score and options to retry or pick another topic
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import useLevelStore from '../src/store/useLevelStore';
 import { GRAMMAR, GrammarExercise } from '../src/data/grammar';
 import ExerciseCard from '../src/components/ExerciseCard';
@@ -78,6 +79,22 @@ export default function GrammarScreen() {
     setGenerateError(null);
     setScreen('exercise');
   }
+
+  // ── Auto-start from "Practice This Topic" deep-link (Phase 31) ──
+  // Reads the optional ?topic= query param set by the Lessons screen.
+  // useRef guard prevents re-triggering on every re-render.
+  const { topic: topicParam } = useLocalSearchParams<{ topic?: string }>();
+  const hasAutoStarted = useRef(false);
+
+  useEffect(() => {
+    if (!topicParam || hasAutoStarted.current) return;
+    const decoded = decodeURIComponent(topicParam);
+    const topicExists = allExercises.some((ex) => ex.topic === decoded);
+    if (topicExists) {
+      hasAutoStarted.current = true;
+      startTopic(decoded);
+    }
+  }, [topicParam, allExercises]);
 
   async function handleGenerateMore() {
     setIsGenerating(true);
