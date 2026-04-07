@@ -1,21 +1,24 @@
-// userId.ts — Returns the authenticated Supabase user's ID (Phase 15)
+// userId.ts — Returns the authenticated Supabase user's ID.
 //
-// Phase 34 update: reads user ID synchronously from useAuthStore when available,
-// avoiding a Supabase round-trip on every write (3 calls per grammar session end).
-// Falls back to a live supabase.auth.getUser() call only if the store is empty
-// (shouldn't happen since all screens are behind the auth gate in _layout.tsx).
+// Reads synchronously from useAuthStore (no network call needed).
+// All screens are behind the auth gate in _layout.tsx, so the store
+// always has a userId by the time any service function is called.
+//
+// If userId is somehow null here, it means a service was called before
+// the auth session loaded — that is a bug, so we throw clearly instead
+// of silently returning a bogus 'fallback-user' ID that would corrupt data.
 
-import { supabase } from './supabase';
 import useAuthStore from '../store/useAuthStore';
 
-// Returns the current user's Supabase auth ID.
-// Reads from the in-memory auth store first (no network call).
-// Falls back to supabase.auth.getUser() if store has no ID yet.
+// Returns the current user's Supabase auth ID from the in-memory store.
+// Throws if called before the session has loaded (should never happen behind the auth gate).
 export async function getUserId(): Promise<string> {
-  const cached = useAuthStore.getState().userId;
-  if (cached) return cached;
-
-  // Fallback — should only happen in edge cases before the session has loaded
-  const { data: { user } } = await supabase.auth.getUser();
-  return user?.id ?? 'fallback-user';
+  const userId = useAuthStore.getState().userId;
+  if (!userId) {
+    throw new Error(
+      'getUserId() called before auth session loaded. ' +
+      'All screens must be behind the auth gate in _layout.tsx.'
+    );
+  }
+  return userId;
 }
