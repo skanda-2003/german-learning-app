@@ -6,10 +6,11 @@
 import type { Level } from '../../store/useLevelStore';
 import type { Lesson } from './types';
 import { A1_LESSONS } from './a1';
+import { A2_LESSONS } from './a2';
 
 export const LESSONS: Record<Level, Lesson[]> = {
   A1: A1_LESSONS,
-  A2: [],
+  A2: A2_LESSONS,
   B1: [],
   B2: [],
 };
