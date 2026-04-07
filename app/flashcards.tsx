@@ -9,7 +9,7 @@
 //   - Category pills show word counts
 //   - Mastery persists to Supabase using the new 3-state mastery column
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,12 @@ import {
 } from 'react-native';
 import useLevelStore from '../src/store/useLevelStore';
 import { VOCABULARY, Word } from '../src/data/vocabulary';
+import {
+  VerbSubCategory,
+  NounSubCategory,
+  PrepositionSubCategory,
+  OtherSubCategory,
+} from '../src/data/vocabulary/types';
 import FlashCard from '../src/components/FlashCard';
 import { useSpacedRepetition } from '../src/hooks/useSpacedRepetition';
 import { loadMastery, saveMastery, MasteryMap } from '../src/lib/masteryService';
@@ -49,6 +55,102 @@ function filterByCategory(words: Word[], category: CategoryId): Word[] {
 }
 
 const CATEGORIES: CategoryId[] = ['All', 'Nouns', 'Verbs', 'Adjectives', 'Prepositions', 'Other'];
+
+// ─── Sub-category detection ────────────────────────────────────────────────────
+
+// Fixed list of modal verbs — same across all levels
+const MODAL_VERBS = ['können', 'müssen', 'wollen', 'möchten', 'dürfen', 'sollen'];
+
+// A verb is irregular if its er/sie/es form doesn't match the expected regular pattern.
+// Regular verbs follow: stem + 't' (spielen → spielt) or stem + 'et' (arbeiten → arbeitet).
+// Vowel-change verbs (fahren → fährt) and strong verbs will fail both checks → irregular.
+function isIrregular(word: Word): boolean {
+  const stem = word.german.replace(/en$|n$/, '');
+  const er = word.conjugations?.er ?? '';
+  return er !== stem + 't' && er !== stem + 'et';
+}
+
+function getVerbSubCategory(word: Word): VerbSubCategory {
+  if (MODAL_VERBS.includes(word.german)) return 'Modal';
+  if (word.german.startsWith('sich ')) return 'Reflexive';
+  // Separable verbs have a space in their ich-form (e.g. "fahre ab")
+  if (word.conjugations?.ich?.includes(' ')) return 'Separable';
+  // Needs conjugation data to detect irregular — fall back to Regular if missing
+  if (word.conjugations && isIrregular(word)) return 'Irregular';
+  return 'Regular';
+}
+
+// Hardcoded case map — covers the most common German prepositions across all levels
+const PREPOSITION_CASES: Record<string, PrepositionSubCategory> = {
+  durch: 'Accusative', für: 'Accusative', gegen: 'Accusative',
+  ohne: 'Accusative', um: 'Accusative', bis: 'Accusative', entlang: 'Accusative',
+  aus: 'Dative', bei: 'Dative', mit: 'Dative', nach: 'Dative',
+  seit: 'Dative', von: 'Dative', zu: 'Dative', gegenüber: 'Dative', außer: 'Dative',
+  an: 'Two-way', auf: 'Two-way', hinter: 'Two-way', in: 'Two-way',
+  neben: 'Two-way', über: 'Two-way', unter: 'Two-way', vor: 'Two-way', zwischen: 'Two-way',
+  wegen: 'Genitive', trotz: 'Genitive', während: 'Genitive',
+  innerhalb: 'Genitive', außerhalb: 'Genitive', statt: 'Genitive', anstatt: 'Genitive',
+};
+
+// Sub-category pill definitions per main category (label + detection function)
+const VERB_SUBCATS: { label: VerbSubCategory }[] = [
+  { label: 'Modal' },
+  { label: 'Separable' },
+  { label: 'Reflexive' },
+  { label: 'Irregular' },
+  { label: 'Regular' },
+];
+
+const NOUN_SUBCATS: { label: NounSubCategory }[] = [
+  { label: 'der' },
+  { label: 'die' },
+  { label: 'das' },
+];
+
+const PREPOSITION_SUBCATS: { label: PrepositionSubCategory }[] = [
+  { label: 'Accusative' },
+  { label: 'Dative' },
+  { label: 'Two-way' },
+  { label: 'Genitive' },
+];
+
+const OTHER_SUBCATS: { label: OtherSubCategory }[] = [
+  { label: 'Adverbs' },
+  { label: 'Conjunctions' },
+  { label: 'Pronouns' },
+  { label: 'Phrases' },
+];
+
+// Apply the active sub-category filter on top of the already main-category-filtered words.
+// Returns filtered words, or the original list if no sub-category is active.
+function applySubFilter(
+  words: Word[],
+  category: CategoryId,
+  verbSub: VerbSubCategory | null,
+  nounSub: NounSubCategory | null,
+  prepSub: PrepositionSubCategory | null,
+  otherSub: OtherSubCategory | null,
+): Word[] {
+  if (category === 'Verbs' && verbSub) {
+    return words.filter(w => getVerbSubCategory(w) === verbSub);
+  }
+  if (category === 'Nouns' && nounSub) {
+    return words.filter(w => w.gender === nounSub);
+  }
+  if (category === 'Prepositions' && prepSub) {
+    return words.filter(w => PREPOSITION_CASES[w.german] === prepSub);
+  }
+  if (category === 'Other' && otherSub) {
+    const posMap: Record<OtherSubCategory, string> = {
+      Adverbs: 'adverb',
+      Conjunctions: 'conjunction',
+      Pronouns: 'pronoun',
+      Phrases: 'phrase',
+    };
+    return words.filter(w => w.partOfSpeech === posMap[otherSub]);
+  }
+  return words;
+}
 
 // ─── FlashcardDeck sub-component ──────────────────────────────────────────────
 // Remounted via key= when the category or search query changes.
@@ -259,6 +361,61 @@ export default function FlashcardsScreen() {
   const [selectedCategory, setSelectedCategory] = useState<CategoryId>('All');
   const [searchQuery, setSearchQuery]     = useState('');
 
+  // Sub-category selections — one per supported main category, all start null (= show all)
+  const [verbSub,  setVerbSub]  = useState<VerbSubCategory | null>(null);
+  const [nounSub,  setNounSub]  = useState<NounSubCategory | null>(null);
+  const [prepSub,  setPrepSub]  = useState<PrepositionSubCategory | null>(null);
+  const [otherSub, setOtherSub] = useState<OtherSubCategory | null>(null);
+
+  // Dropdown state — position is relative to outerContainer
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownAnchor, setDropdownAnchor] = useState<{ x: number; y: number } | null>(null);
+
+  // Refs for measuring positions
+  const containerRef = useRef<View>(null);
+  const pillRefs = useRef<Partial<Record<CategoryId, typeof TouchableOpacity.prototype>>>({});
+
+  // Categories that have sub-category dropdowns
+  const SUBCATEGORY_CATS: CategoryId[] = ['Verbs', 'Nouns', 'Prepositions', 'Other'];
+
+  // Resets all sub-category state when main category changes
+  function handleCategorySelect(cat: CategoryId) {
+    setSelectedCategory(cat);
+    setVerbSub(null);
+    setNounSub(null);
+    setPrepSub(null);
+    setOtherSub(null);
+  }
+
+  // Handles pressing a main category pill
+  function handlePillPress(cat: CategoryId) {
+    const isAlreadySelected = cat === selectedCategory;
+    handleCategorySelect(cat);
+
+    if (!SUBCATEGORY_CATS.includes(cat)) {
+      // No sub-categories for this pill — close any open dropdown
+      setDropdownOpen(false);
+      return;
+    }
+
+    if (isAlreadySelected && dropdownOpen) {
+      // Same pill tapped again: toggle closed
+      setDropdownOpen(false);
+      return;
+    }
+
+    // Measure the pill and the container to get pill position relative to outerContainer
+    const pillRef = pillRefs.current[cat];
+    if (!pillRef || !containerRef.current) return;
+
+    containerRef.current.measureInWindow((cx, cy) => {
+      (pillRef as any).measureInWindow((px: number, py: number, _pw: number, ph: number) => {
+        setDropdownAnchor({ x: px - cx, y: py - cy + ph + 6 });
+        setDropdownOpen(true);
+      });
+    });
+  }
+
   // Load mastery from Supabase when the level changes
   useEffect(() => {
     setMasteryLoading(true);
@@ -268,21 +425,30 @@ export default function FlashcardsScreen() {
     });
   }, [level]);
 
-  // All words in the selected category (used for pill counts + Study Again)
+  // All words in the selected main category (before sub-filter — used for pill counts)
   const allCategoryWords = filterByCategory(words, selectedCategory);
+
+  // Apply the active sub-category filter to get the effective word pool
+  const subFilteredWords = applySubFilter(
+    allCategoryWords,
+    selectedCategory,
+    verbSub,
+    nounSub,
+    prepSub,
+    otherSub,
+  );
 
   // Words due for review today — excludes words whose next_review_date is in the future.
   // If a word has never been studied (not in masteryMap), it is always due.
-  // If no words are due (all reviewed recently), fall back to the full category so
-  // the user is never stuck with an empty deck.
+  // If no words are due (all reviewed recently), fall back to the full sub-filtered set.
   const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
-  const dueWords = allCategoryWords.filter((w) => {
+  const dueWords = subFilteredWords.filter((w) => {
     const data = masteryMap.get(w.id);
     if (!data) return true; // never studied — always include
     if (data.nextReviewDate && data.nextReviewDate > today) return false; // not due yet
     return true; // due today or overdue
   });
-  const wordsForSession = dueWords.length > 0 ? dueWords : allCategoryWords;
+  const wordsForSession = dueWords.length > 0 ? dueWords : subFilteredWords;
 
   // Apply search filter on top (searches German word and English translation)
   const trimmedQuery = searchQuery.trim().toLowerCase();
@@ -294,8 +460,55 @@ export default function FlashcardsScreen() {
       )
     : wordsForSession;
 
-  // Key for the deck — remounts when category or search query changes
-  const deckKey = `${selectedCategory}:${trimmedQuery}`;
+  // Key for the deck — remounts when category, sub-category, or search query changes
+  const activeSub = verbSub ?? nounSub ?? prepSub ?? otherSub ?? '';
+  const deckKey = `${selectedCategory}:${activeSub}:${trimmedQuery}`;
+
+  // Compute sub-pills as a plain variable so the ScrollView always renders
+  // (same layout tree every render — prevents the deck from shifting position)
+  const otherPosMap: Record<OtherSubCategory, string> = {
+    Adverbs: 'adverb', Conjunctions: 'conjunction', Pronouns: 'pronoun', Phrases: 'phrase',
+  };
+  type SubPill = { label: string; count: number; isActive: boolean; onPress: () => void };
+  let subPills: SubPill[] = [];
+
+  if (selectedCategory === 'Verbs') {
+    subPills = VERB_SUBCATS
+      .map(({ label }) => ({
+        label,
+        count: allCategoryWords.filter(w => getVerbSubCategory(w) === label).length,
+        isActive: verbSub === label,
+        onPress: () => setVerbSub(verbSub === label ? null : label),
+      }))
+      .filter(p => p.count > 0);
+  } else if (selectedCategory === 'Nouns') {
+    subPills = NOUN_SUBCATS
+      .map(({ label }) => ({
+        label,
+        count: allCategoryWords.filter(w => w.gender === label).length,
+        isActive: nounSub === label,
+        onPress: () => setNounSub(nounSub === label ? null : label),
+      }))
+      .filter(p => p.count > 0);
+  } else if (selectedCategory === 'Prepositions') {
+    subPills = PREPOSITION_SUBCATS
+      .map(({ label }) => ({
+        label,
+        count: allCategoryWords.filter(w => PREPOSITION_CASES[w.german] === label).length,
+        isActive: prepSub === label,
+        onPress: () => setPrepSub(prepSub === label ? null : label),
+      }))
+      .filter(p => p.count > 0);
+  } else if (selectedCategory === 'Other') {
+    subPills = OTHER_SUBCATS
+      .map(({ label }) => ({
+        label,
+        count: allCategoryWords.filter(w => w.partOfSpeech === otherPosMap[label]).length,
+        isActive: otherSub === label,
+        onPress: () => setOtherSub(otherSub === label ? null : label),
+      }))
+      .filter(p => p.count > 0);
+  }
 
   // ── Loading state ──
   if (masteryLoading) {
@@ -318,7 +531,7 @@ export default function FlashcardsScreen() {
   }
 
   return (
-    <View style={styles.outerContainer}>
+    <View ref={containerRef} style={styles.outerContainer}>
 
       {/* ── Search bar ── */}
       <View style={styles.searchContainer}>
@@ -332,7 +545,6 @@ export default function FlashcardsScreen() {
           autoCapitalize="none"
           clearButtonMode="while-editing"
         />
-        {/* Clear button for Android / web (iOS uses clearButtonMode) */}
         {searchQuery.length > 0 && (
           <TouchableOpacity style={styles.clearButton} onPress={() => setSearchQuery('')}>
             <Text style={styles.clearButtonText}>✕</Text>
@@ -344,34 +556,70 @@ export default function FlashcardsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.pillScrollView}
         contentContainerStyle={styles.pillRow}
       >
         {CATEGORIES.map((cat) => {
           const count = filterByCategory(words, cat).length;
           const isSelected = cat === selectedCategory;
+          const hasSub = SUBCATEGORY_CATS.includes(cat);
+          // Show active sub-category label on the pill when one is selected
+          const activeSubLabel = isSelected
+            ? (verbSub ?? nounSub ?? prepSub ?? otherSub ?? null)
+            : null;
           return (
             <TouchableOpacity
               key={cat}
+              ref={ref => { if (ref) pillRefs.current[cat] = ref; }}
               style={[styles.pill, isSelected && styles.pillSelected]}
-              onPress={() => setSelectedCategory(cat)}
+              onPress={() => handlePillPress(cat)}
             >
               <Text style={[styles.pillText, isSelected && styles.pillTextSelected]}>
-                {cat}
+                {cat}{hasSub ? ' ▾' : ''}
               </Text>
               <Text style={[styles.pillCount, isSelected && styles.pillCountSelected]}>
-                {count}
+                {activeSubLabel ?? count}
               </Text>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
 
-      {/* ── Deck — remounts on category or search change ── */}
+      {/* ── Deck — remounts on category, sub-category, or search change ── */}
       <FlashcardDeck
         key={deckKey}
         studyWords={studyWords}
-        allCategoryWords={allCategoryWords}
+        allCategoryWords={subFilteredWords}
       />
+
+      {/* ── Sub-category dropdown — floats absolutely, never affects layout ── */}
+      {dropdownOpen && dropdownAnchor && subPills.length > 0 && (
+        <>
+          {/* Transparent backdrop: closes dropdown on outside tap */}
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            onPress={() => setDropdownOpen(false)}
+            activeOpacity={1}
+          />
+          {/* Floating card anchored below the tapped pill */}
+          <View style={[styles.dropdown, { top: dropdownAnchor.y, left: dropdownAnchor.x }]}>
+            {subPills.map(({ label, count, isActive, onPress }) => (
+              <TouchableOpacity
+                key={label}
+                style={[styles.dropdownItem, isActive && styles.dropdownItemActive]}
+                onPress={() => { onPress(); setDropdownOpen(false); }}
+              >
+                <Text style={[styles.dropdownItemLabel, isActive && styles.dropdownItemLabelActive]}>
+                  {label}
+                </Text>
+                <Text style={[styles.dropdownItemCount, isActive && styles.dropdownItemCountActive]}>
+                  {count}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
+      )}
 
     </View>
   );
@@ -392,6 +640,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
   },
   searchInput: {
     flex: 1,
@@ -417,9 +666,14 @@ const styles = StyleSheet.create({
   },
 
   // ── Category pills ──
+  // flexShrink: 0 — never let the flex column compress this row
+  pillScrollView: {
+    flexShrink: 0,
+  },
   pillRow: {
     paddingHorizontal: spacing.xxl,
-    paddingVertical: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xs,
     gap: spacing.sm,
     flexDirection: 'row',
   },
@@ -454,6 +708,45 @@ const styles = StyleSheet.create({
   },
   pillCountSelected: {
     color: '#888888',
+  },
+
+  // ── Sub-category dropdown ──
+  // position: absolute — floats over content, zero layout impact
+  dropdown: {
+    position: 'absolute',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    minWidth: 160,
+    zIndex: 100,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.xl,
+  },
+  dropdownItemActive: {
+    backgroundColor: colors.textPrimary,
+  },
+  dropdownItemLabel: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.sm,
+    color: colors.textPrimary,
+  },
+  dropdownItemLabelActive: {
+    color: colors.background,
+  },
+  dropdownItemCount: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+  },
+  dropdownItemCountActive: {
+    color: colors.background,
   },
 
   // ── Deck ──

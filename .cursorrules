@@ -204,6 +204,17 @@ type Word = {
 };
 ```
 
+Sub-category types (also in `types.ts`, used in `flashcards.tsx` for the dropdown filter):
+
+```typescript
+type VerbSubCategory       = 'Regular' | 'Irregular' | 'Modal' | 'Separable' | 'Reflexive';
+type NounSubCategory       = 'der' | 'die' | 'das';
+type PrepositionSubCategory = 'Accusative' | 'Dative' | 'Two-way' | 'Genitive';
+type OtherSubCategory      = 'Adverbs' | 'Conjunctions' | 'Pronouns' | 'Phrases';
+```
+
+Detection is purely runtime from existing word fields — no data changes needed. Modal verbs are detected via a fixed list; separable verbs by a space in the `ich` conjugation form; reflexive verbs by `german.startsWith('sich ')`; irregular verbs by comparing the `er` form against the expected regular stem.
+
 IDs follow the pattern `a1_001`, `a2_001`, `b1_001`, `b2_001` — zero-padded to 3 digits.
 
 All words for a level live in one array exported as `A1_WORDS`, `A2_WORDS`, etc.

@@ -18,6 +18,12 @@ export type Conjugations = {
   sie: string;   // third person plural / formal Sie
 };
 
+// Sub-category types — used in flashcards.tsx for the second pill row
+export type VerbSubCategory = 'Regular' | 'Irregular' | 'Modal' | 'Separable' | 'Reflexive';
+export type NounSubCategory = 'der' | 'die' | 'das';
+export type PrepositionSubCategory = 'Accusative' | 'Dative' | 'Two-way' | 'Genitive';
+export type OtherSubCategory = 'Adverbs' | 'Conjunctions' | 'Pronouns' | 'Phrases';
+
 // The shape of a single vocabulary word
 export type Word = {
   id: string;           // unique identifier, e.g. "a1_001" — used to track mastery in Supabase
