@@ -472,90 +472,38 @@ The real exam has 3 sub-tasks (done in pairs — simulated solo here):
 
 ---
 
-### Phase 31 — Lessons · Effort: High
+### ⏳ Phase 31a — Lessons: A1 + Full Infrastructure · Effort: Medium
 
-**Goal:** Add a Lessons section where each grammar topic has a structured explanation screen — plain English, worked examples, key rules, common mistakes — with a "Practice Now" button that jumps directly into Grammar exercises for that topic.
+Full plan in `lessons.md` (project root).
 
-#### Data structure — `src/data/lessons/types.ts`
+Build the complete Lessons feature with A1 content only. All infrastructure (types, screens, navigation, "Practice This Topic" deep-link, AsyncStorage viewed state + last-studied timestamps) ships in this phase. Verify A1 lessons are accurate and UI feels right before adding more levels.
 
-```ts
-export type LessonExample = {
-  german: string;   // German sentence in IBM Plex Mono
-  english: string;  // English translation
-  note?: string;    // optional annotation, e.g. "verb in second position"
-};
+**Files:**
+- `src/data/lessons/types.ts` — new
+- `src/data/lessons/a1.ts` — 19 A1 lessons
+- `src/data/lessons/index.ts` — new (A2/B1/B2 = `[]` for now)
+- `app/lessons.tsx` — new selector screen
+- `app/lesson.tsx` — new detail screen
+- `app/(drawer)/_layout.tsx` — sidebar item + Drawer.Screen entries
+- `app/grammar.tsx` — `topic` query param support
 
-export type Lesson = {
-  topic: string;          // must match GrammarExercise.topic exactly — used for deep-link
-  level: Level;
-  title: string;          // display title (same as topic, formatted for headings)
-  explanation: string;    // 2–3 paragraph plain English explanation
-  keyPoints: string[];    // 3–5 bullet points of the key rules
-  examples: LessonExample[]; // 4–6 worked examples
-  commonMistake: string;  // one common error described (wrong → right)
-};
-```
+### ⏳ Phase 31b — Lessons: A2 Content · Effort: Low
 
-#### Data files
+Full plan in `lessons.md` (project root).
 
-- `src/data/lessons/a1.ts` — 19 lessons (one per A1 grammar topic, matching topics in `a1.ts` exactly)
-- `src/data/lessons/a2.ts` — 12 lessons (matching A2 grammar topics)
-- `src/data/lessons/b1.ts` — 12 lessons (matching B1 grammar topics)
-- `src/data/lessons/index.ts` — `LESSONS: Record<Level, Lesson[]>`
+Add 12 A2 lessons to `src/data/lessons/a2.ts` and wire into index. Includes the `buildingOn` note on "Reflexive verbs" (builds on A1, focuses on dative reflexive + meaning-changing patterns).
 
-**A1 topic list (must match `GrammarExercise.topic` strings exactly):**
-Verb conjugation: sein, Verb conjugation: haben, Definite articles: der/die/das, Negation: nicht / kein, Basic word order, Indefinite articles: ein/eine, Personal pronouns, Regular verb conjugation, Modal verbs, Accusative case, Possessive articles, Questions, Separable verbs, Plural nouns, Imperative, Prepositions, Time expressions, Reflexive verbs, Days/months/seasons.
+### ⏳ Phase 31c — Lessons: B1 Content · Effort: Low
 
-#### Lesson selector screen — `app/lessons.tsx`
+Full plan in `lessons.md` (project root).
 
-- 2-column card grid (same style as Grammar and Mini Games selectors).
-- Each card shows: topic title, "~3 min read", and a small dot (green if viewed, grey if not).
-- Lesson viewed state is tracked locally via AsyncStorage (`lessons_viewed_A1`, etc.) — a `Set<string>` of topic strings. No Supabase needed; lessons are reference material, not scored.
-- "X / Y lessons read" count shown at top in the LABEL style (`#888`, 11px, caps).
-- B2 lessons show a "coming soon" empty state (same pattern as grammar for B2).
+Add 12 B1 lessons to `src/data/lessons/b1.ts` and wire into index.
 
-#### Lesson detail screen — `app/lesson.tsx`
+### ⏳ Phase 31d — Lessons: B2 Content · Effort: Low
 
-- Accessed via `router.push('/lesson?topic=Verb+conjugation+sein&level=A1')`.
-- Scrollable single-column layout.
-- **Header:** Topic title (IBM Plex Mono 18px bold, `#111`), level badge (small pill).
-- **EXPLANATION section:** Plain Inter 14px `#333` text, line-height 1.6, paragraph breaks.
-- **KEY RULES section:** Bulleted list. Rule text in Inter 13px; any German words in rules rendered in IBM Plex Mono inline.
-- **EXAMPLES section:** One card per example. German sentence: IBM Plex Mono 14px semibold `#111`. English: Inter 12px `#888`. Optional note: Inter 11px `#2563eb`.
-- **COMMON MISTAKE section:** A `#dc2626` 1px left-bordered box. Shows ✗ wrong form + ✓ correct form, both in IBM Plex Mono.
-- **Bottom CTA:** "PRACTICE THIS TOPIC" — primary solid black button. Navigates to `app/grammar.tsx` passing `?topic=<topicString>` as a query param.
-- On mount: mark topic as viewed in AsyncStorage.
+Full plan in `lessons.md` (project root).
 
-#### Grammar screen update — `app/grammar.tsx`
-
-- Read `topic` from `useLocalSearchParams()` at mount.
-- If `topic` param is present: skip the topic selector, pre-filter exercises to that topic, and start the session immediately.
-- If topic param is absent: existing behaviour (show topic selector as normal).
-- This is a small addition — just an early-return branch at the top of the component before the selector renders.
-
-#### Sidebar addition
-
-- Icon: `file-text` (Feather)
-- Label: Lessons
-- Position: between Grammar and Cheat Sheet in the sidebar order.
-- Add `Drawer.Screen` for both `lessons` and `lesson` routes in `_layout.tsx` (lesson detail does not appear in the sidebar itself — only the lessons selector does).
-
-#### No Supabase changes needed
-
-Lesson progress (viewed/not viewed) is local-only via AsyncStorage. Lessons are reference material, not a scored section — no `section_scores` entry, no progress page entry.
-
-#### Summary of files to touch
-| File | Change |
-|---|---|
-| `src/data/lessons/types.ts` | New — `Lesson`, `LessonExample` types |
-| `src/data/lessons/a1.ts` | New — 19 A1 lessons |
-| `src/data/lessons/a2.ts` | New — 12 A2 lessons |
-| `src/data/lessons/b1.ts` | New — 12 B1 lessons |
-| `src/data/lessons/index.ts` | New — `LESSONS` record export |
-| `app/lessons.tsx` | New — lesson selector screen |
-| `app/lesson.tsx` | New — lesson detail screen |
-| `app/grammar.tsx` | Read `topic` query param; pre-filter and auto-start if present |
-| `app/(drawer)/_layout.tsx` | Add Lessons + lesson Drawer.Screen entries; add sidebar item |
+Add B2 lessons once B2 grammar exercises exist (Phase 38). Until then, B2 shows the "coming soon" empty state already in place from Phase 31a.
 
 ### ⏳ Phase 38 — B2 Content · Effort: Very High
 
