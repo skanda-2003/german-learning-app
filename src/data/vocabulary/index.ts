@@ -7,14 +7,14 @@ import { Word } from './types';
 import { A1_WORDS } from './a1';
 import { A2_WORDS } from './a2';
 import { B1_WORDS } from './b1';
+import { B2_WORDS } from './b2';
 
 // A lookup table: given a level, return the correct word list.
-// B2 is empty — word list not yet written.
 export const VOCABULARY: Record<Level, Word[]> = {
   A1: A1_WORDS,   // 661 words
   A2: A2_WORDS,   // 585 words
   B1: B1_WORDS,   // 1406 words
-  B2: [],         // TODO: add B2 vocabulary
+  B2: B2_WORDS,   // Phase 38: B2 vocabulary
 };
 
 // Re-export the Word type so other files can import it from here
