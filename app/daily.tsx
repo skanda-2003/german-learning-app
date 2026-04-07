@@ -1,10 +1,17 @@
 // daily.tsx — Daily Challenge screen
 //
 // Flow:
-//   1. Load the user's progress from Supabase (streak + completion date)
+//   1. Load streak progress + grammar topic scores from Supabase in parallel
 //   2a. If today's challenge is already done → show the "come back tomorrow" screen
-//   2b. If not done → show 5 grammar exercises (selected by today's date as a seed)
+//   2b. If not done → compute 5 weighted exercises (weak topics get more slots),
+//       then show intro screen
 //   3. User completes all 5 → completion saved to Supabase, streak updated, done screen shown
+//
+// Spaced repetition weighting (Phase 33):
+//   - Weak topics (< 60% best score) or unattempted → weight 3 (more frequent)
+//   - Mid topics (60–79%)                           → weight 2
+//   - Strong topics (≥ 80%)                         → weight 1 (less frequent)
+//   - First-time users (no scores yet) → all topics weight 3, uniform pick by seed
 
 import React, { useState, useCallback } from 'react';
 import {
@@ -31,6 +38,7 @@ import { logActivity } from '../src/lib/activityService';
 import { loadMistakes } from '../src/lib/mistakeService';
 import { getContextualTip } from '../src/lib/contextualTipService';
 import useTipStore from '../src/store/useTipStore';
+import { loadTopicScores, TopicScoreMap } from '../src/lib/grammarTopicService';
 import {
   colors, font, fontSize, spacing, radius,
   cardStyle, progressTrackStyle,
@@ -52,18 +60,109 @@ function hashString(s: string): number {
   return h;
 }
 
-// Returns 5 exercises seeded by today's date XORed with a hash of the user ID.
-// This ensures each user gets a different set on any given day.
-function getDailyExercises(allExercises: GrammarExercise[], userId: string): GrammarExercise[] {
+// ─── Weighted daily exercise selection ────────────────────────────────────────
+//
+// Groups all exercises by topic, assigns a weight to each topic based on
+// the user's score history, then allocates 5 slots proportionally.
+//
+// Weights:
+//   Weak (< 60%) or unattempted → 3  (show more often)
+//   Mid  (60–79%)               → 2
+//   Strong (≥ 80%)              → 1  (show less often)
+
+function getTopicWeight(topic: string, scoreMap: TopicScoreMap): number {
+  const score = scoreMap.get(topic);
+  if (!score || score.bestTotal === 0) return 3; // unattempted → treat as weak
+  const pct = score.bestScore / score.bestTotal;
+  if (pct < 0.6) return 3;  // weak
+  if (pct < 0.8) return 2;  // mid
+  return 1;                  // strong
+}
+
+// Picks one exercise from a topic's exercise list using the combined seed.
+// Offset lets us avoid picking the same exercise twice across different slots.
+function pickFromTopic(
+  topicExercises: GrammarExercise[],
+  seed: number,
+  offset: number
+): GrammarExercise {
+  const idx = Math.abs(seed + offset) % topicExercises.length;
+  return topicExercises[idx];
+}
+
+// Main weighted selection function.
+// scoreMap may be empty (first-time user) → falls back to uniform random by seed.
+function getDailyExercises(
+  allExercises: GrammarExercise[],
+  userId: string,
+  scoreMap: TopicScoreMap
+): GrammarExercise[] {
   if (allExercises.length === 0) return [];
+
   const dateSeed = parseInt(getTodayString().replace(/-/g, ''), 10);
   const userSeed = hashString(userId);
-  const seed = dateSeed ^ userSeed; // XOR combines date and user into unique seed
-  const startIndex = Math.abs(seed) % allExercises.length;
-  const result: GrammarExercise[] = [];
-  for (let i = 0; i < CHALLENGE_SIZE; i++) {
-    result.push(allExercises[(startIndex + i) % allExercises.length]);
+  const seed = dateSeed ^ userSeed; // unique per user per day
+
+  // Step 1: Group exercises by topic
+  const byTopic = new Map<string, GrammarExercise[]>();
+  for (const ex of allExercises) {
+    if (!byTopic.has(ex.topic)) byTopic.set(ex.topic, []);
+    byTopic.get(ex.topic)!.push(ex);
   }
+
+  const topics = Array.from(byTopic.keys());
+
+  // Step 2: Compute weights for each topic
+  const weights = topics.map(t => getTopicWeight(t, scoreMap));
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+  // Step 3: Allocate 5 slots proportionally — round each, then fix sum to 5
+  let slots = weights.map(w => Math.round((w / totalWeight) * CHALLENGE_SIZE));
+  // Adjust so slots sum to exactly CHALLENGE_SIZE
+  let diff = CHALLENGE_SIZE - slots.reduce((s, x) => s + x, 0);
+  // Fix by adding/removing from the topic with the highest weight first
+  const sortedByWeight = topics.map((_, i) => i).sort((a, b) => weights[b] - weights[a]);
+  for (const idx of sortedByWeight) {
+    if (diff === 0) break;
+    slots[idx] = Math.max(0, slots[idx] + (diff > 0 ? 1 : -1));
+    diff += diff > 0 ? -1 : 1;
+  }
+  // Guarantee at least 1 slot for topics with weight 3 (weak/unattempted), up to 5 topics
+  const weakTopics = topics.filter((t, i) => weights[i] === 3 && slots[i] === 0);
+  for (const weakTopic of weakTopics.slice(0, CHALLENGE_SIZE)) {
+    const weakIdx = topics.indexOf(weakTopic);
+    // Take a slot from the topic with the most slots (that has ≥ 2)
+    const donor = sortedByWeight.find(i => i !== weakIdx && slots[i] >= 2);
+    if (donor === undefined) break; // no slots to move
+    slots[donor]--;
+    slots[weakIdx]++;
+  }
+
+  // Step 4: Pick exercises for each allocated slot, avoiding duplicates
+  const result: GrammarExercise[] = [];
+  const usedIds = new Set<string>();
+  let offset = 0;
+
+  for (let i = 0; i < topics.length; i++) {
+    const topicExs = byTopic.get(topics[i])!;
+    for (let s = 0; s < slots[i]; s++) {
+      // Find an exercise from this topic we haven't used yet
+      let picked: GrammarExercise | null = null;
+      for (let attempt = 0; attempt < topicExs.length; attempt++) {
+        const candidate = pickFromTopic(topicExs, seed, offset + attempt);
+        if (!usedIds.has(candidate.id)) {
+          picked = candidate;
+          break;
+        }
+      }
+      // Fallback: just use the offset pick (duplicate is better than crash)
+      if (!picked) picked = pickFromTopic(topicExs, seed, offset);
+      usedIds.add(picked.id);
+      result.push(picked);
+      offset++;
+    }
+  }
+
   return result;
 }
 
@@ -87,22 +186,33 @@ export default function DailyScreen() {
     lastActiveDate: '',
     dailyChallengeCompletedDate: '',
   });
-  const [exercises] = useState<GrammarExercise[]>(() => getDailyExercises(allExercises, userId));
+  // exercises are computed after topic scores load, so they start empty
+  const [exercises, setExercises] = useState<GrammarExercise[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       setScreen('loading');
-      loadProgress().then((p) => {
+      setCurrentIndex(0);
+      setCorrectCount(0);
+
+      // Load both streak progress and topic weakness scores in parallel,
+      // then compute the weighted exercise selection before showing the intro.
+      Promise.all([
+        loadProgress(),
+        loadTopicScores(level),
+      ]).then(([p, scoreMap]) => {
         setProgress(p);
+        // Compute weighted exercises now that we have topic scores
+        setExercises(getDailyExercises(allExercises, userId, scoreMap));
         if (p.dailyChallengeCompletedDate === getTodayString()) {
           setScreen('already-done');
         } else {
           setScreen('intro');
         }
       });
-    }, [])
+    }, [level]) // re-run if level changes
   );
 
   async function handleNext(wasCorrect: boolean) {
