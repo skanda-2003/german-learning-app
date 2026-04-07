@@ -1,7 +1,7 @@
 // lesson.tsx — Lesson detail screen
 //
 // Reads ?topic= and ?level= query params from the URL.
-// Marks the lesson as viewed in AsyncStorage on mount (stores ISO timestamp).
+// Marks the lesson as viewed in Supabase on mount (stores ISO timestamp).
 // Sections: Header → Building On (if present) → Explanation → Key Rules →
 //           Examples → Common Mistake → "Practice This Topic" button.
 
@@ -13,9 +13,9 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LESSONS } from '../src/data/lessons/index';
+import { saveLessonViewed } from '../src/lib/lessonProgressService';
 import type { Level } from '../src/store/useLevelStore';
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -35,17 +35,11 @@ export default function LessonScreen() {
   const lesson = LESSONS[level]?.find((l) => l.topic === topic) ?? null;
 
   // ── Mark lesson as viewed on mount ──
-  // Stores a Record<topic, ISO timestamp string> in AsyncStorage.
-  // This powers the green dot and "last studied X days ago" in the selector.
+  // Saves to Supabase via lessonProgressService so the green dot and
+  // "last studied" timestamp persist across devices and fresh logins.
   useEffect(() => {
     if (!lesson) return;
-    const storageKey = `lessons_viewed_${lesson.level}`;
-    AsyncStorage.getItem(storageKey).then((raw) => {
-      const viewed: Record<string, string> = raw ? JSON.parse(raw) : {};
-      // Always update the timestamp (so "last studied" is accurate on revisit)
-      viewed[lesson.topic] = new Date().toISOString();
-      AsyncStorage.setItem(storageKey, JSON.stringify(viewed));
-    });
+    saveLessonViewed(lesson.level, lesson.topic);
   }, [lesson?.topic, lesson?.level]);
 
   // ── Go back to the lessons selector ──

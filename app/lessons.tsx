@@ -4,8 +4,7 @@
 // Each card displays the lesson title, an estimated read time, a colour-coded
 // viewed dot, and a "Last studied X days ago" timestamp.
 //
-// Viewed state is stored in AsyncStorage as Record<topic, ISO timestamp string>
-// using the key "lessons_viewed_A1" (or A2 / B1 / B2).
+// Viewed state is stored in Supabase (lesson_progress table) via lessonProgressService.
 // useFocusEffect reloads the viewed map every time the user returns from a
 // detail screen so the dot and timestamp update immediately.
 
@@ -19,11 +18,11 @@ import {
   Platform,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import useLevelStore from '../src/store/useLevelStore';
 import { LESSONS } from '../src/data/lessons/index';
+import { loadViewedMap } from '../src/lib/lessonProgressService';
 import { getTodayString } from '../src/lib/dateUtils';
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -37,20 +36,12 @@ export default function LessonsScreen() {
 
   const lessons = LESSONS[level];
 
-  // ── Storage key changes when level changes ──
-  const storageKey = `lessons_viewed_${level}`;
-
   // ── Reload viewed state every time we return to this screen ──
+  // Reads from Supabase so viewed dots and timestamps stay in sync across devices.
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem(storageKey).then((raw) => {
-        if (raw) {
-          setViewedMap(JSON.parse(raw) as Record<string, string>);
-        } else {
-          setViewedMap({});
-        }
-      });
-    }, [storageKey])
+      loadViewedMap(level).then(setViewedMap);
+    }, [level])
   );
 
   // ── How many lessons have been viewed ──

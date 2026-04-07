@@ -13,7 +13,8 @@ A German language learning web app for CEFR levels A1 through B2, built with Exp
 - **Mini Games** — Word Match, Gender Battle, Listening Quiz, Fill in the Blank (AI-generated)
 - **Sentence Builder** — tap-to-place word tiles to form correct German sentences
 - **Daily Challenge** — 5 grammar exercises per day with streak tracking
-- **Exam Prep** — Reading, Listening, Writing, Speaking sections
+- **Lessons** — structured grammar lessons per topic with explanations, key rules, examples, and a direct link into practice exercises
+- **Exam Prep** — Reading, Listening, Writing, Speaking, and Comprehension sections
 - **Progress Dashboard** — scores and vocabulary mastery across all sections
 - **Insights** — weak vocabulary, mistake log, activity calendar
 - **Reading Mode** — short German texts with tap-to-translate word lookup
@@ -64,16 +65,16 @@ Output directory: `dist/`
 
 ---
 
-## Vocabulary and content coverage
+## Content coverage
 
-| Level | Vocabulary | Grammar exercises | Tips |
-|---|---|---|---|
-| A1 | 665 words | 223 exercises / 19 topics | 25 tips |
-| A2 | 585 words | 168 exercises / 12 topics | 20 tips |
-| B1 | 1406 words | 136 exercises / 12 topics | 20 tips |
-| B2 | 232 words (incomplete) | coming soon | coming soon |
+| Level | Vocabulary | Grammar | Tips | Lessons | Reading | Sentence Builder |
+|---|---|---|---|---|---|---|
+| A1 | 665 words | 223 exercises / 19 topics | 25 | 19 | 20 passages | 80 sentences |
+| A2 | 585 words | 168 exercises / 12 topics | 20 | 12 | 17 passages | 50 sentences |
+| B1 | 1,406 words | 136 exercises / 12 topics | 20 | 12 | 15 passages | 50 sentences |
+| B2 | 2,123 words | 120 exercises / 10 topics | 20 | 10 | 15 passages | 50 sentences |
 
-Every noun has a plural form, every verb has full present tense conjugations, and every adjective has comparative and superlative forms. B2 vocabulary and grammar are planned for a later phase.
+Every noun has a plural form, every verb has full present tense conjugations, and every adjective has comparative and superlative forms. All four CEFR levels (A1–B2) are fully playable.
 
 ---
 
