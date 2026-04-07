@@ -306,55 +306,10 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 37 — Cheat Sheet / Reference Section (Complete)
 ### ✅ Phase 21 — Expand to A2, B1 (Complete)
 ### ✅ Phase 32 — Progress & Analytics Enhancements (Complete)
+### ✅ Phase 33 — Spaced Repetition for Grammar (Complete)
 
 ---
 ## ACTIVE PIPELINE
-
-### Phase 33 — Spaced Repetition for Grammar · Effort: Medium
-
-**Goal:** Make the Daily Challenge smarter — weight the 5 exercises toward topics the user struggles with, rather than picking uniformly by date seed.
-
-#### How the Daily Challenge works today
-- `getDailyExercises()` in `app/daily.tsx` picks exercises via `(dateSeed XOR userSeed) % totalExercises` — a simple deterministic offset with no topic weighting.
-- All exercises at the level are pooled flat in `GRAMMAR[level]` — a flat array across all topics.
-
-#### Plan
-
-**Step 1 — Load topic weakness scores at challenge start**
-- When the daily challenge screen loads (before showing the "Start" button), call `loadTopicScores(level)` from `grammarTopicService.ts` to get `TopicScoreMap`.
-- A topic is "weak" if `best_score / best_total < 0.6` (below 60%).
-- A topic is "not attempted" if it's absent from the map — treat the same as weak.
-- A topic is "strong" if `best_score / best_total >= 0.8`.
-
-**Step 2 — Weighted topic slot allocation**
-- There are 5 slots in the daily challenge.
-- For each grammar topic in `GRAMMAR[level]`, compute a weight:
-  - Weak (< 60%) or unattempted → weight 3
-  - Mid (60–79%) → weight 2
-  - Strong (≥ 80%) → weight 1
-- Total weight = sum of all topic weights.
-- Allocate slots proportionally: `slots for topic = round((topicWeight / totalWeight) * 5)`. Clamp to min 0, re-adjust so sum = 5.
-- Minimum 1 slot for each weak topic (up to 5 topics).
-
-**Step 3 — Pick exercises per slot from each topic**
-- For each allocated slot, pick a random exercise from that topic's exercises using the `(dateSeed XOR userSeed)` approach (to keep some determinism per day).
-- Avoid duplicates across slots.
-
-**Step 4 — Persistence**
-- No new Supabase table needed — weakness is derived from `grammar_topic_scores` which already persists.
-- The weighting is computed client-side at challenge load time.
-
-**Files to touch:**
-- `app/daily.tsx` — replace `getDailyExercises()` with new weighted version; add `loadTopicScores()` call at screen load.
-- `src/data/grammar/index.ts` — check if `GRAMMAR[level]` is structured per topic or flat array. Currently it's a flat `GrammarExercise[]`. Exercises have a `topic` field — use that to group them in `getDailyExercises()`.
-- No new services needed.
-
-**Edge cases:**
-- If level has no `grammar_topic_scores` yet (first time), all topics are unattempted → pure random by date seed (same as current behavior, just with topic-grouped picks).
-- If a topic has 0 exercises allocated but is weak, reassign its slot to the next weakest topic.
-- If only 1 topic exists at a level, all 5 exercises come from that topic.
-
----
 
 ### ⏳ Phase 27 — Flashcard Verb Sub-categories · Effort: Medium
 
@@ -859,6 +814,7 @@ Add 50 B2 sentences (`B2_SENTENCES`). Grammar complexity: participial phrases, K
 - [2026-04-04] Phase 35 complete — Difficulty tagging added to all 130 sentences (80 A1 + 50 A2). simple/medium/complex tags based on grammar complexity. Pre-game difficulty picker in SentenceBuilderGame.tsx (All / Simple / Medium / Complex); filters pool, adjusts round count, shows badge during play.
 - [2026-04-04] Phase 30 complete — Comprehension sub-section added to Exam Prep. New ComprehensionExercise.tsx component: 5 A1 texts + 5 A2 texts (NOTICE, AD, SHORT MESSAGE, JOB AD, EVENT, etc.), user writes German answers, Gemini returns structured feedback (content/tasks, language, suggestions). New getComprehensionFeedback() in gemini.ts (JSON output, 3 fields). New examComprehension.ts data file with ComprehensionItem type and COMPREHENSION_BY_LEVEL lookup. exam_comprehension SectionKey added to scoresService. Comprehension card added to Exam Prep selector and progress.tsx. B1/B2 show "coming soon" empty state.
 - [2026-04-04] Phase 34 complete — 6 silent correctness bugs fixed. topicTipMap.ts keys audited and corrected to match a1.ts exactly ('Accusative case', 'Modal verbs', 'Questions') — Focus Tips now fire for A1's most common mistakes. DST streak bug fixed in streakService.ts and insights.tsx: setDate() replaces ms subtraction so spring-forward nights don't corrupt streak or heatmap. loadMistakes() now has .limit(100). getUserId() reads synchronously from useAuthStore (userId field added), eliminating 3 Supabase round-trips per grammar session end. Daily challenge seed XORs date with a hash of the user ID so each user gets different exercises. Shared date utilities extracted to src/lib/dateUtils.ts (toDateString, getTodayString, getTomorrowString, formatDate); all three callers updated.
+- [2026-04-07] Phase 33 complete — Spaced repetition for Daily Challenge. getDailyExercises() now groups exercises by topic, weights each topic (weak/unattempted → 3, mid → 2, strong → 1), allocates 5 slots proportionally, and picks per slot using the date×user seed. useFocusEffect loads loadTopicScores() + loadProgress() in parallel before computing exercises. First-time users (no scores) get uniform selection — same as before. No new Supabase tables.
 - [2026-04-07] Phase 32 complete — Progress & Analytics Enhancements. 5 features shipped: (1) loadActivity(days) in activityService.ts — Progress STREAK card now shows "X / 7 this week". (2) seenCount added to progress.tsx — VOCABULARY card shows "N seen · X% mastered". (3) grammar_topic_history Supabase table + saveTopicScoreHistory/loadTopicScoreHistory in grammarTopicService.ts — grammar.tsx saves history per session; Insights renders mini sparklines (blue bars) and ↑/↓/→ trend arrows per topic. (4) Trend computed by comparing this-week avg vs last-week avg (>5pt = trend). (5) GenderBattleGame now calls saveMistake() on wrong answers; Insights shows GENDER ERRORS section with der/die/das bar breakdown when data exists.
 - [2026-04-06] Phase 21 B1 complete — B1 grammar fully playable. b1.ts: 136 exercises across 12 topics (Konjunktiv II würde, Konjunktiv II sein/haben/modals, Passive Präsens, Passive Präteritum, Relative clauses Nom/Akk, Relative clauses Dat, Genitiv, Temporal als/wenn/während, Temporal bevor/nachdem/seitdem, Infinitive constructions, Two-part conjunctions, Verb+preposition). Wired into grammar/index.ts. tips.ts: 20 proper B1 tips (replaced 5 placeholders). topicTipMap.ts: B1 section added with one focus tip per topic.
 - [2026-04-04] Phase 37 complete — Cheat Sheet / Reference. **Data:** `src/data/cheatsheets/` — `a1.ts`–`b2.ts` (`CheatSheetSection[]`), `types.ts` (`CheatSheetBlock` union: text, table, example, subheading), `index.ts` (`CHEATSHEETS: Record<Level, …>`). **Routing:** `app/cheatsheet.tsx`, sidebar label "Cheat Sheet" (Feather `list`), `Drawer.Screen` in `_layout.tsx`. **UI (final):** Masonry-style card grid on web via CSS `column-count` + `column-gap` (12px), responsive 1 / 2 / 3 columns at `<768` / `768–1200` / `>1200px`; cards `break-inside: avoid`, `margin-bottom: 12px`; `column-span: all` wide cards for **sein and haben (present)** (sein | haben tables side-by-side, 1px vertical divider; stacks on narrow width) and **Present tense — regular verbs**. Native: single-column `ScrollView`. Level pills use Inter (12px / 500); selected pill `#111` bg + white text, unselected white + `#888` + 1px `#e0e0e0` border; tab bar `border-bottom` + `margin-bottom` 16px; sticky tabs on web; `useEffect` syncs sheet level to global header level. Cards: white `#fff`, 1px `#e0e0e0`, 4px radius, padding 12×14; section title Inter 600, 10px caps, `#888`, left 2px `#2563eb` accent; body copy Inter 12px `#555`; tables — web `display: table` + `border-collapse`, th Inter 10px, td IBM Plex Mono 12px, explicit first-column widths by header shape (pronoun / question-word / article / conjugation / modal). German examples: IBM Plex Mono 13px semibold; English: Inter 11px `#888`. No Gemini, no Supabase.
