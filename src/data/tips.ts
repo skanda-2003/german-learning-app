@@ -1,6 +1,6 @@
 // tips.ts — Static tip/hint content shown in the TipsBar at the bottom of every screen.
 // Each level has its own array of tips.
-// A1: 25 tips. A2: 20 tips. B1/B2: placeholder tips (coming soon).
+// A1: 25 tips. A2: 20 tips. B1: 20 tips. B2: 20 tips.
 
 import { Level } from '../store/useLevelStore';
 
@@ -120,10 +120,25 @@ export const TIPS: Record<Level, string[]> = {
     'Verb + preposition: warten auf (to wait for), denken an (to think about), sich freuen auf (looking forward to), sich freuen über (happy about).',
   ],
   B2: [
-    'The Konjunktiv I is used for indirect speech in formal writing: Er sagte, er habe keine Zeit.',
-    'Extended participial phrases replace relative clauses in formal German writing.',
-    'German has many two-way prepositions (in, an, auf) that take Akkusativ for movement and Dativ for location.',
-    'Nominalisations (turning verbs into nouns) are very common in formal German: beschließen → der Beschluss.',
-    'The double infinitive construction is used with modal verbs in the Perfekt: Er hat kommen müssen.',
+    'Extended participial phrases make formal text denser: die in Europa entwickelte Methode statt die Methode, die in Europa entwickelt wurde.',
+    'Use Konjunktiv I in indirect speech to show distance from a claim: Die Sprecherin sagte, die Lage sei stabil.',
+    'Modal particles change tone, not core meaning: Komm doch rein, Das ist ja klar, Wart mal kurz.',
+    'Passive with modal verbs follows this order: Das muss heute erledigt werden.',
+    'N-Deklination affects many masculine nouns in oblique cases: der Kollege, den Kollegen, dem Kollegen, des Kollegen.',
+    'Nominalization is common in formal writing: Das Lernen braucht Zeit; die Schnelligkeit ist entscheidend.',
+    'Genitiv prepositions are frequent at B2: wegen, trotz, während, innerhalb, außerhalb, aufgrund.',
+    'Use obwohl for subordinate contrast and trotzdem for main-clause contrast: Obwohl es regnet, ... Trotzdem ...',
+    'Use weil (verb at end) vs denn (normal main-clause order) carefully in argumentation.',
+    'Use als for one-time past events and wenn for repeated conditions or present/future situations.',
+    'Indirect yes/no questions need ob: Ich weiß nicht, ob er kommt.',
+    'Indirect W-questions keep a W-word and send the verb to the end: Kannst du sagen, wann der Zug abfährt?',
+    'Use was after alles, etwas, nichts, vieles: Alles, was er sagt, klingt plausibel.',
+    'Use wo for place references in relative clauses: der Ort, wo wir uns getroffen haben.',
+    'Prefer nominal style in formal reports, but keep sentences readable and not overloaded.',
+    'In written B2 German, vary connectors to avoid repetition: dennoch, hingegen, folglich, während.',
+    'Check register: colloquial fillers may be fine in dialogue but reduce precision in formal essays.',
+    'When summarizing sources, keep reported speech consistent and avoid switching randomly to direct voice.',
+    'Build cohesion with reference words: dieser Ansatz, diese Maßnahme, dadurch, demnach.',
+    'At B2, accuracy and style both matter: correct grammar is necessary, but clear structure is just as important.',
   ],
 };

@@ -137,4 +137,35 @@ export const TOPIC_TIP_MAP: Partial<Record<Level, Record<string, string>>> = {
     'Verb + preposition combinations':
       'Fixed combos: warten auf, denken an, sich interessieren für, sich ärgern über, sich freuen auf (future), sich freuen über (past), bitten um.',
   },
+  B2: {
+    'Extended participial phrases':
+      'Formal B2 style often compresses relative clauses into participial attributes: die in Berlin arbeitende Forscherin.',
+
+    'Konjunktiv I':
+      'Use Konjunktiv I in indirect speech to report claims neutrally: Er sagte, er sei bereit.',
+
+    'Modal particles':
+      'Modal particles (doch, ja, mal, eigentlich, wohl, halt) change tone and stance, not the factual core.',
+
+    'Passive with modal verbs':
+      'Passive + modal structure is fixed: modal verb + Partizip II + werden. Example: Das muss heute erledigt werden.',
+
+    'N-Deklination':
+      'Many masculine nouns add -n/-en in accusative, dative, and genitive: der Kunde, den Kunden, dem Kunden, des Kunden.',
+
+    Nominalisierung:
+      'Nominalization increases formality: das Lernen, die Entscheidung, die Schnelligkeit. Keep capitalization correct.',
+
+    'Genitiv prepositions':
+      'Key B2 prepositions with genitive: wegen, trotz, während, innerhalb, außerhalb, aufgrund, anstatt, mithilfe.',
+
+    'Complex connectors':
+      'Distinguish pairs carefully: obwohl (subordinate) vs trotzdem (main clause), weil (verb final) vs denn (verb second).',
+
+    'Indirect questions':
+      'Use ob for yes/no indirect questions and keep verb-final order: Ich weiß nicht, ob er kommt.',
+
+    'Relative clauses with was/wo':
+      'Use was after alles/etwas/nichts and wo for place references: Alles, was ... / der Ort, wo ...',
+  },
 };

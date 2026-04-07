@@ -63,7 +63,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 // Pick up to MAX_ROUNDS entries from the pool filtered by difficulty.
-// Falls back to A1 if the selected level has no sentences yet (B1/B2).
+// Falls back to A1 if the selected level has no sentences yet.
 function pickEntries(pool: SentenceEntry[], picked: PickedDifficulty): SentenceEntry[] {
   const source = pool.length > 0 ? pool : SENTENCE_BUILDER_DATA['A1'];
   const filtered = picked === 'all' ? source : source.filter(e => e.difficulty === picked);
