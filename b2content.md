@@ -1,16 +1,16 @@
 # Phase 38 — B2 Content Plan
 
 ## Context
-B2 is the last level to complete. The vocabulary file (b2.ts) exists with 232 placeholder words but is **not wired into** vocabulary/index.ts. Grammar, passages, sentence builder, real tips, and topicTipMap are all empty/missing for B2. Do vocabulary replacement first (across multiple sessions), then content (grammar + tips + passages + sentences) in a follow-up session.
+B2 is the last level to complete. **Vocabulary is done** — b2.ts has 2,123 Aspekte Neu B2 words (IDs b2_0001 → b2_2123) and is wired into vocabulary/index.ts. Grammar, passages, sentence builder, real tips, and topicTipMap are all still empty/missing for B2. Next: Part B — content (grammar + tips + topicTipMap + passages + sentences).
 
 ---
 
 ## Part A — Vocabulary Replacement
 
-### Current state
-- `src/data/vocabulary/b2.ts` — 232 words, exists but **not wired in**
-- `src/data/vocabulary/index.ts` — `B2: []`, comment says "TODO: add B2 vocabulary"
-- `b2_aspekte.txt` — 2,970 lines (Aspekte Neu B2 Kapitelwortschatz)
+### Current state ✅ COMPLETE
+- `src/data/vocabulary/b2.ts` — **2,123 words** (b2_0001 → b2_2123), fully populated
+- `src/data/vocabulary/index.ts` — `B2: B2_WORDS` — wired and live
+- `b2_aspekte.txt` — 2,970 lines (Aspekte Neu B2 Kapitelwortschatz), used as source
   - Format: raw German only (no English), examples in parentheses, plural/conjugation after comma
   - Headers to skip: `Kapitelwortschatz`, `Kapitel N`, `Modul N`, `Seite N`, `Auftakt`, `Wiederholung`
   - Lesson markers to strip: `1b `, `2a `, `4c ` etc.
@@ -28,11 +28,11 @@ B2 is the last level to complete. The vocabulary file (b2.ts) exists with 232 pl
 - Final b2.ts: sorted A→Z, IDs `b2_0001` → `b2_N` (fresh from 1, replaces current 232)
 - After all chunks done: update `src/data/vocabulary/index.ts` to import and wire `B2_WORDS`
 
-### Files to change (Part A)
-| File | Change |
+### Files changed (Part A) ✅
+| File | Status |
 |---|---|
-| `src/data/vocabulary/b2.ts` | **Replace entirely** — ~2,123 Aspekte words, IDs b2_0001 onwards |
-| `src/data/vocabulary/index.ts` | Import B2_WORDS, replace `B2: []` with `B2: B2_WORDS` |
+| `src/data/vocabulary/b2.ts` | ✅ 2,123 words, IDs b2_0001 → b2_2123 |
+| `src/data/vocabulary/index.ts` | ✅ B2_WORDS imported and wired |
 
 ---
 
@@ -91,10 +91,9 @@ Note: `SentenceBuilderGame.tsx` currently falls back to A1 for B2 — update tha
 ---
 
 ## Session order
-1. **Session 1:** Vocabulary chunk 1 — A words (~100 entries), write first block of b2.ts
-2. **Sessions 2–21:** Chunks on "continue" — each session adds ~100 words
-3. **After last chunk:** Wire index.ts, commit vocab with git commands
-4. **Follow-up session:** Part B — grammar, tips, topicTipMap, passages, sentences, commit content
+1. ~~**Sessions 1–21:** Vocabulary chunks~~ ✅ Done — 2,123 words across ~21 chunks
+2. ~~**After last chunk:** Wire index.ts~~ ✅ Done
+3. **Next session:** Part B — grammar, tips, topicTipMap, passages, sentences, commit content
 
 ## Verification
 - Flashcards at B2 level show real Aspekte words with gender + examples
