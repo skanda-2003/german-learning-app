@@ -305,59 +305,10 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 30 — Newspaper / Comprehension Exercise (Complete)
 ### ✅ Phase 37 — Cheat Sheet / Reference Section (Complete)
 ### ✅ Phase 21 — Expand to A2, B1 (Complete)
+### ✅ Phase 32 — Progress & Analytics Enhancements (Complete)
 
 ---
 ## ACTIVE PIPELINE
-
-### Phase 32 — Progress & Analytics Enhancements · Effort: Medium
-
-**Goal:** Make Progress and Insights screens show richer, more actionable data beyond just best scores.
-
-#### 1. Consistency Score — "studied X out of last 7 days"
-- **What:** A "7-day consistency" number shown on the Progress page — how many of the last 7 days the user studied (not just the streak count).
-- **Where to display:** Replace or augment the Streak stat card on progress.tsx. Could show as "5 / 7 days" sub-label under the streak number.
-- **How:** `activityService.ts` already writes a row to `activity_log` (user_id, date) via `logActivity()`. Load rows for the past 7 days (using `getTodayString()` and subtracting 6 days with `setDate()`). Count unique dates. Show as "X / 7 this week".
-- **Files to touch:** `src/lib/activityService.ts` (add `loadActivity(days)` function), `app/progress.tsx` (load and display).
-
-#### 2. Words Seen vs Words Mastered
-- **What:** Currently the Vocabulary stat card shows only "known" words. Add "seen" count = words with any mastery state (known + shaky + unknown).
-- **Where to display:** Vocabulary stat card on progress.tsx. Change sub-label from e.g. "212 known" to "212 known · 340 seen".
-- **How:** `loadMastery()` returns a `MasteryMap` (Map<wordId, { state }>). Count entries with state known → mastered. Count all entries → seen. Total vocabulary pool = `VOCABULARY[level].length`.
-- **Files to touch:** `app/progress.tsx` only — computation is local, no Supabase changes needed.
-
-#### 3. Grammar Score History per Topic (sparklines)
-- **What:** Right now only `best_score` is stored per topic. Add session-by-session history so users can see if they are improving or stagnating on a topic.
-- **Supabase:** New table `grammar_topic_history`:
-  - `id` BIGSERIAL PRIMARY KEY
-  - `user_id` TEXT
-  - `level` TEXT
-  - `topic` TEXT
-  - `score` INT
-  - `total` INT
-  - `created_at` TIMESTAMPTZ DEFAULT now()
-  - RLS: `user_id = auth.uid()::text`
-  - No unique constraint — each session appends a new row. Keep last 10 rows per topic (delete oldest on insert if count > 10, or just keep all and slice in JS).
-- **Service:** Add `saveTopicScoreHistory(topic, level, score, total)` to `src/lib/grammarTopicService.ts`. Call it alongside `saveTopicScore()` in `app/grammar.tsx` at session end.
-- **Load:** Add `loadTopicScoreHistory(level)` returning `Map<topic, number[]>` (last 10 score percentages, oldest first).
-- **Display:** In `app/insights.tsx` Weak Grammar Topics section, render a mini sparkline (5–10 data points) next to each topic's score bar. Use inline SVG on web: a small `<svg>` with a `<polyline>` of percentage values scaled 0–100% mapped to 0–24px height. Each point is spaced 4px apart. Color: blue `#2563eb`.
-- **Files to touch:** Supabase dashboard (create table + RLS), `src/lib/grammarTopicService.ts` (add 2 functions), `app/grammar.tsx` (call save history), `app/insights.tsx` (render sparkline).
-
-#### 4. Accuracy Trend — grammar score going up or down week over week
-- **What:** For each grammar topic, compare average score % in the last 7 days vs the 7 days before that. Show a ↑ (green) or ↓ (red) or → (grey) arrow next to the topic score in Insights.
-- **Depends on:** Feature 3 above (grammar_topic_history table needed first).
-- **How:** `grammar_topic_history` rows have `created_at`. Group by week. Compute `avg(score/total)` for this week vs last week. If this week avg > last week avg by >5%, show ↑. If lower by >5%, show ↓. Otherwise →.
-- **Files to touch:** `src/lib/grammarTopicService.ts` (add trend computation helper), `app/insights.tsx` (render arrow).
-
-#### 5. Error Pattern Detection — gender mistake analysis
-- **What:** In Insights, surface a line like "You've gotten feminine noun genders wrong 12 times" by analyzing Gender Battle mistakes in mistake_log.
-- **How:** `mistake_log` entries for Gender Battle have `section = 'game_gender_battle'`. The `correct_answer` is "der", "die", or "das". Count how many times the user answered wrong for each gender. E.g., if `correct_answer = 'die'` appears 12 times where the user had a different answer → "feminine gender wrong 12 times".
-- **Where to display:** New sub-section in `app/insights.tsx` titled "GENDER ERRORS" — show 3 rows: der X wrong, die X wrong, das X wrong. Only show if total gender mistakes > 0.
-- **Files to touch:** `app/insights.tsx` only — computation done in-screen from loaded `loadMistakes()` data (already loaded).
-
-#### 6. Spaced Repetition for Grammar — surfacing weak topics in Daily Challenge
-- **This item is moved to Phase 33** — see below.
-
----
 
 ### Phase 33 — Spaced Repetition for Grammar · Effort: Medium
 
@@ -908,6 +859,7 @@ Add 50 B2 sentences (`B2_SENTENCES`). Grammar complexity: participial phrases, K
 - [2026-04-04] Phase 35 complete — Difficulty tagging added to all 130 sentences (80 A1 + 50 A2). simple/medium/complex tags based on grammar complexity. Pre-game difficulty picker in SentenceBuilderGame.tsx (All / Simple / Medium / Complex); filters pool, adjusts round count, shows badge during play.
 - [2026-04-04] Phase 30 complete — Comprehension sub-section added to Exam Prep. New ComprehensionExercise.tsx component: 5 A1 texts + 5 A2 texts (NOTICE, AD, SHORT MESSAGE, JOB AD, EVENT, etc.), user writes German answers, Gemini returns structured feedback (content/tasks, language, suggestions). New getComprehensionFeedback() in gemini.ts (JSON output, 3 fields). New examComprehension.ts data file with ComprehensionItem type and COMPREHENSION_BY_LEVEL lookup. exam_comprehension SectionKey added to scoresService. Comprehension card added to Exam Prep selector and progress.tsx. B1/B2 show "coming soon" empty state.
 - [2026-04-04] Phase 34 complete — 6 silent correctness bugs fixed. topicTipMap.ts keys audited and corrected to match a1.ts exactly ('Accusative case', 'Modal verbs', 'Questions') — Focus Tips now fire for A1's most common mistakes. DST streak bug fixed in streakService.ts and insights.tsx: setDate() replaces ms subtraction so spring-forward nights don't corrupt streak or heatmap. loadMistakes() now has .limit(100). getUserId() reads synchronously from useAuthStore (userId field added), eliminating 3 Supabase round-trips per grammar session end. Daily challenge seed XORs date with a hash of the user ID so each user gets different exercises. Shared date utilities extracted to src/lib/dateUtils.ts (toDateString, getTodayString, getTomorrowString, formatDate); all three callers updated.
+- [2026-04-07] Phase 32 complete — Progress & Analytics Enhancements. 5 features shipped: (1) loadActivity(days) in activityService.ts — Progress STREAK card now shows "X / 7 this week". (2) seenCount added to progress.tsx — VOCABULARY card shows "N seen · X% mastered". (3) grammar_topic_history Supabase table + saveTopicScoreHistory/loadTopicScoreHistory in grammarTopicService.ts — grammar.tsx saves history per session; Insights renders mini sparklines (blue bars) and ↑/↓/→ trend arrows per topic. (4) Trend computed by comparing this-week avg vs last-week avg (>5pt = trend). (5) GenderBattleGame now calls saveMistake() on wrong answers; Insights shows GENDER ERRORS section with der/die/das bar breakdown when data exists.
 - [2026-04-06] Phase 21 B1 complete — B1 grammar fully playable. b1.ts: 136 exercises across 12 topics (Konjunktiv II würde, Konjunktiv II sein/haben/modals, Passive Präsens, Passive Präteritum, Relative clauses Nom/Akk, Relative clauses Dat, Genitiv, Temporal als/wenn/während, Temporal bevor/nachdem/seitdem, Infinitive constructions, Two-part conjunctions, Verb+preposition). Wired into grammar/index.ts. tips.ts: 20 proper B1 tips (replaced 5 placeholders). topicTipMap.ts: B1 section added with one focus tip per topic.
 - [2026-04-04] Phase 37 complete — Cheat Sheet / Reference. **Data:** `src/data/cheatsheets/` — `a1.ts`–`b2.ts` (`CheatSheetSection[]`), `types.ts` (`CheatSheetBlock` union: text, table, example, subheading), `index.ts` (`CHEATSHEETS: Record<Level, …>`). **Routing:** `app/cheatsheet.tsx`, sidebar label "Cheat Sheet" (Feather `list`), `Drawer.Screen` in `_layout.tsx`. **UI (final):** Masonry-style card grid on web via CSS `column-count` + `column-gap` (12px), responsive 1 / 2 / 3 columns at `<768` / `768–1200` / `>1200px`; cards `break-inside: avoid`, `margin-bottom: 12px`; `column-span: all` wide cards for **sein and haben (present)** (sein | haben tables side-by-side, 1px vertical divider; stacks on narrow width) and **Present tense — regular verbs**. Native: single-column `ScrollView`. Level pills use Inter (12px / 500); selected pill `#111` bg + white text, unselected white + `#888` + 1px `#e0e0e0` border; tab bar `border-bottom` + `margin-bottom` 16px; sticky tabs on web; `useEffect` syncs sheet level to global header level. Cards: white `#fff`, 1px `#e0e0e0`, 4px radius, padding 12×14; section title Inter 600, 10px caps, `#888`, left 2px `#2563eb` accent; body copy Inter 12px `#555`; tables — web `display: table` + `border-collapse`, th Inter 10px, td IBM Plex Mono 12px, explicit first-column widths by header shape (pronoun / question-word / article / conjugation / modal). German examples: IBM Plex Mono 13px semibold; English: Inter 11px `#888`. No Gemini, no Supabase.
 

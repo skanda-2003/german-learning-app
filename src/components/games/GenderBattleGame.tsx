@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Word } from '../../data/vocabulary';
 import { saveScore } from '../../lib/scoresService';
+import { saveMistake } from '../../lib/mistakeService';
 import { colors, font, fontSize, spacing, radius } from '../../styles/theme';
 
 // ─── Props ─────────────────────────────────────────────────────────────────────
@@ -95,6 +96,14 @@ export default function GenderBattleGame({ words, onExit }: Props) {
       setCorrectCount(prev => prev + 1);
       setResult('correct');
     } else {
+      // Log the mistake so the Insights "GENDER ERRORS" section can analyse it.
+      // question = the noun shown, correctAnswer = the right gender.
+      saveMistake(
+        'game_gender_battle',
+        stripArticle(currentNoun.german),
+        gender,
+        currentNoun.gender ?? ''
+      );
       setResult('wrong');
     }
   }

@@ -42,6 +42,43 @@ export async function logActivity(): Promise<void> {
   }
 }
 
+// ─── Load recent activity count ───────────────────────────────────────────────
+
+// Returns how many unique days the user studied in the last `days` days
+// (inclusive of today). Used by the Progress page "X / 7 this week" stat.
+// Uses setDate() to avoid DST edge cases.
+export async function loadActivity(days: number): Promise<number> {
+  try {
+    const userId = await getUserId();
+
+    // Build the start date: today minus (days - 1) to include today in the window
+    const start = new Date();
+    start.setDate(start.getDate() - (days - 1));
+    const yyyy = start.getFullYear();
+    const mm   = String(start.getMonth() + 1).padStart(2, '0');
+    const dd   = String(start.getDate()).padStart(2, '0');
+    const startStr = `${yyyy}-${mm}-${dd}`;
+
+    const { data, error } = await supabase
+      .from('activity_log')
+      .select('log_date')
+      .eq('user_id', userId)
+      .gte('log_date', startStr);
+
+    if (error) {
+      console.error('Failed to load activity count:', error.message);
+      return 0;
+    }
+
+    // Count unique dates (UNIQUE constraint handles this, but Set is safe)
+    const uniqueDates = new Set((data ?? []).map((row) => row.log_date as string));
+    return uniqueDates.size;
+  } catch (err) {
+    console.error('Failed to load activity count:', err);
+    return 0;
+  }
+}
+
 // ─── Load activity dates ───────────────────────────────────────────────────────
 
 // Returns an array of YYYY-MM-DD strings for every day the user completed

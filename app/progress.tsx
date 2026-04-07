@@ -21,6 +21,7 @@ import { VOCABULARY } from '../src/data/vocabulary';
 import { GRAMMAR } from '../src/data/grammar';
 import { loadMastery, MasteryMap } from '../src/lib/masteryService';
 import { loadProgress, getTodayString, UserProgress } from '../src/lib/streakService';
+import { loadActivity } from '../src/lib/activityService';
 import { loadAllScores, SectionScore } from '../src/lib/scoresService';
 import { loadTopicScores, TopicScoreMap, TopicScore } from '../src/lib/grammarTopicService';
 import {
@@ -308,6 +309,7 @@ export default function ProgressScreen() {
   const [topicScores, setTopicScores]       = useState<TopicScoreMap>(new Map());
   const [streak, setStreak]                 = useState(0);
   const [lastActiveDate, setLastActiveDate] = useState('');
+  const [weeklyCount, setWeeklyCount]       = useState(0);
   const [challengeDoneToday, setChallengeDoneToday] = useState(false);
   const [scores, setScores] = useState<Awaited<ReturnType<typeof loadAllScores>> | null>(null);
 
@@ -319,11 +321,12 @@ export default function ProgressScreen() {
       async function load() {
         setLoading(true);
 
-        const [mastery, progress, allScores, topicScoreMap] = await Promise.all([
+        const [mastery, progress, allScores, topicScoreMap, weekly] = await Promise.all([
           loadMastery(),
           loadProgress(),
           loadAllScores(),
           loadTopicScores(level),
+          loadActivity(7),
         ]);
 
         if (!cancelled) {
@@ -331,6 +334,7 @@ export default function ProgressScreen() {
           setTopicScores(topicScoreMap);
           setStreak(progress.streakCount);
           setLastActiveDate(progress.lastActiveDate);
+          setWeeklyCount(weekly);
           setChallengeDoneToday(progress.dailyChallengeCompletedDate === getTodayString());
           setScores(allScores);
           setLoading(false);
@@ -356,6 +360,8 @@ export default function ProgressScreen() {
   const totalCount = vocab.length;
   // Use .state now that MasteryMap stores MasteryData objects
   const knownCount = vocab.filter(w => masteryMap.get(w.id)?.state === 'known').length;
+  // "seen" = any word the user has rated at least once (known + shaky + unknown)
+  const seenCount  = vocab.filter(w => masteryMap.has(w.id)).length;
   const masteryPct = totalCount > 0 ? Math.round((knownCount / totalCount) * 100) : 0;
 
   // ── Vocabulary by category ────────────────────────────────────────────────
@@ -415,12 +421,12 @@ export default function ProgressScreen() {
         <StatCard
           label="STREAK"
           value={`${streak}`}
-          sub={formatLastActive(lastActiveDate)}
+          sub={`${weeklyCount} / 7 this week · ${formatLastActive(lastActiveDate)}`}
         />
         <StatCard
           label="VOCABULARY"
           value={`${knownCount} / ${totalCount}`}
-          sub={`${masteryPct}% mastered`}
+          sub={`${seenCount} seen · ${masteryPct}% mastered`}
         />
         <StatCard
           label="GRAMMAR"
