@@ -307,76 +307,103 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 21 — Expand to A2, B1 (Complete)
 ### ✅ Phase 32 — Progress & Analytics Enhancements (Complete)
 ### ✅ Phase 33 — Spaced Repetition for Grammar (Complete)
+### ✅ Phase 27 — Flashcard Sub-categories (Complete)
 
 ---
 ## ACTIVE PIPELINE
 
-### ⏳ Phase 27 — Flashcard Verb Sub-categories · Effort: Medium
+### ✅ Phase 27 — Flashcard Sub-categories · Effort: Medium
 
-**Goal:** When the user taps the "Verbs" pill in flashcard categories, show a second row of sub-category pills underneath. Each sub-category filters to that verb type.
+**Goal:** When the user taps certain category pills (Verbs, Nouns, Prepositions, Other), show a second row of sub-category pills underneath. Each sub-category filters to that specific word type. Adjectives: no sub-row (no clean runtime split). All detection is runtime — no data file changes needed.
 
-#### Verb sub-categories (consistent across all levels)
-| Sub-category | Detection method | A1 count | A2 count | B1 count |
-|---|---|---|---|---|
-| Modal Verbs | `german` is in fixed list: können, müssen, wollen, möchten, dürfen, sollen | 6 | 0 | 0 |
-| Separable Verbs | `conjugations?.ich` contains a space (e.g. "fahre ab") | ~40 | ~35 | ~80 |
-| Reflexive Verbs | `german` starts with "sich " | 1 | ~3 | ~5 |
-| Irregular Verbs | `du` conjugation has a vowel change vs infinitive stem (fahren→fährst, sehen→siehst) — detected by comparing `conjugations.er` to stem; OR manually tagged | ~35 | ~30 | ~60 |
-| Regular Verbs | all verbs that match none of the above | ~65 | ~60 | ~200 |
+#### Sub-categories per category
 
-> Note: A2 and B1 vocabulary lists contain only **new** words not in A1. So modals (all in A1) show 0 at A2 and B1. Show count 0 if empty — don't hide, so users understand why.
-> Actually: hide sub-categories with count 0 to keep UI clean. If no sub-categories have words, don't expand.
+**Verbs** — 5 sub-categories (consistent across all levels)
+| Sub-category | Detection method |
+|---|---|
+| Modal | `german` is in fixed list: können, müssen, wollen, möchten, dürfen, sollen |
+| Separable | `conjugations?.ich` contains a space (e.g. "fahre ab") |
+| Reflexive | `german` starts with "sich " |
+| Irregular | `isIrregular(word)` — `conjugations.er` ≠ stem + 't' / stem + 'et' (covers vowel-change verbs) |
+| Regular | all verbs that match none of the above |
 
-#### Detection logic — runtime, no file tagging needed
-Add a helper function `getVerbType(word: Word): VerbSubCategory` to `app/flashcards.tsx` (or a new `src/lib/verbUtils.ts`):
+> A2 modals = 0 (all introduced at A1), B1 modals = 0. Sub-pill hidden when count = 0.
+
+**Nouns** — 3 sub-categories (gender split)
+| Sub-category | Detection |
+|---|---|
+| der | `word.gender === 'der'` |
+| die | `word.gender === 'die'` |
+| das | `word.gender === 'das'` |
+
+**Prepositions** — 4 sub-categories (hardcoded case map)
+| Sub-category | Prepositions |
+|---|---|
+| Accusative | durch, für, gegen, ohne, um, bis, entlang |
+| Dative | aus, bei, mit, nach, seit, von, zu, gegenüber, außer |
+| Two-way | an, auf, hinter, in, neben, über, unter, vor, zwischen |
+| Genitive | wegen, trotz, während, innerhalb, außerhalb, statt, anstatt |
+
+Detection: look up `word.german` in a hardcoded `PREPOSITION_CASES` map.
+
+**Other** — 4 sub-categories (partOfSpeech split)
+| Sub-category | Detection |
+|---|---|
+| Adverbs | `word.partOfSpeech === 'adverb'` |
+| Conjunctions | `word.partOfSpeech === 'conjunction'` |
+| Pronouns | `word.partOfSpeech === 'pronoun'` |
+| Phrases | `word.partOfSpeech === 'phrase'` |
+
+#### Detection helpers — `app/flashcards.tsx`
 
 ```ts
 const MODAL_VERBS = ['können', 'müssen', 'wollen', 'möchten', 'dürfen', 'sollen'];
 
-function getVerbType(word: Word): VerbSubCategory {
+function getVerbSubCategory(word: Word): VerbSubCategory {
   if (MODAL_VERBS.includes(word.german)) return 'Modal';
   if (word.german.startsWith('sich ')) return 'Reflexive';
-  // Separable: ich conjugation has a space (e.g. "hole ab")
   if (word.conjugations?.ich?.includes(' ')) return 'Separable';
-  // Irregular: er form differs significantly from infinitive (has umlaut / vowel swap)
-  // Simple heuristic: er form is NOT just stem + 't'
   if (word.conjugations && isIrregular(word)) return 'Irregular';
   return 'Regular';
 }
+
+function isIrregular(word: Word): boolean {
+  const stem = word.german.replace(/en$|n$/, '');
+  const er = word.conjugations?.er ?? '';
+  return er !== stem + 't' && er !== stem + 'et';
+}
+
+const PREPOSITION_CASES: Record<string, PrepositionSubCategory> = {
+  durch: 'Accusative', für: 'Accusative', gegen: 'Accusative',
+  ohne: 'Accusative', um: 'Accusative', bis: 'Accusative', entlang: 'Accusative',
+  aus: 'Dative', bei: 'Dative', mit: 'Dative', nach: 'Dative',
+  seit: 'Dative', von: 'Dative', zu: 'Dative', gegenüber: 'Dative', außer: 'Dative',
+  an: 'Two-way', auf: 'Two-way', hinter: 'Two-way', in: 'Two-way',
+  neben: 'Two-way', über: 'Two-way', unter: 'Two-way', vor: 'Two-way', zwischen: 'Two-way',
+  wegen: 'Genitive', trotz: 'Genitive', während: 'Genitive',
+  innerhalb: 'Genitive', außerhalb: 'Genitive', statt: 'Genitive', anstatt: 'Genitive',
+};
 ```
 
-For `isIrregular()`: strip infinitive ending (-en / -n), derive stem, check if `conjugations.er` equals `stem + 't'` or `stem + 'et'`. If not → irregular. This covers vowel-change verbs (fahren→fährt, sehen→sieht, lesen→liest, geben→gibt, nehmen→nimmt, etc.).
-
-#### Type changes
-Add to `src/data/vocabulary/types.ts` (optional — only if we decide to pre-tag rather than detect at runtime):
+#### Type changes — `src/data/vocabulary/types.ts`
 ```ts
 export type VerbSubCategory = 'Regular' | 'Irregular' | 'Modal' | 'Separable' | 'Reflexive';
+export type NounSubCategory = 'der' | 'die' | 'das';
+export type PrepositionSubCategory = 'Accusative' | 'Dative' | 'Two-way' | 'Genitive';
+export type OtherSubCategory = 'Adverbs' | 'Conjunctions' | 'Pronouns' | 'Phrases';
 ```
-This type is used in `flashcards.tsx` for the filter logic regardless.
 
 #### UI changes — `app/flashcards.tsx`
-- State: add `verbSubCategory: VerbSubCategory | null` (null = no sub-filter active).
-- When "Verbs" pill is selected, render a second row of sub-category pills below the main category row.
-- Each sub-category pill shows: `Modal Verbs · 6` format (label + count).
-- Selecting a sub-category pill filters words further: `words.filter(w => w.partOfSpeech === 'verb' && getVerbType(w) === subCategory)`.
-- Selecting "Verbs" again (already selected) collapses the sub-row and clears sub-category. Or pressing a different main category also collapses.
-- Sub-category pills use the same pill style as main categories (same border/bg/text style, just smaller font or same).
-
-#### CategoryId type update
-```ts
-type CategoryId = 'All' | 'Nouns' | 'Verbs' | 'Adjectives' | 'Prepositions' | 'Other';
-type VerbSubCategory = 'Regular' | 'Irregular' | 'Modal' | 'Separable' | 'Reflexive';
-```
+- State: one `XxxSubCategory | null` per category (4 state vars, all null by default).
+- When a supported main category is selected, render a second pill row below with sub-category pills.
+- Each sub-category pill shows label + count (e.g. `Modal · 6`). Sub-pills with count 0 are hidden. If all are 0, no sub-row shown.
+- Selecting a sub-pill filters further on top of the main-category filter.
+- Tapping the active sub-pill deselects it (shows all words in that main category).
+- Switching main category resets all sub-category state.
 
 #### Files to touch
-- `app/flashcards.tsx` — add sub-category state, detection helper, second pill row, filter logic.
-- `src/data/vocabulary/types.ts` — add `VerbSubCategory` type (if needed as shared type).
-
-#### Notes on counts per level
-- A2 modals = 0 (all modals were introduced at A1 — A2 word list has none). Sub-pill hidden.
-- B1 modals = 0 for same reason. Sub-pill hidden.
-- Reflexive: A1 = 1 (sich kümmern), A2 = ~3 (sich umziehen, sich verabschieden, sich ärgern, sich beeilen), B1 = ~5.
-- The word count on each sub-pill updates automatically because it's computed at runtime from the level's word list.
+- `app/flashcards.tsx` — sub-category state, detection helpers, `applySubFilter()`, sub-pill row UI.
+- `src/data/vocabulary/types.ts` — add the 4 sub-category types.
 
 ---
 ## LATER
@@ -814,6 +841,7 @@ Add 50 B2 sentences (`B2_SENTENCES`). Grammar complexity: participial phrases, K
 - [2026-04-04] Phase 35 complete — Difficulty tagging added to all 130 sentences (80 A1 + 50 A2). simple/medium/complex tags based on grammar complexity. Pre-game difficulty picker in SentenceBuilderGame.tsx (All / Simple / Medium / Complex); filters pool, adjusts round count, shows badge during play.
 - [2026-04-04] Phase 30 complete — Comprehension sub-section added to Exam Prep. New ComprehensionExercise.tsx component: 5 A1 texts + 5 A2 texts (NOTICE, AD, SHORT MESSAGE, JOB AD, EVENT, etc.), user writes German answers, Gemini returns structured feedback (content/tasks, language, suggestions). New getComprehensionFeedback() in gemini.ts (JSON output, 3 fields). New examComprehension.ts data file with ComprehensionItem type and COMPREHENSION_BY_LEVEL lookup. exam_comprehension SectionKey added to scoresService. Comprehension card added to Exam Prep selector and progress.tsx. B1/B2 show "coming soon" empty state.
 - [2026-04-04] Phase 34 complete — 6 silent correctness bugs fixed. topicTipMap.ts keys audited and corrected to match a1.ts exactly ('Accusative case', 'Modal verbs', 'Questions') — Focus Tips now fire for A1's most common mistakes. DST streak bug fixed in streakService.ts and insights.tsx: setDate() replaces ms subtraction so spring-forward nights don't corrupt streak or heatmap. loadMistakes() now has .limit(100). getUserId() reads synchronously from useAuthStore (userId field added), eliminating 3 Supabase round-trips per grammar session end. Daily challenge seed XORs date with a hash of the user ID so each user gets different exercises. Shared date utilities extracted to src/lib/dateUtils.ts (toDateString, getTodayString, getTomorrowString, formatDate); all three callers updated.
+- [2026-04-07] Phase 27 complete — Flashcard sub-categories. Verbs (Modal/Separable/Reflexive/Irregular/Regular), Nouns (der/die/das), Prepositions (Accusative/Dative/Two-way/Genitive), Other (Adverbs/Conjunctions/Pronouns/Phrases). All detection is runtime — no data changes. Sub-categories accessed via a floating dropdown anchored below the tapped pill (position: absolute, measureInWindow for positioning, transparent backdrop to close). Pills with ▾ indicate a dropdown is available; active sub-category shown in pill count area. New types added to types.ts: VerbSubCategory, NounSubCategory, PrepositionSubCategory, OtherSubCategory.
 - [2026-04-07] Phase 33 complete — Spaced repetition for Daily Challenge. getDailyExercises() now groups exercises by topic, weights each topic (weak/unattempted → 3, mid → 2, strong → 1), allocates 5 slots proportionally, and picks per slot using the date×user seed. useFocusEffect loads loadTopicScores() + loadProgress() in parallel before computing exercises. First-time users (no scores) get uniform selection — same as before. No new Supabase tables.
 - [2026-04-07] Phase 32 complete — Progress & Analytics Enhancements. 5 features shipped: (1) loadActivity(days) in activityService.ts — Progress STREAK card now shows "X / 7 this week". (2) seenCount added to progress.tsx — VOCABULARY card shows "N seen · X% mastered". (3) grammar_topic_history Supabase table + saveTopicScoreHistory/loadTopicScoreHistory in grammarTopicService.ts — grammar.tsx saves history per session; Insights renders mini sparklines (blue bars) and ↑/↓/→ trend arrows per topic. (4) Trend computed by comparing this-week avg vs last-week avg (>5pt = trend). (5) GenderBattleGame now calls saveMistake() on wrong answers; Insights shows GENDER ERRORS section with der/die/das bar breakdown when data exists.
 - [2026-04-06] Phase 21 B1 complete — B1 grammar fully playable. b1.ts: 136 exercises across 12 topics (Konjunktiv II würde, Konjunktiv II sein/haben/modals, Passive Präsens, Passive Präteritum, Relative clauses Nom/Akk, Relative clauses Dat, Genitiv, Temporal als/wenn/während, Temporal bevor/nachdem/seitdem, Infinitive constructions, Two-part conjunctions, Verb+preposition). Wired into grammar/index.ts. tips.ts: 20 proper B1 tips (replaced 5 placeholders). topicTipMap.ts: B1 section added with one focus tip per topic.
