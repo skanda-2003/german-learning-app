@@ -161,6 +161,7 @@ Uses clean Feather line icons — NO emojis anywhere in the UI
 - section_scores table (user_id, section, best_score, best_total, sessions_completed)
 - mistake_log table (user_id, section, question, user_answer, correct_answer, timestamp)
 - grammar_topic_scores table (user_id, level, topic, best_score, best_total, sessions_completed)
+- grammar_topic_history table (user_id, level, topic, score, total, recorded_at) — per-session history for sparklines/trend arrows
 
 ### Important Supabase Notes
 - Free tier limit is 500MB — more than enough for a single user
@@ -309,45 +310,17 @@ List changes grouped by file. For each file, bullet the specific things that cha
 ### ✅ Phase 33 — Spaced Repetition for Grammar (Complete)
 ### ✅ Phase 27 — Flashcard Sub-categories (Complete)
 ### ✅ Phase 38 — B2 Content (Complete)
+### ✅ Phase 31a — Lessons: A1 + Full Infrastructure (Complete)
+### ✅ Phase 31b — Lessons: A2 Content (Complete)
+### ✅ Phase 31c — Lessons: B1 Content (Complete)
+### ✅ Phase 31d — Lessons: B2 Content (Complete)
+### ✅ Phase 38 — B2 Content (Complete)
+### ✅ Phase 39 — B1 Content Gaps (Complete)
 
 ---
 ## ACTIVE PIPELINE
 
-### ⏳ Phase 39 — B1 Content Gaps · Effort: Medium
-
-**Goal:** Fill the two remaining content gaps for B1 so the level is fully playable on par with A1/A2/B2.
-
-#### Current B1 state
-| Content | Status |
-|---|---|
-| Grammar exercises (136, 12 topics) | ✅ Done |
-| Vocabulary (1,406 words) | ✅ Done |
-| Tips (20) | ✅ Done |
-| topicTipMap (12 entries) | ✅ Done |
-| Lessons (12) | ✅ Done |
-| Reading passages | ❌ Missing — `B1: []` in passages.ts |
-| Sentence Builder sentences | ❌ Missing — `B1: []` in sentenceBuilder.ts |
-
-#### Part 1 — Reading passages (`src/data/passages.ts`)
-Add **12 B1 passages** to replace `B1: []`.
-Each: 8–10 sentences. Grammar: Konjunktiv II, passive, relative clauses, temporal connectors (als/wenn/während/bevor/nachdem), two-part conjunctions, verb+preposition. Topics should match B1 life themes: work, travel, environment, culture, relationships, media, health, city life.
-Format: same `{ id, title, titleEn, text }` as A2/B2 — no `words` array needed.
-IDs: `b1_p01` → `b1_p12`.
-Export: add `B1_PASSAGES` constant, replace `B1: []` with `B1: B1_PASSAGES`.
-
-#### Part 2 — Sentence Builder (`src/data/sentenceBuilder.ts`)
-Add **50 B1 sentences** (`B1_SENTENCES`) to replace `B1: []`.
-Grammar: Konjunktiv II (würde/wäre/hätte), passive Präsens/Präteritum, relative clauses (Nom/Akk/Dat), temporal subordinate clauses, genitiv phrases, two-part conjunctions (weder…noch, sowohl…als auch), infinitive constructions (um…zu, ohne…zu).
-Difficulty split: 10 simple / 20 medium / 20 complex (same tagging as other levels).
-IDs: `b1_sb_001` → `b1_sb_050`.
-Export: add `B1_SENTENCES` constant above the export block, replace `B1: []` with `B1: B1_SENTENCES`.
-Note: `SentenceBuilderGame.tsx` already handles any non-empty pool correctly — no changes needed there.
-
-#### Files to change
-| File | Change |
-|---|---|
-| `src/data/passages.ts` | Add `B1_PASSAGES` (12 passages), replace `B1: []` |
-| `src/data/sentenceBuilder.ts` | Add `B1_SENTENCES` (50 sentences), replace `B1: []` |
+*No active phase. All A1–B2 content is complete. See LATER for planned future phases.*
 
 ---
 ## LATER
@@ -509,22 +482,6 @@ The real exam has 3 sub-tasks (done in pairs — simulated solo here):
 
 ---
 
-### ✅ Phase 31a — Lessons: A1 + Full Infrastructure (Complete)
-
-### ✅ Phase 31b — Lessons: A2 Content (Complete)
-
-### ✅ Phase 31c — Lessons: B1 Content (Complete)
-
-### ✅ Phase 31d — Lessons: B2 Content (Complete)
-
-Full plan in `lessons.md` (project root).
-
-B2 grammar exercises are now complete (Phase 38 done). B2 shows the "coming soon" empty state — ready to implement.
-
-### ✅ Phase 38 — B2 Content (Complete)
-
----
-
 ## Progress Log
 
 - [2026-03-26] Project planning completed. CLAUDE.md created.
@@ -579,6 +536,7 @@ B2 grammar exercises are now complete (Phase 38 done). B2 shows the "coming soon
 - [2026-04-07] Phase 38 Part A complete — B2 vocabulary done. `src/data/vocabulary/b2.ts` replaced with 2,123 Aspekte Neu B2 words (IDs b2_0001 → b2_2123), sourced from b2_aspekte.txt. Wired into `src/data/vocabulary/index.ts` (`B2: B2_WORDS`). B2 flashcards now show real vocabulary.
 - [2026-04-07] Phase 38 Part B complete — B2 grammar (120 exercises, 10 topics), 20 B2 tips, topicTipMap B2 section, 15 B2 reading passages (10 standard + 5 exam-style: Wahlpflicht, Kündigung wegen Krankheit, Sparkommentar, Gendern, Fachkräftemangel), 50 B2 sentence builder sentences. Full B2 level now playable.
 - [2026-04-07] Phase 31d complete — B2 lessons now populated in `src/data/lessons/b2.ts` for all 10 B2 grammar topics (Extended participial phrases, Konjunktiv I, Modal particles, Passive with modal verbs, N-Deklination, Nominalisierung, Genitiv prepositions, Complex connectors, Indirect questions, Relative clauses with was/wo). `src/data/lessons/index.ts` now maps `B2` to `B2_LESSONS`, so Lessons no longer shows the B2 "coming soon" empty state.
+- [2026-04-07] Phase 39 complete — B1 content gaps filled. 15 reading passages added to `src/data/passages.ts` (B1_PASSAGES, IDs b1_p01–b1_p15) covering work, travel, environment, culture, relationships, media, health, city life — using Konjunktiv II, passive, relative clauses, temporal connectors. 50 sentence builder sentences added to `src/data/sentenceBuilder.ts` (B1_SENTENCES, IDs b1_sb_001–b1_sb_050) with difficulty tagging (simple/medium/complex). All four CEFR levels are now fully playable with complete content.
 
 ---
 *This file is the single source of truth for the project.

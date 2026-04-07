@@ -30,6 +30,9 @@ app/                        — Expo Router screen files (one file = one route)
   grammar.tsx
   daily.tsx
   exam.tsx
+  lessons.tsx               — Lesson selector (2-column grid per level)
+  lesson.tsx                — Individual lesson detail + "Practice This Topic" deep-link
+  cheatsheet.tsx            — Static grammar reference with masonry card grid
   progress.tsx
   insights.tsx
   reading.tsx
@@ -52,9 +55,17 @@ src/
       index.ts              — VOCABULARY: Record<Level, Word[]>
     grammar/
       types.ts              — GrammarExercise and related types
-      a1.ts, a2.ts, b1.ts
+      a1.ts, a2.ts, b1.ts, b2.ts
       index.ts              — GRAMMAR: Record<Level, GrammarExercise[]>
-    passages.ts             — Reading Mode passages
+    lessons/
+      types.ts              — Lesson type
+      a1.ts, a2.ts, b1.ts, b2.ts
+      index.ts              — LESSONS: Record<Level, Lesson[]>
+    cheatsheets/
+      types.ts              — CheatSheetSection + CheatSheetBlock union types
+      a1.ts, a2.ts, b1.ts, b2.ts
+      index.ts              — CHEATSHEETS: Record<Level, CheatSheetSection[]>
+    passages.ts             — Reading Mode passages (A1: 20, A2: 17, B1: 15, B2: 15)
     sentenceBuilder.ts      — Sentence Builder sentences, Record<Level, SentenceEntry[]>
     tips.ts                 — Tips list
     topicTipMap.ts          — Grammar topic → tip mapping
@@ -416,6 +427,7 @@ Existing exported functions (add new features here, do not create new files):
 generateFillInBlankSentence(germanWord, englishTranslation, level)
 getWritingFeedback(writingPrompt, userText, level)
 getSpeakingFeedback(speakingPrompt, userText, level)
+getComprehensionFeedback(text, questions, userAnswers, level)
 generateGrammarExercises(topic, level)
 generateReadingPassage(topic, level)
 ```
@@ -450,7 +462,7 @@ Rules for Gemini prompts:
 - Screen state union: `type Screen = 'view-a' | 'view-b'`
 
 **Section keys** used in Supabase `section_scores`:
-`grammar`, `exam_reading`, `exam_listening`, `exam_writing`, `exam_speaking`,
+`grammar`, `exam_reading`, `exam_listening`, `exam_writing`, `exam_speaking`, `exam_comprehension`,
 `game_gender_battle`, `game_listening_quiz`, `game_word_match`, `game_sentence_builder`,
 `game_fill_in_blank`
 
@@ -474,8 +486,7 @@ Rules for Gemini prompts:
   errors when a row does not yet exist.
 - **Do not create a new Zustand store** unless you have a clear reason why the state
   needs to be shared across multiple unrelated screens.
-- **Do not add B2 content** to data files that are still marked as "coming soon" —
-  check CLAUDE.md for the current status of each level.
+- **All four levels (A1–B2) are fully complete.** Do not add placeholder or "coming soon" states for any level — check CLAUDE.md's ACTIVE PIPELINE section for what is genuinely in progress before assuming content is missing.
 - **Do not break the existing screen flow** (topic-select → exercise → done pattern
   in Grammar and Daily Challenge) without reading those screens first.
 
