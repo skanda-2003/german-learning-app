@@ -1,10 +1,11 @@
 // insights.tsx — Insights / Analytics screen
 //
-// Shows four sections:
+// Shows six sections:
 //   1. WEAK VOCABULARY  — words you've marked Unknown or Shaky
 //   2. RECENT MISTAKES  — last 10 grammar questions you got wrong
-//   3. WEAK TOPICS      — grammar topics ranked by mistake count
-//   4. ACTIVITY         — heatmap of the last 3 months of daily challenge completions
+//   3. WEAK TOPICS      — grammar topics ranked by score, with sparklines + trend arrows
+//   4. GENDER ERRORS    — der/die/das mistake breakdown (only if Gender Battle has been played)
+//   5. ACTIVITY         — heatmap of the last 3 months of daily challenge completions
 
 import React, { useState, useCallback } from 'react';
 import {
@@ -20,7 +21,7 @@ import { VOCABULARY } from '../src/data/vocabulary';
 import { loadMastery } from '../src/lib/masteryService';
 import { loadMistakes, MistakeEntry } from '../src/lib/mistakeService';
 import { loadActivityDates } from '../src/lib/activityService';
-import { loadTopicScores } from '../src/lib/grammarTopicService';
+import { loadTopicScores, loadTopicScoreHistory, TopicHistoryMap, TopicTrendMap } from '../src/lib/grammarTopicService';
 import type { Word } from '../src/data/vocabulary';
 import type { MasteryState } from '../src/lib/masteryService';
 import {
@@ -90,12 +91,14 @@ function weekMonthLabel(week: DaySlot[]): string | null {
 export default function InsightsScreen() {
   const level = useLevelStore((state) => state.level);
 
-  const [isLoading,   setIsLoading]   = useState(true);
-  const [weakWords,   setWeakWords]   = useState<WeakWord[]>([]);
-  const [mistakes,    setMistakes]    = useState<MistakeEntry[]>([]);
-  const [weakTopics,  setWeakTopics]  = useState<WeakTopic[]>([]);
-  const [calWeeks,    setCalWeeks]    = useState<DaySlot[][]>([]);
-  const [activeCount, setActiveCount] = useState(0);
+  const [isLoading,     setIsLoading]     = useState(true);
+  const [weakWords,     setWeakWords]     = useState<WeakWord[]>([]);
+  const [mistakes,      setMistakes]      = useState<MistakeEntry[]>([]);
+  const [weakTopics,    setWeakTopics]    = useState<WeakTopic[]>([]);
+  const [topicHistory,  setTopicHistory]  = useState<TopicHistoryMap>(new Map());
+  const [topicTrends,   setTopicTrends]   = useState<TopicTrendMap>(new Map());
+  const [calWeeks,      setCalWeeks]      = useState<DaySlot[][]>([]);
+  const [activeCount,   setActiveCount]   = useState(0);
 
   // ── Load all data when the screen comes into focus ──
   useFocusEffect(
@@ -107,11 +110,12 @@ export default function InsightsScreen() {
   async function loadAll() {
     setIsLoading(true);
 
-    const [masteryMap, mistakeList, activityDateList, topicScoreMap] = await Promise.all([
+    const [masteryMap, mistakeList, activityDateList, topicScoreMap, historyResult] = await Promise.all([
       loadMastery(),
       loadMistakes(),
       loadActivityDates(),
       loadTopicScores(level),
+      loadTopicScoreHistory(level),
     ]);
 
     // ── 1. Weak vocabulary ──
@@ -146,8 +150,10 @@ export default function InsightsScreen() {
     const weeks = buildCalendarWeeks(activeDatesSet);
 
     setWeakWords(weakVocab);
-    setMistakes(mistakeList.slice(0, MAX_MISTAKES));
+    setMistakes(mistakeList); // keep all 100 — display slices to MAX_MISTAKES, gender analysis uses all
     setWeakTopics(weakTopicList);
+    setTopicHistory(historyResult.history);
+    setTopicTrends(historyResult.trends);
     setCalWeeks(weeks);
     setActiveCount(activeDatesSet.size);
     setIsLoading(false);
@@ -169,6 +175,30 @@ export default function InsightsScreen() {
     if (pct >= 50) return colors.amber;
     return colors.error;
   }
+
+  // Trend arrow character and color
+  function trendArrow(trend: 'up' | 'down' | 'neutral'): string {
+    if (trend === 'up')   return '↑';
+    if (trend === 'down') return '↓';
+    return '→';
+  }
+  function trendColor(trend: 'up' | 'down' | 'neutral'): string {
+    if (trend === 'up')   return colors.success;
+    if (trend === 'down') return colors.error;
+    return colors.textMuted;
+  }
+
+  // ── Gender error counts from the full mistake list ──
+  // Only mistakes from Gender Battle (section = 'game_gender_battle') count.
+  // correctAnswer is the gender the user missed (der / die / das).
+  const genderErrors = { der: 0, die: 0, das: 0 };
+  for (const m of mistakes) {
+    if (m.section !== 'game_gender_battle') continue;
+    if (m.correctAnswer === 'der') genderErrors.der++;
+    else if (m.correctAnswer === 'die') genderErrors.die++;
+    else if (m.correctAnswer === 'das') genderErrors.das++;
+  }
+  const totalGenderErrors = genderErrors.der + genderErrors.die + genderErrors.das;
 
   // ─── Main render ──────────────────────────────────────────────────────────────
 
@@ -217,7 +247,7 @@ export default function InsightsScreen() {
             No mistakes logged yet — complete some grammar exercises.
           </Text>
         ) : (
-          mistakes.map((m) => (
+          mistakes.slice(0, MAX_MISTAKES).map((m) => (
             <View key={m.id} style={styles.mistakeRow}>
               <Text style={styles.mistakeQuestion} numberOfLines={2}>
                 {m.question}
@@ -243,22 +273,75 @@ export default function InsightsScreen() {
             No topic data yet — complete grammar exercises by topic to see scores here.
           </Text>
         ) : (
-          weakTopics.map(({ topic, pct }) => (
-            <View key={topic} style={styles.topicRow}>
-              <Text style={styles.topicName} numberOfLines={1}>{topic}</Text>
-              <View style={styles.topicBarTrack}>
-                <View style={[
-                  styles.topicBarFill,
-                  { width: `${pct}%` as any, backgroundColor: topicBarColor(pct) },
-                ]} />
+          weakTopics.map(({ topic, pct }) => {
+            const history = topicHistory.get(topic) ?? [];
+            const trend   = topicTrends.get(topic) ?? 'neutral';
+            return (
+              <View key={topic} style={styles.topicRow}>
+                <Text style={styles.topicName} numberOfLines={1}>{topic}</Text>
+                <View style={styles.topicBarTrack}>
+                  <View style={[
+                    styles.topicBarFill,
+                    { width: `${pct}%` as any, backgroundColor: topicBarColor(pct) },
+                  ]} />
+                </View>
+                <Text style={styles.topicCount}>{pct}%</Text>
+                {/* Mini sparkline: bars showing the last N session scores */}
+                {history.length >= 2 && (
+                  <View style={styles.sparkline}>
+                    {history.map((val, i) => (
+                      <View
+                        key={i}
+                        style={[
+                          styles.sparkBar,
+                          { height: Math.max(2, Math.round((val / 100) * 20)) },
+                        ]}
+                      />
+                    ))}
+                  </View>
+                )}
+                {/* Trend arrow — only shown when there is history to compare */}
+                {topicTrends.has(topic) && (
+                  <Text style={[styles.trendArrow, { color: trendColor(trend) }]}>
+                    {trendArrow(trend)}
+                  </Text>
+                )}
               </View>
-              <Text style={styles.topicCount}>{pct}%</Text>
-            </View>
-          ))
+            );
+          })
         )}
       </View>
 
-      {/* ── Section 4: Activity Calendar ───────────────────────────── */}
+      {/* ── Section 4: Gender Errors (only if any Gender Battle mistakes exist) ── */}
+      {totalGenderErrors > 0 && (
+        <>
+          <Text style={[labelStyle, styles.sectionLabel]}>GENDER ERRORS</Text>
+          <View style={styles.card}>
+            <Text style={styles.genderErrorMeta}>
+              Based on your last {mistakes.filter(m => m.section === 'game_gender_battle').length} Gender Battle rounds
+            </Text>
+            {(['der', 'die', 'das'] as const).map((g) => (
+              <View key={g} style={styles.genderErrorRow}>
+                <Text style={styles.genderErrorLabel}>{g}</Text>
+                <View style={styles.genderErrorBar}>
+                  <View style={[
+                    styles.genderErrorFill,
+                    {
+                      width: `${totalGenderErrors > 0 ? (genderErrors[g] / totalGenderErrors) * 100 : 0}%` as any,
+                      backgroundColor: g === 'die' ? colors.accent : colors.error,
+                    },
+                  ]} />
+                </View>
+                <Text style={styles.genderErrorCount}>
+                  {genderErrors[g]} wrong
+                </Text>
+              </View>
+            ))}
+          </View>
+        </>
+      )}
+
+      {/* ── Section 5: Activity Calendar ───────────────────────────── */}
       <Text style={[labelStyle, styles.sectionLabel]}>ACTIVITY</Text>
       <View style={styles.card}>
         <Text style={styles.calendarMeta}>
@@ -459,13 +542,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.sm,
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   topicName: {
     fontFamily: font.regular,
     fontSize: fontSize.xs,
     color: colors.textPrimary,
-    width: 130,
+    width: 120,
   },
   topicBarTrack: {
     flex: 1,
@@ -483,7 +566,66 @@ const styles = StyleSheet.create({
     fontFamily: font.semiBold,
     fontSize: fontSize.xs,
     color: colors.textMuted,
-    width: 20,
+    width: 26,
+    textAlign: 'right',
+  },
+
+  // Sparkline: a row of small bars aligned to their bottom edge
+  sparkline: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 20,
+    gap: 1,
+  },
+  sparkBar: {
+    width: 3,
+    backgroundColor: colors.accent,
+    borderRadius: 1,
+  },
+
+  // Trend arrow: ↑ green / ↓ red / → grey
+  trendArrow: {
+    fontFamily: font.bold,
+    fontSize: fontSize.sm,
+    width: 14,
+    textAlign: 'center',
+  },
+
+  // ── Gender errors ──
+  genderErrorMeta: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    marginBottom: spacing.md,
+  },
+  genderErrorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  genderErrorLabel: {
+    fontFamily: font.semiBold,
+    fontSize: fontSize.sm,
+    color: colors.textPrimary,
+    width: 28,
+  },
+  genderErrorBar: {
+    flex: 1,
+    height: 6,
+    backgroundColor: colors.border,
+    borderRadius: radius.sm,
+    overflow: 'hidden',
+  },
+  genderErrorFill: {
+    height: '100%',
+    borderRadius: radius.sm,
+  },
+  genderErrorCount: {
+    fontFamily: font.regular,
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    width: 52,
     textAlign: 'right',
   },
 

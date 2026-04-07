@@ -23,7 +23,7 @@ import { generateGrammarExercises } from '../src/lib/gemini';
 import { saveScore } from '../src/lib/scoresService';
 import { logActivity } from '../src/lib/activityService';
 import { saveMistake, loadMistakes } from '../src/lib/mistakeService';
-import { saveTopicScore } from '../src/lib/grammarTopicService';
+import { saveTopicScore, saveTopicScoreHistory } from '../src/lib/grammarTopicService';
 import { getContextualTip } from '../src/lib/contextualTipService';
 import useTipStore from '../src/store/useTipStore';
 import type { MistakeData } from '../src/components/ExerciseCard';
@@ -126,6 +126,8 @@ export default function GrammarScreen() {
       // Save per-topic score only when a specific topic was drilled (not "All Topics")
       if (selectedTopic !== null) {
         saveTopicScore(selectedTopic, level, newCorrectCount, totalExercises);
+        // Also append to history so sparklines and trend arrows can be computed
+        saveTopicScoreHistory(selectedTopic, level, newCorrectCount, totalExercises);
       }
       // Log today's activity so the Insights heatmap reflects grammar sessions
       logActivity();
