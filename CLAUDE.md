@@ -515,19 +515,13 @@ The real exam has 3 sub-tasks (done in pairs — simulated solo here):
 
 ### ✅ Phase 31c — Lessons: B1 Content (Complete)
 
-### ⏳ Phase 31d — Lessons: B2 Content · Effort: Low
+### ✅ Phase 31d — Lessons: B2 Content (Complete)
 
 Full plan in `lessons.md` (project root).
 
 B2 grammar exercises are now complete (Phase 38 done). B2 shows the "coming soon" empty state — ready to implement.
 
 ### ✅ Phase 38 — B2 Content (Complete)
-
-**Full plan in `b2content.md` (project root).**
-
-**Goal:** Complete B2 so it is fully playable. Two parts:
-- **Part A — Vocabulary:** ✅ Done — `src/data/vocabulary/b2.ts` has 2,123 Aspekte Neu B2 words (IDs b2_0001 → b2_2123), wired into `vocabulary/index.ts`.
-- **Part B — Content:** ✅ Done — `src/data/grammar/b2.ts` (120 exercises, 10 topics), 20 B2 tips in `tips.ts`, B2 section in `topicTipMap.ts` (10 entries), 15 B2 reading passages in `passages.ts` (10 standard + 5 exam-style), 50 B2 sentences in `sentenceBuilder.ts`.
 
 ---
 
@@ -584,6 +578,7 @@ B2 grammar exercises are now complete (Phase 38 done). B2 shows the "coming soon
 
 - [2026-04-07] Phase 38 Part A complete — B2 vocabulary done. `src/data/vocabulary/b2.ts` replaced with 2,123 Aspekte Neu B2 words (IDs b2_0001 → b2_2123), sourced from b2_aspekte.txt. Wired into `src/data/vocabulary/index.ts` (`B2: B2_WORDS`). B2 flashcards now show real vocabulary.
 - [2026-04-07] Phase 38 Part B complete — B2 grammar (120 exercises, 10 topics), 20 B2 tips, topicTipMap B2 section, 15 B2 reading passages (10 standard + 5 exam-style: Wahlpflicht, Kündigung wegen Krankheit, Sparkommentar, Gendern, Fachkräftemangel), 50 B2 sentence builder sentences. Full B2 level now playable.
+- [2026-04-07] Phase 31d complete — B2 lessons now populated in `src/data/lessons/b2.ts` for all 10 B2 grammar topics (Extended participial phrases, Konjunktiv I, Modal particles, Passive with modal verbs, N-Deklination, Nominalisierung, Genitiv prepositions, Complex connectors, Indirect questions, Relative clauses with was/wo). `src/data/lessons/index.ts` now maps `B2` to `B2_LESSONS`, so Lessons no longer shows the B2 "coming soon" empty state.
 
 ---
 *This file is the single source of truth for the project.
