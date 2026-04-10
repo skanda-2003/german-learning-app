@@ -878,13 +878,13 @@ const styles = StyleSheet.create({
     paddingBottom:     spacing.md,
   },
   headerTitle: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: font.semiBold,
     fontSize:   22,
     color:      colors.textPrimary,
     lineHeight: 28,
   },
   headerSub: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   12,
     color:      colors.textSecondary,
     marginTop:  2,
@@ -1014,7 +1014,7 @@ const styles = StyleSheet.create({
 
   // ── Search section label ──
   searchSectionLabel: {
-    fontFamily:        'Inter_500Medium',
+    fontFamily:        font.medium,
     fontSize:          10,
     color:             colors.textSecondary,
     textTransform:     'uppercase',
@@ -1031,7 +1031,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   alphaHeaderText: {
-    fontFamily:    'Inter_500Medium',
+    fontFamily:    font.medium,
     fontSize:      11,
     color:         colors.textSecondary,
     textTransform: 'uppercase',
@@ -1054,12 +1054,12 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   rowGerman: {
-    fontFamily: 'IBMPlexMono_400Regular',
+    fontFamily: font.regular,
     fontSize:   14,
     color:      colors.textPrimary,
   },
   rowConjNote: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   11,
     color:      colors.textSecondary,
     marginTop:  2,
@@ -1070,7 +1070,7 @@ const styles = StyleSheet.create({
     gap:           6,
   },
   rowType: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   10,
     color:      colors.textSecondary,
   },
@@ -1082,7 +1082,7 @@ const styles = StyleSheet.create({
     borderRadius:      radius.md,
   },
   levelBadgeText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: font.semiBold,
     fontSize:   10,
     lineHeight: 14,
   },
@@ -1093,7 +1093,7 @@ const styles = StyleSheet.create({
     paddingBottom:     spacing.md,
   },
   recentLabel: {
-    fontFamily:    'Inter_500Medium',
+    fontFamily:    font.medium,
     fontSize:      10,
     color:         colors.textSecondary,
     letterSpacing: 0.9,
@@ -1112,7 +1112,7 @@ const styles = StyleSheet.create({
     padding:         8,
   },
   recentChipText: {
-    fontFamily: 'IBMPlexMono_400Regular',
+    fontFamily: font.regular,
     fontSize:   12,
     color:      colors.textPrimary,
   },
@@ -1125,7 +1125,7 @@ const styles = StyleSheet.create({
     paddingTop:     spacing.xxxl,
   },
   noResultsText: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   14,
     color:      colors.textSecondary,
   },
@@ -1179,24 +1179,24 @@ const styles = StyleSheet.create({
     marginLeft:    spacing.md,
   },
   sheetArticle: {
-    fontFamily:  'IBMPlexMono_400Regular',
+    fontFamily:  font.regular,
     fontSize:    32,
     color:       colors.textSecondary,
     marginRight: 8,
   },
   sheetWord: {
-    fontFamily: 'IBMPlexMono_700Bold',
+    fontFamily: font.bold,
     fontSize:   32,
     color:      colors.textPrimary,
   },
   sheetTypeLabel: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   13,
     color:      colors.textSecondary,
     marginTop:  4,
   },
   sheetEnglish: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   15,
     color:      colors.textSecondary,
     marginTop:  spacing.sm,
@@ -1220,13 +1220,13 @@ const styles = StyleSheet.create({
     gap:           spacing.lg,
   },
   infoLabel: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   11,
     color:      colors.textSecondary,
     width:      90,
   },
   infoValue: {
-    fontFamily: 'IBMPlexMono_400Regular',
+    fontFamily: font.regular,
     fontSize:   13,
     color:      colors.textPrimary,
     flex:       1,
@@ -1242,14 +1242,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   infoBoxText: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: font.medium,
     fontSize:   13,
     color:      colors.accent,
   },
 
   // ── Example sentence ──
   sectionLabel: {
-    fontFamily:    'Inter_500Medium',
+    fontFamily:    font.medium,
     fontSize:      10,
     color:         colors.textSecondary,
     textTransform: 'uppercase',
@@ -1257,13 +1257,13 @@ const styles = StyleSheet.create({
     marginBottom:  spacing.sm,
   },
   exampleDe: {
-    fontFamily:   'IBMPlexMono_700Bold',
+    fontFamily:   font.bold,
     fontSize:     13,
     color:        colors.textPrimary,
     marginBottom: 4,
   },
   exampleEn: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   12,
     color:      colors.textSecondary,
   },

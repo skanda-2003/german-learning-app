@@ -24,7 +24,7 @@ import { B1_WORDS } from '../src/data/vocabulary/b1';
 import { B2_WORDS } from '../src/data/vocabulary/b2';
 import type { Word } from '../src/data/vocabulary/types';
 import {
-  colors, spacing, radius,
+  colors, font, spacing, radius,
 } from '../src/styles/theme';
 import type { Level } from '../src/store/useLevelStore';
 
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     marginBottom:   spacing.xl,
   },
   backLinkText: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: font.medium,
     fontSize:   14,
     color:      colors.accent,
   },
@@ -265,13 +265,13 @@ const styles = StyleSheet.create({
     gap:           spacing.sm,
   },
   verbTitle: {
-    fontFamily: 'IBMPlexMono_700Bold',
+    fontFamily: font.bold,
     fontSize:   22,
     color:      colors.textPrimary,
     lineHeight: 28,
   },
   verbEnglish: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   14,
     color:      colors.textSecondary,
     marginTop:  4,
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     borderRadius:      radius.md,
   },
   levelBadgeText: {
-    fontFamily:  'Inter_600SemiBold',
+    fontFamily:  font.semiBold,
     fontSize:    11,
     lineHeight:  15,
   },
@@ -300,12 +300,12 @@ const styles = StyleSheet.create({
     marginTop:       spacing.lg,
   },
   separableTitle: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: font.semiBold,
     fontSize:   13,
     color:      colors.accent,
   },
   separableExample: {
-    fontFamily: 'IBMPlexMono_400Regular',
+    fontFamily: font.regular,
     fontSize:   13,
     color:      colors.accent,
     marginTop:  2,
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   tableHeaderText: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: font.semiBold,
     fontSize:   11,
     color:      colors.textSecondary,
     textTransform: 'uppercase' as const,
@@ -344,20 +344,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   tablePronoun: {
-    fontFamily: 'IBMPlexMono_400Regular',
+    fontFamily: font.regular,
     fontSize:   13,
     color:      colors.textSecondary,
     width:      130,
   },
   tableForm: {
-    fontFamily: 'IBMPlexMono_400Regular',
+    fontFamily: font.regular,
     fontSize:   13,
     color:      colors.textPrimary,
     flex:       1,
   },
 
   noConjNote: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   13,
     color:      colors.textSecondary,
     padding:    spacing.md,
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
 
   // ── Example sentence ──
   sectionLabel: {
-    fontFamily:    'Inter_500Medium',
+    fontFamily:    font.medium,
     fontSize:      10,
     color:         colors.textSecondary,
     textTransform: 'uppercase' as const,
@@ -374,13 +374,13 @@ const styles = StyleSheet.create({
     marginBottom:  spacing.sm,
   },
   exampleDe: {
-    fontFamily:   'IBMPlexMono_700Bold',
+    fontFamily:   font.bold,
     fontSize:     13,
     color:        colors.textPrimary,
     marginBottom: 4,
   },
   exampleEn: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   12,
     color:      colors.textSecondary,
   },
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     paddingTop:        spacing.xl,
   },
   errorText: {
-    fontFamily: 'Inter_400Regular',
+    fontFamily: font.regular,
     fontSize:   14,
     color:      colors.textSecondary,
     marginTop:  spacing.xl,
