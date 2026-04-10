@@ -37,7 +37,7 @@ Toggle: **A1 → A2 → B1 → B2** — affects all content globally.
 ---
 
 ## Navigation (Sidebar — Feather icons)
-Home (home) · Flashcards (layers) · Mini Games (zap) · Grammar (edit-3) · Cheat Sheet (list) · Daily Challenge (calendar) · Exam Prep (book-open) · Progress (bar-chart-2) · Insights (trending-up) · Reading Mode (book)
+Home (home) · Flashcards (layers) · Dictionary (book-open) · Mini Games (zap) · Grammar (edit-3) · Cheat Sheet (list) · Daily Challenge (calendar) · Exam Prep (book-open) · Progress (bar-chart-2) · Insights (trending-up) · Reading Mode (book)
 
 ---
 
@@ -46,6 +46,8 @@ Home (home) · Flashcards (layers) · Mini Games (zap) · Grammar (edit-3) · Ch
 **Home** — Greeting + streak, TODAY'S FOCUS (weakest area), CONTINUE WHERE YOU LEFT OFF, quick stats, section launch cards. No scrolling.
 
 **Flashcards** — German/English flip; Known/Shaky/Unknown (green/amber/red); spaced repetition; category pills (All/Nouns/Verbs/Adjectives/Prepositions/Other) with runtime sub-categories; word search; "Study Weak"; session summary. Mastery saves to Supabase. Space=flip, 1/2/3=rate.
+
+**Dictionary** — Searchable reference covering all ~3,000+ words across A1–B2 regardless of current level. Three search indexes: German base-word, conjugation reverse (maps "isst" → "essen"), English reverse. Filter pills (All/Nouns/Verbs/Adjectives/Other). Alphabetical SectionList with sticky headers when idle; FlatList with GERMAN MATCHES / ENGLISH MATCHES sections when searching. Bottom sheet detail for nouns (plural card), adjectives (comparative), prepositions (case info), and other types. Full-screen verb detail (`dictionary-verb.tsx`) with present-tense conjugation table and separable verb banner. Recently viewed (last 10) stored in AsyncStorage key `dictionary_recent`. Web Speech API speaker button on all detail views.
 
 **Mini Games** — Word Match, Gender Battle (der/die/das), Listening Quiz (Web Speech API), Fill in the Blank (Gemini). 2-column card grid selector.
 
@@ -168,6 +170,7 @@ All phases complete — all A1–B2 content live.
 ✅ Phase 38 — B2 Content
 ✅ Phase 39 — B1 Content Gaps
 ✅ Phase 31a/b/c/d — Lessons: A1 + A2 + B1 + B2
+✅ Phase 40 — Dictionary (all-level searchable reference)
 
 ---
 

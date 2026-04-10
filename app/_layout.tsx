@@ -46,6 +46,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { route: 'index',         label: 'Home',            icon: 'home'        },
   { route: 'flashcards',    label: 'Flashcards',      icon: 'layers'      },
+  { route: 'dictionary',    label: 'Dictionary',      icon: 'book-open'   },
   { route: 'games',         label: 'Mini Games',      icon: 'zap'         },
   { route: 'grammar',       label: 'Grammar',         icon: 'edit-3'      },
   { route: 'lessons',       label: 'Lessons',         icon: 'file-text'   },
@@ -278,7 +279,9 @@ export default function RootLayout() {
           }}
         >
           <Drawer.Screen name="index"         options={{ title: 'Home' }}             />
-          <Drawer.Screen name="flashcards"    options={{ title: 'Flashcards' }}       />
+          <Drawer.Screen name="flashcards"      options={{ title: 'Flashcards' }}       />
+          <Drawer.Screen name="dictionary"    options={{ title: 'Dictionary' }}       />
+          <Drawer.Screen name="dictionary-verb" options={{ title: 'Word Detail' }}    />
           <Drawer.Screen name="games"         options={{ title: 'Mini Games' }}       />
           <Drawer.Screen name="grammar"       options={{ title: 'Grammar' }}          />
           <Drawer.Screen name="lessons"       options={{ title: 'Lessons' }}          />
