@@ -93,4 +93,4 @@ Entirely free to run — Supabase free tier, Gemini free tier (`gemini-2.5-flash
 
 ## Project status
 
-Active development. See `CLAUDE.md` for the full build phase plan and progress log.
+Complete. All A1–B2 content and features are live. No further development planned.
