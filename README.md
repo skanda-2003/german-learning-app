@@ -9,6 +9,7 @@ A German language learning web app for CEFR levels A1 through B2, built with Exp
 ## What it does
 
 - **Flashcards** — spaced repetition with three mastery states: Known, Shaky, Unknown. Review dates calculated per state (Known→7d, Shaky→2d, Unknown→1d). Category pills (Verbs, Nouns, Prepositions, Other) open a sub-category dropdown for fine-grained filtering (e.g. Modal verbs, der/die/das nouns, Accusative prepositions)
+- **Dictionary** — searchable reference for all 3,000+ words across A1–B2, regardless of selected level. Search by German word, conjugated verb form (e.g. "isst" → essen), or English translation. Noun detail shows plural; verb detail shows full present-tense conjugation table with separable verb indicator; adjective detail shows comparative. Recently viewed history persisted locally
 - **Grammar Exercises** — level-specific drills with multiple choice and fill-in-the-blank
 - **Mini Games** — Word Match, Gender Battle, Listening Quiz, Fill in the Blank (AI-generated)
 - **Sentence Builder** — tap-to-place word tiles to form correct German sentences

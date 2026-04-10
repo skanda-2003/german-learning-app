@@ -26,6 +26,8 @@ app/                        — Expo Router screen files (one file = one route)
   _layout.tsx               — Root layout: drawer nav, auth gate, font loading, TipsBar
   index.tsx                 — Home / Dashboard
   flashcards.tsx
+  dictionary.tsx            — Searchable all-level dictionary (A1–B2, ~3,000 words)
+  dictionary-verb.tsx       — Full-screen verb detail (conjugation table, separable banner)
   games.tsx
   grammar.tsx
   daily.tsx
@@ -231,6 +233,12 @@ IDs follow the pattern `a1_001`, `a2_001`, `b1_001`, `b2_001` — zero-padded to
 All words for a level live in one array exported as `A1_WORDS`, `A2_WORDS`, etc.
 The central lookup is `VOCABULARY: Record<Level, Word[]>` in `src/data/vocabulary/index.ts`.
 Always import from `index.ts`, never directly from `a1.ts` etc.
+
+**Dictionary pattern** — when you need all words across all levels (e.g. for the Dictionary
+screen), define a module-level constant by importing each level array directly and tagging each
+word with its source level: `type WordWithLevel = Word & { level: Level }`. Build this once at
+module level so it is never re-computed. Do not import it from another screen file — define it
+locally in each file that needs it to avoid circular imports.
 
 ---
 
