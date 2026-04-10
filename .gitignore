@@ -37,8 +37,10 @@ yarn-error.*
 myinstructions.txt
 
 # Cursor editor
-cursor.md
 .cursorrules
+
+# Claude Code
+CLAUDE.md
 
 # WSL-specific Metro polling config (not needed on Windows/Mac)
 metro.config.js
