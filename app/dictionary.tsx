@@ -1031,7 +1031,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   alphaHeaderText: {
-    fontFamily:    font.medium,
+    fontFamily:    font.bold,
     fontSize:      11,
     color:         colors.textSecondary,
     textTransform: 'uppercase',
